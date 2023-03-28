@@ -82,10 +82,7 @@ export const CredentialsOwnershipDetailsForm = () => {
     const [personalDetailsAtom, setPersonalDetailsAtom] = useAtom(personalAccountDetailsAtom)
     const [open, setOpen] = useState(false)
     const uamcheckemail = useApiCallBack((api, email: string) => api.users.UAMCheckEmail(email))
-    const uamadduser = useApiCallBack(async (api, args : UAMAddRequestArgs) => {
-        const result = await api.users.UAMAddUsersFunc(args)
-        return result
-    })
+    const uamadduser = useApiCallBack(async (api, args : UAMAddRequestArgs) => await api.users.UAMAddUsersFunc(args))
     const authjwtAccountCreation = useApiCallBack(
         async (api, args: AuthenticationJwtCreateAccount) => await api.authentication.authenticationJwtCreateAccount(args)
     )
@@ -110,7 +107,7 @@ export const CredentialsOwnershipDetailsForm = () => {
                 const uam_add_request_data = {
                     firstname: personalDetailsAtom?.firstName,
                     lastname: personalDetailsAtom?.lastName,
-                    middlename : personalDetailsAtom?.middleName,
+                    middlename : personalDetailsAtom?.hasNoMiddleName ? "N/A" : personalDetailsAtom?.middleName,
                     email: values.email,
                     password : values.password,
                     userType: personalDetailsAtom?.userType
@@ -133,6 +130,7 @@ export const CredentialsOwnershipDetailsForm = () => {
                         )
                         return;
                     } else {
+                        console.log(uam_add_request_data)
                         uamadduser.execute(uam_add_request_data)
                         .then((repository: any) => {
                             const { data } : any = repository
