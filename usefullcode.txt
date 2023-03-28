@@ -1,0 +1,118 @@
+// useEffect(
+    //     () => {
+    //         if(Object.keys(user).length > 0){
+    //             axios.get(`https://www.googleapis.com/oauth2/v1/userinfo?access_token=${user?.access_token}`, {
+    //                 headers: {
+    //                     Authorization : `Bearer ${user.access_token}`,
+    //                     Accept: 'application/json'
+    //                 }
+    //             })
+    //             .then((res : any) => {
+    //                 const { data } : any = res
+    //                 console.log(data)
+    //                 setProfile(data)
+    //             })
+    //         }
+    //     },
+    //     [user]
+
+    // )
+
+    code above is for google auth scan 
+
+
+    // const objSession = {
+        //   userId: accessUserId,
+        //   savedAuth : accessSavedAuth
+        // }
+        // if(accessSavedAuth == null && accessUserId == null){
+        //   setOpen(false)
+        // } else {
+        //     IdentifyUsertype.execute(accessUserId)
+        //     .then((response : any) => {
+        //       const { data } : any = response
+        //       if(data == 'Administrator') {
+        //         setUser(objSession)
+        //         setOpen(false)  
+        //         router.push('/sys-admin/admin-dashboard')
+        //       }
+        //     }) 
+        // }
+
+        code above is for check auth v2
+
+
+
+        useEffect(() => {
+        setOpen(!open)
+        const objSession = {
+            userId: accessUserId,
+            savedAuth : accessSavedAuth
+        }
+        if(accessSavedAuth != null && accessUserId != null){
+            setOpen(false)
+            setSavedAuth(objSession)
+        } else {
+            IdentifyUsertype.execute(accessUserId)
+            .then((response : any) => {
+              const { data } : any = response
+              if(data == 'Developers') {
+                setOpen(false)  
+                router.push('/sys-dev/dev-dashboard')
+              }
+              else if(data == 'Client') {
+                setOpen(false)
+                console.log('Client Dashboard')
+              } else if(data == 'Administrator') {return;}
+              else {
+                handleOnToast(
+                    "Invalid Token.",
+                    "top-right",
+                    false,
+                    true,
+                    true,
+                    true,
+                    undefined,
+                    "dark",
+                    "error"
+                )
+                setOpen(false)  
+                router.push('/login')
+              }
+            })
+        }
+    }, [accessSavedAuth, accessUserId])
+
+
+    code above is for auth scan v2
+
+
+    // setOpen(!open)
+        // const uuid = localStorage.getItem('uid') === null ? 0 : localStorage.getItem('uid')
+        // CheckAuthentication()
+        // .then((res : any) => {
+        //     if(res == 'no_saved_storage') {
+        //         setOpen(false)
+        //       }
+        //       else if(res?.data == 'no_records'){
+        //         setOpen(false)
+        //       } else if(res?.data == 'not_match'){
+        //         setOpen(false)
+        //       } else {
+        //         IdentifyUsertype.execute(uuid)
+        //         .then((identified: any) => {
+        //           if(identified?.data == 'Administrator') {
+        //             setOpen(false)
+        //             return;
+        //           } else if(identified?.data == 'Developers') {
+        //             setOpen(false)
+        //             router.push('/sys-dev/dev-dashboard')
+        //           }
+        //         })
+        //       }
+        // }).catch(error => {
+        //   setOpen(false)
+        //   return;
+        // })
+
+        code above is for auth checking v2 login tsx
