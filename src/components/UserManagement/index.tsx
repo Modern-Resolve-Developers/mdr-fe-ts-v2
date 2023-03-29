@@ -316,13 +316,15 @@ export const FormAdditionalDetails = () => {
                         )
                        }
                        &nbsp;
-                       <ControlledButton 
+                       {
+                        params.row.userType != 1 && <ControlledButton 
                         text="DELETE"
                         variant='outlined'
                         color='error'
                         size='small'
                         onClick={() => console.log(params.row.id)}
                        />
+                       }
                     </div>
                 </>
             )
