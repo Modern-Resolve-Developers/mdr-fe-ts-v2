@@ -28,74 +28,12 @@ import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import AddTaskIcon from '@mui/icons-material/AddTask';
 
 import PlaylistAddCheckIcon from '@mui/icons-material/PlaylistAddCheck';
+import { sidebarList, sidebarExpand } from "./sys-routing/sys-routing";
 if(typeof Highcharts === 'object'){
     exportingInit(Highcharts)
     offlineExporting(Highcharts)
 }
 
-export const adminSidebarData = [
-    {
-        title: 'Admin Overview',
-        dropDown: false,
-        uri: '/sys-admin/admin-dashboard'
-    },
-    {
-        title: 'User Management',
-        dropDown: false,
-        uri: '/sys-admin/user-management'
-    },
-    {
-        title: 'Ecommerce',
-        dropDown: true,
-    },
-    {
-        title: 'Client Profiles',
-        dropDown: false,
-    },
-    {
-        title: 'Transactions',
-        dropDown: false,
-    }
-  ]
-  
-  const subExpandData = [
-    {
-        parentMenu : 'Task',
-        icon: (
-            <>
-            <ListItemIcon>
-                <TaskAltIcon className='text-white' />
-            </ListItemIcon>
-            </>
-        ),
-        childMenu : [
-            {
-                title : 'Create Task',
-                dropDown: false,
-                uri: '/sys-admin/task',
-                icon : (
-                    <>
-                        <ListItemIcon>
-                            <AddTaskIcon className='text-white' />
-                        </ListItemIcon>
-                    </>
-                )
-            },
-            {
-                title : 'Task List',
-                dropDown: false,
-                uri: '/sys-admin/tasklist',
-                icon : (
-                    <>
-                        <ListItemIcon>
-                            <PlaylistAddCheckIcon className='text-white' />
-                        </ListItemIcon>
-                    </>
-                )
-            }
-        ]
-    }
-  ]
 
 const TestAdminDashboard: React.FC = () => {
     const router = useRouter()
@@ -260,7 +198,7 @@ const TestAdminDashboard: React.FC = () => {
       )
     return (
         <>
-            <DashboardLayout sidebarConfig={adminSidebarData} subsidebarConfig={subExpandData}>
+            <DashboardLayout sidebarConfig={sidebarList} subsidebarConfig={sidebarExpand}>
                 <Container>
                     <ControlledGrid>
                         <Grid item xs={3}>

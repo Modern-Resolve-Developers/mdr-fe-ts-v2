@@ -4,80 +4,15 @@ import { useState, useEffect, useContext, useCallback } from "react";
 import { ControlledTypography, UncontrolledCard } from "@/components";
 
 import { useRouter } from 'next/router';
-import { Container, ListItemIcon } from "@mui/material";
+import { Container } from "@mui/material";
 
 import { ToastContextContinue } from "@/utils/context/base/ToastContext";
 import { ToastContextSetup } from "@/utils/context";
 import { ContextSetup } from "@/utils/context";
 import {ARContext} from "@/utils/context/base/AdminRegistrationContext"
-import TaskAltIcon from '@mui/icons-material/TaskAlt';
-import AddTaskIcon from '@mui/icons-material/AddTask';
 
-import PlaylistAddCheckIcon from '@mui/icons-material/PlaylistAddCheck';
 import { FormAdditionalDetails } from "@/components/UserManagement";
-export const adminSidebarData = [
-    {
-        title: 'Admin Overview',
-        dropDown: false,
-        uri: '/sys-admin/admin-dashboard'
-    },
-    {
-        title: 'User Management',
-        dropDown: false,
-        uri: '/sys-admin/user-management'
-    },
-    {
-        title: 'Ecommerce',
-        dropDown: true,
-    },
-    {
-        title: 'Client Profiles',
-        dropDown: false,
-    },
-    {
-        title: 'Transactions',
-        dropDown: false,
-    }
-  ]
-  
-  const subExpandData = [
-    {
-        parentMenu : 'Task',
-        icon: (
-            <>
-            <ListItemIcon>
-                <TaskAltIcon className='text-white' />
-            </ListItemIcon>
-            </>
-        ),
-        childMenu : [
-            {
-                title : 'Create Task',
-                dropDown: false,
-                uri: '/sys-admin/task',
-                icon : (
-                    <>
-                        <ListItemIcon>
-                            <AddTaskIcon className='text-white' />
-                        </ListItemIcon>
-                    </>
-                )
-            },
-            {
-                title : 'Task List',
-                dropDown: false,
-                uri: '/sys-admin/tasklist',
-                icon : (
-                    <>
-                        <ListItemIcon>
-                            <PlaylistAddCheckIcon className='text-white' />
-                        </ListItemIcon>
-                    </>
-                )
-            }
-        ]
-    }
-  ]
+import { sidebarList, sidebarExpand } from "./sys-routing/sys-routing";
 const UserManagement: React.FC = () => {
     const router = useRouter()
     const [open, setOpen] = useState(false)
@@ -117,7 +52,7 @@ const UserManagement: React.FC = () => {
 
     return (
         <>
-             <DashboardLayout sidebarConfig={adminSidebarData} subsidebarConfig={subExpandData}>
+             <DashboardLayout sidebarConfig={sidebarList} subsidebarConfig={sidebarExpand}>
                 <Container>
                     <UncontrolledCard>
                             <ControlledTypography
