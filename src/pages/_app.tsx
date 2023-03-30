@@ -6,7 +6,7 @@ import '@fontsource/roboto/700.css';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import type { AppProps } from 'next/app'
 import { NextPage } from 'next';
-import { ReactElement, ReactNode } from 'react';
+import React, { ReactElement, ReactNode, useEffect } from 'react';
 import AdminRegistrationContext from '../utils/context/base/AdminRegistrationContext'
 import ToastContext from '../utils/context/base/ToastContext'
 import { ControlledToast } from '@/components';
@@ -17,6 +17,7 @@ import 'react-quill/dist/quill.snow.css'
 import TableSearchContext from '@/utils/context/base/TableSearchContext';
 import { AuthProvider } from '@/utils/context/base/AuthContext';
 import { useRefreshTokenHandler } from '@/utils/hooks/useRefreshTokenHandler';
+import { CookiesProvider } from 'react-cookie'
 export type NextPageWithLayout<P = any, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode
 }
@@ -35,7 +36,6 @@ const darkTheme = createTheme({
 export default function App({ Component, pageProps }: AppPropsWithLayout) {
   useRefreshTokenHandler()
   const getLayout = Component.getLayout ?? ((page) => page);
-
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
@@ -57,7 +57,9 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
           pauseOnHover
           theme="dark"
           />
+          <CookiesProvider>
           {getLayout(<Component {...pageProps} />)}
+          </CookiesProvider>
         </ToastContext>
         </SessionContext>
       </AdminRegistrationContext>
