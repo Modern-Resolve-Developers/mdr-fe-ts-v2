@@ -38,8 +38,7 @@ import { useAuthContext } from "@/utils/context/base/AuthContext";
 import { useAccessToken, useRefreshToken } from "@/utils/context/hooks/hooks";
 import { useLayout } from "./hooks/useLayout";
 
-import {yupResolver} from '@hookform/resolvers/yup'
-import loginInformationSchema from "@/utils/formSchemas/loginForm/loginInformation";
+import { useCookies } from 'react-cookie'
 
 const baseSchema = z.object({
     email : requiredString("Your email is required.").email(),
@@ -68,6 +67,7 @@ const Login: React.FC = () => {
             password: ''
         }
     })
+    const [cookies, setCookies] = useCookies(['auth'])
     const [accessToken, setAccessToken] = useAccessToken()
     const [refreshToken, setRefreshToken] = useRefreshToken()
     const {
@@ -116,6 +116,7 @@ const Login: React.FC = () => {
     
     useEffect(
       () => {
+        console.log(cookies)
         setOpen(!open)
         let savedAuthStorage;
         const savedTokenStorage = localStorage.getItem('token')
@@ -251,6 +252,12 @@ const Login: React.FC = () => {
                         setRefreshToken(
                           authLoginResponse?.data?.refreshToken
                         )
+                        const expiry = new Date()
+                        expiry.setDate(expiry.getDate() + 3)
+                        setCookies('auth', authLoginResponse?.data?.token, {
+                          path: '/',
+                          expires: expiry
+                        })
                         setAccessSavedAuth(api?.data?.token[0]?.savedAuth)
                         setAccessUserId(structure.userId)
                         setOpen(false)

@@ -35,6 +35,7 @@ export const sidebarList: sidebarProps[] = [
     {
         title: 'System Products',
         dropDown: false,
+        uri: '/sys-admin/product-management'
     },
     {
         title: 'Ecommerce',

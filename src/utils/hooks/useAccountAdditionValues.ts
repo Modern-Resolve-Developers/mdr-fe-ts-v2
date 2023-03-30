@@ -6,7 +6,7 @@ import { CredentialsAccountCreation } from "@/components/UserManagement/forms/Cr
 import { EditFormUserAccount } from "@/components/UserManagement";
 import { TaskInformationCreation } from "@/components/TaskManagement/forms";
 import { TaskAssigneeCreation } from "@/components/TaskManagement/forms/TaskAssignee";
-
+import { ProductManagementCreation } from "@/pages/blocks/ProductManagementBlocks/productManagementBlocks";
 
 type AccountCreationFormData = {
     accountCreation: AccountCreation
@@ -16,6 +16,7 @@ type AccountLoginFormData = {
     accountLoginFrmData : loginAccount
 }
 
+export const productManagementAtom = atom<ProductManagementCreation | undefined>(undefined)
 
 export const taskAssigneeAtom = atom<TaskAssigneeCreation | undefined>(undefined)
 
