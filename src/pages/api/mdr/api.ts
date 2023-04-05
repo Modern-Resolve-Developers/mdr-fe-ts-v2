@@ -1,6 +1,6 @@
 import { AxiosInstance } from 'axios'
 
-import { CreateTask } from '../types'
+import { CreateTask, CreateProducts } from '../types'
 export class MdrApi {
     constructor(private readonly axios: AxiosInstance){}
 
@@ -24,5 +24,14 @@ export class MdrApi {
     }
     public IdentifyUserTypeFunc(uuid: any) {
         return this.axios.get(`/api/token/identify-user-type/${uuid}`)
+    }
+    public ProductCategoryList(){
+        return this.axios.get('/api/productcategory/fetch-all-category')
+    }
+    public ProductManagementCreation(props : CreateProducts){
+        return this.axios.post('/api/productmanagement/create-new-products', props)
+    }
+    public ProductSystemGen(props: {product_id: any}){
+        return this.axios.post('/api/systemgen/gen-products-system-gen', props)
     }
 }

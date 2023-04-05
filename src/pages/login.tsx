@@ -116,7 +116,6 @@ const Login: React.FC = () => {
     
     useEffect(
       () => {
-        console.log(cookies)
         setOpen(!open)
         let savedAuthStorage;
         const savedTokenStorage = localStorage.getItem('token')

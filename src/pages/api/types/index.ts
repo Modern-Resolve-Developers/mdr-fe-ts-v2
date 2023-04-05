@@ -11,3 +11,28 @@ export type CreateTask = {
     task_dept: string | undefined 
     task_status: string | undefined
 }
+
+type ProductFeaturesProps = {
+    label: string
+    value: string
+}
+
+export type CreateProducts = {
+    productName: string | undefined
+    productDescription: string | undefined
+    productCategory: string | undefined
+    productFeatures: ProductFeaturesProps[]
+    projectType: string | undefined
+    productImageUrl?: string | undefined
+    projectScale: string | undefined
+    productPrice: number | undefined
+    projectInstallment: string | undefined
+    installmentInterest?: number | undefined
+    monthsToPay: number | undefined
+    downPayment: any | undefined
+    monthlyPayment?: any | undefined
+    totalPayment?: any | undefined
+    repositoryName: string | undefined
+    maintainedBy: string | undefined
+    repositoryZipUrl?: string | undefined
+}
