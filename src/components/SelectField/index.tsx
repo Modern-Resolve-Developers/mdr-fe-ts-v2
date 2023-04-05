@@ -5,7 +5,7 @@ import { ControlledField } from "../Checkbox";
 import { PlainSelectField, PlainSelectFieldProps } from "./PlainSelectField";
 export type SingleOption = {
     label: string
-    value: string
+    value: any
     name: string
 }
 

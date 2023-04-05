@@ -3,12 +3,13 @@ import { Card, CardContent } from "@mui/material";
 type CardProps = {
     children?: React.ReactNode
     style?: React.CSSProperties
+    className?: any
 }
 
-const UncontrolledCard: React.FC<CardProps> = ({children, style}) => {
+const UncontrolledCard: React.FC<CardProps> = ({children, style, className}) => {
     return (
         <>
-            <Card style={style}>
+            <Card className={className} style={style}>
                 <CardContent>
                     {children}
                 </CardContent>
