@@ -30,6 +30,9 @@ import ControlledBackdrop from '@/components/Backdrop/Backdrop'
 
 import { CreateProducts } from "@/pages/api/types";
 import { useRouter } from "next/router";
+
+import {ProjectTable} from "@/components";
+
 export const productManagementBaseSchema = z.object({
     productName: requiredString("Product name is required."),
     productDescription: requiredString("Product Description is required."),
@@ -55,6 +58,7 @@ export const productManagementBaseSchema = z.object({
 })
 export type ProductManagementCreation = z.infer<typeof productManagementBaseSchema>
 const ProductPricingForm = () => {
+    const [isEdit, setIsEdit] = useState(true)
     const [scale, setScale] = useState<Array<{
         label: string
         value: string
@@ -99,21 +103,24 @@ const ProductPricingForm = () => {
     /* calc area start */
     const installmentPercentage = watch('installmentInterest')
     const monthsToPay = watch('monthlyPaymentSelection')
+    const dpRequired = watch('downpaymentRequired')
     useEffect(() => {
-        const downPayment = (installmentPercentage / 100) * slideValue
+        const dpAmount = slideValue / monthsToPay
+        const dpAmountPercentage = (dpAmount / slideValue) * 100
+        const downPayment = (dpAmountPercentage / 100) * slideValue
         const interestFromProductPrice = (slideValue * installmentPercentage)
-        const monthlyPayment = (slideValue - downPayment) / monthsToPay + interestFromProductPrice
+        const monthlyPayment = (slideValue - (isEdit == false ? dpRequired : downPayment)) / monthsToPay + interestFromProductPrice
         const totalAmountWithoutInterest = (monthlyPayment * monthsToPay) + downPayment
         const totalAmountWithInterest = totalAmountWithoutInterest + (totalAmountWithoutInterest * (installmentPercentage / 100) * monthsToPay)
         if(!monthsToPay){
             return;
         }
         else{
-            setValue('downpaymentRequired', downPayment.toLocaleString())
+            setValue('downpaymentRequired', isEdit == false ? dpRequired.toLocaleString() : downPayment.toLocaleString())
             setValue('monthlyPaymentRequired', monthlyPayment.toLocaleString())
             setValue('totalAmountBasedOnInstallation', totalAmountWithInterest.toLocaleString())
         }
-    }, [installmentPercentage, monthsToPay, slideValue])
+    }, [installmentPercentage, monthsToPay, slideValue, dpRequired])
     /* calc area end */
     const handleSlideChange = (val : any) => {
         setSlideValue(val)
@@ -127,6 +134,20 @@ const ProductPricingForm = () => {
         } else {
             setValue('projectScale', 'small_scale')
         }
+    }
+    const handleOnEditDownPayment = () => {
+        setIsEdit(false)
+    }
+    const handleCancelEditRequredDP = () => {
+        setIsEdit(true)
+        resetField('installmentInterest')
+        resetField('monthlyPaymentSelection')
+        resetField('downpaymentRequired')
+        resetField('monthlyPaymentRequired')
+        resetField('totalAmountBasedOnInstallation')
+    }
+    const handleSaveEditRequiredDP = () => {
+        setIsEdit(true)
     }
     return(
         <>
@@ -148,7 +169,7 @@ const ProductPricingForm = () => {
                             defaultValue={slideValue}
                             style={{marginTop: '10px'}}
                             step={10}
-                            min={20000}
+                            min={15000}
                             max={120000}
                             value={slideValue}
                             onChange={(e, val) => handleSlideChange(val)}
@@ -230,7 +251,41 @@ const ProductPricingForm = () => {
                                 label='Required Downpayment'
                                 shouldUnregister
                                 placeholder="Auto generated downpayment"
-                                disabled
+                                disabled={isEdit}
+                                />
+                                {
+                                    isEdit == false && 
+                                    <div style={{ display: 'flex', float: 'right' }}>
+                                        <NormalButton 
+                                        variant="text"
+                                        size="small"
+                                        children="CANCEL"
+                                        style={{
+                                            float: 'right'
+                                        }}
+                                        onClick={handleCancelEditRequredDP}
+                                        />&nbsp;
+                                        <NormalButton 
+                                        variant="text"
+                                        size="small"
+                                        children="SAVE"
+                                        style={{
+                                            float: 'right'
+                                        }}
+                                        onClick={handleSaveEditRequiredDP}
+                                        />
+                                    </div>
+                                }
+                                <NormalButton 
+                                variant="text"
+                                size="small"
+                                children="EDIT"
+                                style={{
+                                    float: 'right',
+                                    display: isEdit == false ? 'none' : '' 
+                                }}
+                                disabled={!monthsToPay}
+                                onClick={handleOnEditDownPayment}
                                 />
                         </Grid>
                         <Grid item xs={4}>
@@ -781,7 +836,20 @@ const ProductManagementBlocks: React.FC<FieldProps> = (props : FieldProps) => {
                                     </Container>
                                 </>
                             ) : (
-                                <></>
+                                <>
+                                    <Container>
+                                        <UncontrolledCard style={{
+                                            marginTop: '10px'
+                                        }}>
+                                            <Typography variant='subtitle1'>Product List</Typography>
+                                            <ProjectTable 
+                                                data={[]}
+                                                sx={{ marginTop: '20px', overflowX: 'scroll', width: '100%'}}
+                                                columns={[]}
+                                            />
+                                        </UncontrolledCard>
+                                    </Container>
+                                </>
                             )
                         }
                     </ControlledTabs>
