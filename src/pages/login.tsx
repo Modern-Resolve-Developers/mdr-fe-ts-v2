@@ -292,6 +292,16 @@ const Login: React.FC = () => {
         }
         })
     }
+
+    const enterKeyTrigger = (event: any) => {
+      const value = getValues()
+      if(event.key === "Enter") {
+        if(value.password != '') {
+          handleSignin()
+        }
+      }
+    }
+
     return (
         <>
         {
@@ -299,7 +309,8 @@ const Login: React.FC = () => {
             {
               control: control,
               isValid: isValid,
-              handleSubmit: handleSignin
+              handleSubmit: handleSignin,
+              enterKeyLogin: enterKeyTrigger
             },
             ['AccountLoginBlocks']
           )
