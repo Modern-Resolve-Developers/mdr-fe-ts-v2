@@ -6,6 +6,7 @@ const AccountLoginBlocks: React.FC<FieldProps> = (props: FieldProps) => {
     const {
         control,
         handleSubmit,
+        enterKeyLogin,
         isValid,
     } = props;
 
@@ -53,6 +54,7 @@ const AccountLoginBlocks: React.FC<FieldProps> = (props: FieldProps) => {
                         required
                         type="password"
                         label="Password"
+                        onKeyPress={enterKeyLogin}
                         />
               </div>
             </div>
