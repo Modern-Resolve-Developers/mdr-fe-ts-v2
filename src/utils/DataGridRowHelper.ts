@@ -31,3 +31,12 @@ export const rowCreativeDesign = (rowData : any) => {
     })
     return newArrayTemporary
 }
+
+export const PMGridRow: Array<{
+    product_id: number
+    productName: string
+    productCategory: string
+    projectType: string
+    productStatus: string
+    IsUnderMaintenance: string
+}> = []
