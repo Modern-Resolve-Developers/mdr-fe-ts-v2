@@ -1,15 +1,66 @@
 import { ControlledTextField } from "@/components/TextField/TextField";
 import { FieldProps } from "@/pages/hooks/useLayout"
+import { ToastContextSetup } from "@/utils/context";
+import { ToastContextContinue } from "@/utils/context/base/ToastContext";
 import { LockClosedIcon } from '@heroicons/react/20/solid'
+import { useContext, useEffect, useState } from "react";
 import GoogleButton from 'react-google-button'
+
 const AccountLoginBlocks: React.FC<FieldProps> = (props: FieldProps) => {
     const {
         control,
         handleSubmit,
         enterKeyLogin,
         isValid,
+        getValues,
+        setValue
     } = props;
+    const {
+      handleOnToast
+    } = useContext(ToastContextContinue) as ToastContextSetup
+    const [checkedVal, setCheckedVal] = useState(false)
+    const checkRememberMe = () => {
+      let parseStorage;
+      const storage = localStorage.getItem('rm')
+      if(typeof storage == 'string'){
+        parseStorage = JSON.parse(storage)
+      }
+      setValue('email', parseStorage?.email)
+      setCheckedVal(parseStorage?.rmChecked)
+    }
+    useEffect(() => {
+      checkRememberMe()
+    }, [])    
 
+    const handleCheckBox = (event: any) => {
+      const checked = event.target.checked
+      const value = getValues()
+      if(checked){
+        if(!value.email){
+          handleOnToast(
+            "Provide required fields",
+            "top-right",
+            false,
+            true,
+            true,
+            true,
+            undefined,
+            "dark",
+            "error"
+          )
+        } else{
+          const objCredentials = {
+            email : value.email,
+            rmChecked: checked
+          }
+          localStorage.setItem("rm", JSON.stringify(objCredentials))
+          setCheckedVal(checked)
+        }
+      } else {
+        setCheckedVal(false)
+        localStorage.removeItem('rm')
+      }
+    }
     return (
         <>
             <div className="flex min-h-full items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -66,6 +117,8 @@ const AccountLoginBlocks: React.FC<FieldProps> = (props: FieldProps) => {
                   name="remember-me"
                   type="checkbox"
                   className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  onChange={handleCheckBox}
+                  checked={checkedVal}
                 />
                 <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
                   Remember me

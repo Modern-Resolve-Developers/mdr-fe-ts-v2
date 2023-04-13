@@ -40,6 +40,7 @@ import { useLayout } from "./hooks/useLayout";
 
 import { useCookies } from 'react-cookie'
 
+
 const baseSchema = z.object({
     email : requiredString("Your email is required.").email(),
     password: requiredString("Your password is required.")
@@ -55,10 +56,8 @@ const Login: React.FC = () => {
     const {
         getValues,
         control,
-        resetField,
         formState : { isValid },
-        watch,
-        trigger
+        setValue
     } = useForm<loginAccount>({
         mode: "all",
         resolver: zodResolver(baseSchema),
@@ -80,12 +79,10 @@ const Login: React.FC = () => {
       CheckAuthentication
     } = useContext(ARContext) as ContextSetup
     const setAccountLogin = useSetAtom(accountLoginAtom)
-    const baseAccountLogin = useAtomValue(accountLoginAtom)
     const router = useRouter()
     const [user, setUser] = useState<any>({})
     const [profile, setProfile] = useState([])
     const [open, setOpen] = useState(false)
-    const { login } = useAuthContext()
 
     /* api callbacks */
     const authSignin = useApiCallBack(async (api, args: LoginProps) => {
@@ -310,7 +307,9 @@ const Login: React.FC = () => {
               control: control,
               isValid: isValid,
               handleSubmit: handleSignin,
-              enterKeyLogin: enterKeyTrigger
+              enterKeyLogin: enterKeyTrigger,
+              getValues: getValues,
+              setValue: setValue
             },
             ['AccountLoginBlocks']
           )
