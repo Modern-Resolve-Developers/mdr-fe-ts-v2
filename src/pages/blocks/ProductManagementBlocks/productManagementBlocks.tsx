@@ -2,7 +2,7 @@ import { ControlledTabs } from "@/components/Tabs/Tabs";
 import { FieldProps } from "@/pages/hooks/useLayout";
 import { useContext, useEffect, useState } from "react";
 import { Container, Grid, Box, Avatar, Typography, Slider } from "@mui/material";
-import { UncontrolledCard, ControlledTypography } from "@/components";
+import { UncontrolledCard, ControlledTypography, ControlledChip } from "@/components";
 import { ControlledTextField } from "@/components/TextField/TextField";
 import { ControlledSelectField } from "@/components/SelectField";
 import {
@@ -33,6 +33,8 @@ import { useRouter } from "next/router";
 
 import {ProjectTable} from "@/components";
 
+import { PMGridRow } from "@/utils/DataGridRowHelper";
+
 export const productManagementBaseSchema = z.object({
     productName: requiredString("Product name is required."),
     productDescription: requiredString("Product Description is required."),
@@ -44,7 +46,7 @@ export const productManagementBaseSchema = z.object({
     }).array(),
     productImage: z.string().optional(),
     projectScale: requiredString('Kindly select project scale.'),
-    productPrice: z.number(),
+    productPrice: z.any(),
     installment: requiredString('Please select installment'),
     installmentInterest: z.any({required_error : 'Kindly select interest percentage'}).optional(),
     downpaymentRequired: z.any().optional(),
@@ -656,10 +658,103 @@ const ProductManagementForm = () => {
 }
 
 const ProductManagementBlocks: React.FC<FieldProps> = (props : FieldProps) => {
+    const PMGridColumns: any[] = [
+        { field : 'id', headerName: 'ID', width: 70 },
+        {
+            field: 'productName',
+            headerName: 'Product Name',
+            sortable: false,
+            width: 160
+        },
+        {
+            field: 'productCategory',
+            headerName: 'Product Category',
+            sortable: false,
+            width: 160
+        },
+        {
+            field: 'projectType',
+            headerName: 'Project Type',
+            sortable: false,
+            width: 130
+        },
+        {
+            field: 'productStatus',
+            headerName: 'Status',
+            width: 130,
+            renderCell: (params: any) => {
+                if(params.value == '1'){
+                    return (
+                        <>
+                            <ControlledChip 
+                                label="Active"
+                                color="success"
+                                size={'small'}
+                            />
+                        </>
+                    )
+                } else {
+                    return (
+                        <>
+                            <ControlledChip 
+                                label="Inactive"
+                                color="error"
+                                size={'small'}
+                            />
+                        </>
+                    )
+                }
+            }
+        },
+        {
+            field: 'IsUnderMaintenance',
+            headerName: 'Maintenance',
+            width: 130,
+            renderCell: (params: any) => {
+                if(params.value == '1') {
+                    return (
+                        <>
+                            <ControlledChip 
+                                label="Yes"
+                                color="success"
+                                size={'small'}
+                            />
+                        </>
+                    )
+                } else {
+                    return (
+                        <>
+                            <ControlledChip 
+                                label="No"
+                                color="error"
+                                size={'small'}
+                            />
+                        </>
+                    )
+                }
+            }
+        },
+        {
+            headerName: "Actions",
+            width: 160,
+            renderCell: (params : any) => {
+                return (
+                    <NormalButton 
+                    variant='outlined'
+                    size='small'
+                    children='REVOKE'
+                    color="error"
+                    />
+                )
+            }
+        }
+    ]
     const [productManageAtom, setProductManageAtom] = useAtom(productManagementAtom)
     const PMCreation = useApiCallBack(async (api, args : CreateProducts | any) => await api.mdr.ProductManagementCreation(args))
     const PMWhenCreated = useApiCallBack(async (api, args: {product_id: any}) => await api.mdr.ProductSystemGen(args))
+    const PMList = useApiCallBack(api => api.mdr.ProductList())
     const [valueChange, setValueChange] = useState(0)
+    const [pmlist, setPmList] = useState([])
     const router = useRouter()
     const handleChange = (event: React.SyntheticEvent, newValue: number) => {
         setValueChange(newValue)
@@ -680,6 +775,17 @@ const ProductManagementBlocks: React.FC<FieldProps> = (props : FieldProps) => {
         setValue
     } = form;
 
+    const getAllProducts = () => {
+        PMList.execute().then((res : any) => {
+            const { data } : any = res;
+            setPmList(data)
+        })
+    }
+
+    useEffect(() => {
+        getAllProducts()
+    }, [])
+
     const handleContinue = () => {
         handleSubmit(
             (values) => {
@@ -692,11 +798,11 @@ const ProductManagementBlocks: React.FC<FieldProps> = (props : FieldProps) => {
                     projectType: values.projectType,
                     productImageUrl: values.productImage,
                     projectScale: values.projectScale,
-                    productPrice: values.productPrice,
+                    productPrice: parseFloat(values.productPrice),
                     projectInstallment: values.installment,
                     installmentInterest: parseFloat(values.installmentInterest),
                     monthsToPay: values.monthlyPaymentSelection,
-                    downPayment: values.downpaymentRequired,
+                    downPayment: parseFloat(values.downpaymentRequired.replaceAll(',', '')),
                     monthlyPayment: parseFloat(values.monthlyPaymentRequired.replaceAll(',', '')),
                     totalPayment: parseFloat(values.totalAmountBasedOnInstallation.replaceAll(',', '')),
                     repositoryName: values.repositoryName,
@@ -843,9 +949,10 @@ const ProductManagementBlocks: React.FC<FieldProps> = (props : FieldProps) => {
                                         }}>
                                             <Typography variant='subtitle1'>Product List</Typography>
                                             <ProjectTable 
-                                                data={[]}
+                                                data={pmlist}
                                                 sx={{ marginTop: '20px', overflowX: 'scroll', width: '100%'}}
-                                                columns={[]}
+                                                columns={PMGridColumns}
+                                                rowIsCreativeDesign={false}
                                             />
                                         </UncontrolledCard>
                                     </Container>

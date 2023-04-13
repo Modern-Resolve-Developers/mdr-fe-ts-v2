@@ -5,7 +5,7 @@ import { ProjectTableProps } from ".";
 
 
 const ProjectTable: React.FC<ProjectTableProps> = ({
-    data, openEdit, sx, handleClick, columns
+    data, openEdit, sx, handleClick, columns, rowIsCreativeDesign = true
 }: any) => {
     
 
@@ -14,7 +14,7 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
         <>
             <DataGrid
             sx={sx}
-            rows={rowCreativeDesign(data)}
+            rows={rowIsCreativeDesign ? rowCreativeDesign(data) : data}
             columns={columns}
             autoHeight
             disableRowSelectionOnClick

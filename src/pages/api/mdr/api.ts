@@ -34,4 +34,7 @@ export class MdrApi {
     public ProductSystemGen(props: {product_id: any}){
         return this.axios.post('/api/systemgen/gen-products-system-gen', props)
     }
+    public ProductList(){
+        return this.axios.get('/api/productmanagement/get-all-products')
+    }
 }
