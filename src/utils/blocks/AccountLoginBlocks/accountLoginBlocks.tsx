@@ -1,12 +1,12 @@
 import { ControlledTextField } from "@/components/TextField/TextField";
-import { FieldProps } from "@/pages/hooks/useLayout"
+import { FieldProps } from "@/utils/pageHooks/hooks/useLayout"
 import { ToastContextSetup } from "@/utils/context";
 import { ToastContextContinue } from "@/utils/context/base/ToastContext";
 import { LockClosedIcon } from '@heroicons/react/20/solid'
 import { useContext, useEffect, useState } from "react";
 import GoogleButton from 'react-google-button'
 
-const AccountLoginBlocks: React.FC<FieldProps> = (props: FieldProps) => {
+export const AccountLoginBlocks: React.FC<FieldProps> = (props: FieldProps) => {
     const {
         control,
         handleSubmit,
@@ -155,4 +155,3 @@ const AccountLoginBlocks: React.FC<FieldProps> = (props: FieldProps) => {
     )
 }
 
-export default AccountLoginBlocks

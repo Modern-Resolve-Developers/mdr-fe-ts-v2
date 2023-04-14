@@ -3,11 +3,11 @@ import { ControlledCheckbox } from "@/components/Checkbox/Checkbox"
 import { ControlledTextField } from "@/components/TextField/TextField"
 import { Button, Container, Grid, Typography } from "@mui/material"
 import { FormProvider } from "react-hook-form"
-import { FieldProps } from "@/pages/hooks/useLayout"
+import { FieldProps } from "@/utils/pageHooks/hooks/useLayout"
 
 
 
-const AccountCreationBlocks: React.FC<FieldProps> = (props : FieldProps) => {
+export const AccountCreationBlocks: React.FC<FieldProps> = (props : FieldProps) => {
     const {
         control,
         hasNoMiddleName,
@@ -110,4 +110,3 @@ const AccountCreationBlocks: React.FC<FieldProps> = (props : FieldProps) => {
     )
 }
 
-export default AccountCreationBlocks

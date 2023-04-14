@@ -6,7 +6,7 @@ import { ArrowPathIcon, CloudArrowUpIcon, FingerPrintIcon, LockClosedIcon } from
 import { useApiCallBack } from "@/utils/hooks/useApi";
 
 import { useRefreshTokenHandler } from "@/utils/hooks/useRefreshTokenHandler";
-import { useLayout } from "./hooks/useLayout";
+import { useLayout } from "../utils/pageHooks/hooks/useLayout";
 
 const Home: React.FC = () => {
   useRefreshTokenHandler()

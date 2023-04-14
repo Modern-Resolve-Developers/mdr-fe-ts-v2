@@ -12,7 +12,7 @@ import { ContextSetup } from "@/utils/context";
 import {ARContext} from "@/utils/context/base/AdminRegistrationContext"
 
 import { FormAdditionalDetails } from "@/components/UserManagement";
-import { sidebarList, sidebarExpand } from "./sys-routing/sys-routing";
+import { sidebarList, sidebarExpand } from "../../utils/sys-routing/sys-routing";
 const UserManagement: React.FC = () => {
     const router = useRouter()
     const [open, setOpen] = useState(false)
