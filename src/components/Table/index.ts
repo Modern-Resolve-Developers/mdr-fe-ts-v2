@@ -4,4 +4,5 @@ export type ProjectTableProps = {
     sx?: React.CSSProperties
     handleClick?: (props : any) => void;
     columns: any
+    rowIsCreativeDesign?: boolean
 }

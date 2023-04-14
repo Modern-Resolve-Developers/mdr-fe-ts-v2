@@ -9,9 +9,12 @@ export type FieldProps = {
     hasNoMiddleName?: boolean
     form?: any
     handleSubmit?: any
+    enterKeyLogin?: any
     isValid?: boolean
     onSubmit?: any
     open?: any
+    getValues?: any,
+    setValue?: any
 }
 
 export const useLayout = (field: FieldProps, props: string[]) => {
