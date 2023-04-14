@@ -6,7 +6,7 @@ import { CredentialsAccountCreation } from "@/components/UserManagement/forms/Cr
 import { EditFormUserAccount } from "@/components/UserManagement";
 import { TaskInformationCreation } from "@/components/TaskManagement/forms";
 import { TaskAssigneeCreation } from "@/components/TaskManagement/forms/TaskAssignee";
-import { ProductManagementCreation } from "@/utils/blocks/ProductManagementBlocks/productManagementBlocks";
+import { ProductManagementCreation } from "@/pages/sys-admin/product-management";
 
 type AccountCreationFormData = {
     accountCreation: AccountCreation
