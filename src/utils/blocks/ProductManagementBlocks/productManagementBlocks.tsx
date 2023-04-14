@@ -1,5 +1,5 @@
 import { ControlledTabs } from "@/components/Tabs/Tabs";
-import { FieldProps } from "@/pages/hooks/useLayout";
+import { FieldProps } from "@/utils/pageHooks/hooks/useLayout";
 import { useContext, useEffect, useState } from "react";
 import { Container, Grid, Box, Avatar, Typography, Slider } from "@mui/material";
 import { UncontrolledCard, ControlledTypography, ControlledChip } from "@/components";
@@ -657,7 +657,7 @@ const ProductManagementForm = () => {
     )
 }
 
-const ProductManagementBlocks: React.FC<FieldProps> = (props : FieldProps) => {
+export const ProductManagementBlocks: React.FC<FieldProps> = (props : FieldProps) => {
     const PMGridColumns: any[] = [
         { field : 'id', headerName: 'ID', width: 70 },
         {
@@ -964,4 +964,3 @@ const ProductManagementBlocks: React.FC<FieldProps> = (props : FieldProps) => {
                     </FormProvider>
     )
 }
-export default ProductManagementBlocks

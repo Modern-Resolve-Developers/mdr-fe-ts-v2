@@ -1,8 +1,8 @@
 import DashboardLayout from "@/components/DashboardLayout";
 import { Container } from "@mui/material";
 import { ControlledTypography, UncontrolledCard } from "@/components";
-import { sidebarList, sidebarExpand } from "./sys-routing/sys-routing";
-import { useLayout } from "../hooks/useLayout";
+import { sidebarList, sidebarExpand } from "../../utils/sys-routing/sys-routing";
+import { useLayout } from "../../utils/pageHooks/hooks/useLayout";
 const ProductManagement: React.FC = () => {
     
     return (

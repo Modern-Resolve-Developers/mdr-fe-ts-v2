@@ -3,7 +3,7 @@ import HomeFeatureSection from "@/components/Content/Home/FeatureSection";
 import HomeFooterSection from "@/components/Content/Home/FooterSection";
 import { ArrowPathIcon, CloudArrowUpIcon, FingerPrintIcon, LockClosedIcon } from '@heroicons/react/24/outline'
 import HomeFeatureSectionSecondLayer from "@/components/Content/Home/FeatureSectionSecondLayer";
-import {AccountCreationBlocks, AccountLoginBlocks, ProductManagementBlocks} from "../blocks";
+import {AccountCreationBlocks, AccountLoginBlocks, ProductManagementBlocks} from "../../blocks";
 export type FieldProps = {
     control?: any
     hasNoMiddleName?: boolean

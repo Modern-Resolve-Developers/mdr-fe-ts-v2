@@ -6,7 +6,7 @@ import AddTaskIcon from '@mui/icons-material/AddTask';
 
 import PlaylistAddCheckIcon from '@mui/icons-material/PlaylistAddCheck';
 import { TaskFormAdditionalDetails } from "@/components/TaskManagement";
-import { sidebarList, sidebarExpand } from "./sys-routing/sys-routing";
+import { sidebarList, sidebarExpand } from "../../utils/sys-routing/sys-routing";
 
 const Task: React.FC = () => {
     

@@ -18,7 +18,7 @@ import { ToastContextContinue } from '@/utils/context/base/ToastContext'
 import { ToastContextSetup } from '@/utils/context'
 
 import { useRouter } from 'next/router'
-import { useLayout } from './hooks/useLayout'
+import { useLayout } from '../utils/pageHooks/hooks/useLayout'
 import { useApiCallBack } from '@/utils/hooks/useApi'
 import { UAMCreationAdminArgs } from './api/users/types'
 import { AuthenticationJwtCreateAccount } from './api/Authentication/types'

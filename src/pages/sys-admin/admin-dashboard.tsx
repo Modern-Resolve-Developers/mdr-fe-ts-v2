@@ -28,7 +28,7 @@ import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import AddTaskIcon from '@mui/icons-material/AddTask';
 
 import PlaylistAddCheckIcon from '@mui/icons-material/PlaylistAddCheck';
-import { sidebarList, sidebarExpand } from "./sys-routing/sys-routing";
+import { sidebarList, sidebarExpand } from "../../utils/sys-routing/sys-routing";
 if(typeof Highcharts === 'object'){
     exportingInit(Highcharts)
     offlineExporting(Highcharts)

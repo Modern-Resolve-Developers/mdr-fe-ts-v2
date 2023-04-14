@@ -36,7 +36,7 @@ import { SessionStorageContextSetup } from "@/utils/context";
 import { useAuthContext } from "@/utils/context/base/AuthContext";
 
 import { useAccessToken, useRefreshToken } from "@/utils/context/hooks/hooks";
-import { useLayout } from "./hooks/useLayout";
+import { useLayout } from "../utils/pageHooks/hooks/useLayout";
 
 import { useCookies } from 'react-cookie'
 
