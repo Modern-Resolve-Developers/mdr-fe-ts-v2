@@ -7,6 +7,7 @@ import { EditFormUserAccount } from "@/components/UserManagement";
 import { TaskInformationCreation } from "@/components/TaskManagement/forms";
 import { TaskAssigneeCreation } from "@/components/TaskManagement/forms/TaskAssignee";
 import { ProductManagementCreation } from "@/pages/sys-admin/product-management";
+import { categoryManagementCreation } from "@/pages/sys-admin/category-manage-all";
 
 type AccountCreationFormData = {
     accountCreation: AccountCreation
@@ -15,6 +16,8 @@ type AccountCreationFormData = {
 type AccountLoginFormData = {
     accountLoginFrmData : loginAccount
 }
+
+export const categoryManagementAtom = atom<categoryManagementCreation | undefined>(undefined)
 
 export const productManagementAtom = atom<ProductManagementCreation | undefined>(undefined)
 

@@ -20,7 +20,7 @@ import { ToastContextContinue } from "@/utils/context/base/ToastContext";
 import { useAccessToken, useRefreshToken } from "@/utils/context/hooks/hooks";
 
 import { SidebarTypes, SubSidebarTypes } from "../Sidebar";
-
+import { sidebarList } from "@/utils/sys-routing/sys-routing";
 type DashboardLayoutProps = {
     children : React.ReactNode
     sidebarConfig: SidebarTypes[]
@@ -69,7 +69,7 @@ const AppBar = styled(MuiAppBar, {
     duration: theme.transitions.duration.leavingScreen,
   }),
   background: '#153D77',
-  color: 'white',
+  color: 'black',
   ...(open && {
     marginLeft: drawerWidth,
     width: `calc(100% - ${drawerWidth}px)`,
@@ -106,6 +106,7 @@ export default function DashboardLayout({children, sidebarConfig, subsidebarConf
     const [accessToken, setAccessToken, clearAccessToken] = useAccessToken()
     const [refreshToken, setRefreshToken, clearRefreshToken] = useRefreshToken()
     const signoutInProgress = useApiCallBack((api, uuid: any) => api.mdr.signoutUser(uuid))
+    const [sidebarStateConfig , setSidebarStateConfig] = useState<any>(sidebarList)
     const {
       accessSavedAuth, accessUserId, clearAccessSavedAuth, clearAccessUserId
     } = useContext(SessionContextMigrate) as SessionStorageContextSetup
@@ -144,8 +145,13 @@ export default function DashboardLayout({children, sidebarConfig, subsidebarConf
           })
       }
     }
-    const handleClick = () => {
-      setDropDown(!dropDown)
+    const handleClick = (outerIndex: any, innerIndex: any) => {
+      let newArray = sidebarStateConfig
+      const outerArray = [...newArray]
+      const innerArray = outerArray[outerIndex]
+      innerArray.dropDownChildren[innerIndex] = {...innerArray?.dropDownChildren[innerIndex], dropDown: !innerArray.dropDownChildren[innerIndex].dropDown}
+      outerArray[outerIndex] = innerArray
+      setSidebarStateConfig([...newArray, ...outerArray])
     }
     return (
         <Box className='flex'>

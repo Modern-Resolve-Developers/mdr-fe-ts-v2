@@ -11,6 +11,8 @@ import ExpandMore from '@mui/icons-material/ExpandMore';
 
 import { useRouter } from 'next/router';
 
+import EngineeringIcon from '@mui/icons-material/Engineering';
+
 const ControlledAdministratorSidebar: React.FC<AdminSidebarProps> = (props) => {
     const {
         open, handleDrawerClose, theme, handleClick, dropDown, Drawer, DrawerHeader, sidebarConfig, subsidebarConfig
@@ -24,7 +26,7 @@ const ControlledAdministratorSidebar: React.FC<AdminSidebarProps> = (props) => {
             PaperProps={{
                 sx: {
                     backgroundColor: '#051e34',
-                    color: 'white'
+                    color: 'white',
                 }
             }}
             >
@@ -53,8 +55,8 @@ const ControlledAdministratorSidebar: React.FC<AdminSidebarProps> = (props) => {
                         <Divider className='bg-sideBarTabHover' />
                         <List style={{ marginTop : '5px'}}>
                             {
-                                sidebarConfig?.map((text: any, index: any) => (
-                                    <Box className='flex flex-col items-center'>
+                                sidebarConfig?.map((text: any, outerIndex: any) => (
+                                    <Box key={outerIndex} className='flex flex-col items-center'>
                                         <ListItem
                                         key={text}
                                         disablePadding
@@ -72,17 +74,17 @@ const ControlledAdministratorSidebar: React.FC<AdminSidebarProps> = (props) => {
                                             {text.dropDown ? (
                                                 <>
                                                 {
-                                                    subsidebarConfig?.map((item : any) => (
+                                                    text.dropDownChildren?.length > 0 && text.dropDownChildren?.map((item : any, innerIndex: any) => (
                                                         <>
-                                                            <ListItemButton onClick={handleClick}>
+                                                            <ListItemButton key={innerIndex} disabled={item.disable} onClick={() => handleClick(outerIndex, innerIndex)}>
                                                                 {item.icon}
                                                                 <ListItemText primary={item.parentMenu} />
-                                                                {dropDown ? <ExpandLess /> : <ExpandMore />}
+                                                                {item.dropDown ? <ExpandLess /> : <ExpandMore />}
                                                             </ListItemButton>
                                                             {
                                                                 item.childMenu.map((child: any) => (
                                                                     <>
-                                                                        <Collapse in={dropDown} timeout="auto" unmountOnExit>
+                                                                        <Collapse in={item.dropDown} key={innerIndex} timeout="auto" unmountOnExit>
                                                                             <List component="div" disablePadding>
                                                                                 <ListItemButton sx={{ pl : 4}} onClick={() => router.push(child.uri)}>
                                                                                     {child.icon}
@@ -106,6 +108,7 @@ const ControlledAdministratorSidebar: React.FC<AdminSidebarProps> = (props) => {
                                                         px: 2.5
                                                     }}
                                                     onClick={() => router.push(text.uri)}
+                                                    disabled={text.disable}
                                                     >
                                                         <ListItemIcon
                                                         sx={{
@@ -115,12 +118,13 @@ const ControlledAdministratorSidebar: React.FC<AdminSidebarProps> = (props) => {
                                                             color: "white"
                                                         }}
                                                         >
-                                                            {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
+                                                            {text.icon}
                                                         </ListItemIcon>
                                                         <ListItemText 
                                                         primary={text.title}
                                                         sx={{ opacity: open ? 1 : 0}}
                                                         />
+                                                        {text.disable && <EngineeringIcon className='text-white' />}
                                                     </ListItemButton>
                                                 </>
                                             )}

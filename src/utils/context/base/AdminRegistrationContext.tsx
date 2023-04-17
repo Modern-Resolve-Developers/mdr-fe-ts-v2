@@ -1,8 +1,9 @@
-import { createContext, useState, useCallback } from 'react'
-import { ContextSetup } from '..'
-import { buildHttp } from '@/pages/api/http'
+import { createContext, useState, useCallback, useContext } from 'react'
+import { ContextSetup, ToastContextSetup } from '..'
 import { useApiCallBack } from '@/utils/hooks/useApi'
 import { useAccessToken, useRefreshToken } from "../hooks/hooks";
+import { useRouter } from 'next/router';
+import { ToastContextContinue } from './ToastContext';
 export const ARContext = createContext<ContextSetup | null>(null)
 
 type ARContextProps = {
@@ -13,7 +14,6 @@ export type AuthenticationProps = {
     userId : any
     savedAuth : any
 }
-
 
 
 const AdminRegistrationContext: React.FC<ARContextProps> = ({
@@ -28,12 +28,17 @@ const AdminRegistrationContext: React.FC<ARContextProps> = ({
         const result = await api.authentication.userAvailabilityCheck(args)
         return result
     })
-    
+    const router = useRouter()
     const callBackSyncGetAllUsers = useCallback(() => {
         fetchAllUsersExecutioner.execute()
         .then((response: any) => {
             const { data } : any = response;
             setUsers(data)
+        }).catch(error => {
+            if(error?.response?.status == 401){
+                localStorage.clear()
+                router.push('/login')
+            }
         })
     }, [])
     const CheckAuthentication = () => {
