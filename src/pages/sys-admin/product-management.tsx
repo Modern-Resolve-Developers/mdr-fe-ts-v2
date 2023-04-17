@@ -84,9 +84,6 @@ const ProductPricingForm = () => {
         }
     ])
     const {
-        handleOnToast
-    } = useContext(ToastContextContinue) as ToastContextSetup
-    const {
         control,
         setValue,
         watch,
@@ -837,7 +834,6 @@ const ProductManagement: React.FC = () => {
                             setValue('productImage', '')
                             }
                         }).catch(error => {
-                            console.log(error)
                             setOpen(false)
                             if(error?.response?.status == 401){
                                 handleOnToast(
@@ -856,7 +852,6 @@ const ProductManagement: React.FC = () => {
                             }
                         })
                 }).catch(error => {
-                    console.log(error)
                     setOpen(false)
                     if(error?.response?.status == 401){
                         handleOnToast(

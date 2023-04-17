@@ -37,4 +37,10 @@ export class MdrApi {
     public ProductList(){
         return this.axios.get('/api/productmanagement/get-all-products')
     }
+    public CreateProductCategory(props : {label : string, value: string, type: string}) {
+        return this.axios.post('/api/productcategory/create-new-category', props)
+    }
+    public FetchAllCategories(){
+        return this.axios.get('/api/productcategory/get-all-new-categories')
+    }
 }

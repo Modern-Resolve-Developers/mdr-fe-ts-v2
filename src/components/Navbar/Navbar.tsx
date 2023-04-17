@@ -1,8 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AdminNavbarProps } from ".";
-import { Box, Toolbar, IconButton, Avatar, Menu, MenuItem } from '@mui/material'
+import { Box, Toolbar, IconButton, Avatar, Menu, MenuItem, Autocomplete, TextField } from '@mui/material'
 import MenuIcon from "@mui/icons-material/Menu";
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import algoliasearch from 'algoliasearch'
+const client = algoliasearch("EJNUDUL5B2", "ad45b044260204eb353de721ab3500a8")
+const index = client.initIndex("dev_mdr")
+
+
 
 const ControlledAdministratorNavbar: React.FC<AdminNavbarProps> = (props) => {
     const { 
@@ -10,6 +15,7 @@ const ControlledAdministratorNavbar: React.FC<AdminNavbarProps> = (props) => {
     } = props
 
     const [anchorEl, setAnchorEl] = useState(null)
+    const [searched, setSearched] = useState([])
     const logout = Boolean(anchorEl);
     const handleClose = () => {
         setAnchorEl(null);
@@ -17,6 +23,40 @@ const ControlledAdministratorNavbar: React.FC<AdminNavbarProps> = (props) => {
       const handleClick = (event: any) => {
         setAnchorEl(event.currentTarget)
       }
+    useEffect(() => {
+      const objects: Array<{
+        objectID: number
+        name: string,
+        value: string
+      }> = [
+        {
+          objectID: 1,
+          name: "MDR",
+          value:'mdr'
+        }
+      ]
+      index
+      .saveObjects(objects)
+      .then(({ objectIDs }) => {
+        console.log(objectIDs);
+      })
+      .catch(err => {
+        console.log(err);
+      });
+    }, [])
+    const handleChangeSearch = (event: any) => {
+      index
+      .search(event.target.value)
+      .then(({ hits } : any) => {
+        setSearched(hits)
+      })
+      .catch(err => {
+        console.log(err);
+      });
+    }
+    const handleChangeAutoCompleteSearch = (event: any, values: any) => {
+      console.log(values)
+    }
     return (
         <>
         <AppBar position='fixed' open={open}>
@@ -38,6 +78,19 @@ const ControlledAdministratorNavbar: React.FC<AdminNavbarProps> = (props) => {
                         Hi, Administrator
                     </h3>
                    <Box className='flex item-center gap-3'>
+                   <Autocomplete 
+                    id="free-solo-demo"
+                    freeSolo
+                    options={searched}
+                    getOptionLabel={(option : any) => option.name}
+                    sx={{ width: 300 }}
+                    onChange={(e: any, values: any) =>
+                      handleChangeAutoCompleteSearch(e, values)
+                    }
+                    renderInput={
+                      (params) => <TextField onChange={handleChangeSearch} {...params} label="Search" />
+                    }
+                   />
                    <Avatar
               alt="Remy Sharp"
               src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS_cj9fuTsqPCwvnG-IqN3HAVb9jMa0BD5uxQ&usqp=CAU"
