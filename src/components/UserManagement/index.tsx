@@ -40,6 +40,7 @@ import { UpdateUsersDetailsArgs } from "@/pages/api/users/types";
 // all imported types from api 
 import { ARContext } from "@/utils/context/base/AdminRegistrationContext";
 import { ContextSetup } from "@/utils/context";
+import ControlledTypography from "../Typography/Typography";
 
 
 const FORM_MAP: Array<{ label: string; form: React.FC }> = [
@@ -81,7 +82,7 @@ export type EditFormUserAccount = z.infer<typeof editFormSchema>
 export const MAX_UAM_STEPS = FORM_MAP.length;
 
 export const FormAdditionalDetails = () => {
-    const fetchAllUsersExecutioner = useApiCallBack(api => api.users.fetchAllUsersFunc())
+    const init_removeUser = useApiCallBack(async (api, uid: number) => api.users.AccountDeletion(uid))
     const UpdateUsersVerifiedStatusExecutioner = useApiCallBack(async (api, args: {identifier: any, uuid: any}) => {
         const result = await api.users.UpdateUsersVerifiedStatusFunc(args)
         return result
@@ -117,6 +118,8 @@ export const FormAdditionalDetails = () => {
         id: 0
     })
     const [editModal, setEditModal] = useState(false)
+    const [deleteModal, setDeleteModal] = useState(false)
+    const [deleteUID, setDeleteUID] = useState({ id: 0 })
     const {
         handleOnToast
     } = useContext(ToastContextContinue) as ToastContextSetup
@@ -305,13 +308,15 @@ export const FormAdditionalDetails = () => {
                             </>
                         ) : (
                             <>
-                                <ControlledButton 
+                                {
+                                    params.row.userType != 1 && <ControlledButton 
                                     text="Lock"
                                     variant='outlined'
                                     color='error'
                                     size='small'
                                     onClick={() => handleClickProjectTable({id : params.row.id, propstype: 'lock'})}
                                 />
+                                }
                             </>
                         )
                        }
@@ -322,7 +327,7 @@ export const FormAdditionalDetails = () => {
                         variant='outlined'
                         color='error'
                         size='small'
-                        onClick={() => console.log(params.row.id)}
+                        onClick={() => handleuamDelete(params.row.id)}
                        />
                        }
                     </div>
@@ -330,7 +335,33 @@ export const FormAdditionalDetails = () => {
             )
         }
     ]
-    
+    const handleuamDelete = (uid: number) => {
+        setDeleteModal(!deleteModal)
+        setDeleteUID({ ...deleteUID, id : uid })
+    }
+    const handleYes = () => {
+        setBackdrop(!backdrop)
+        setDeleteModal(false)
+        init_removeUser.execute(deleteUID.id)
+        .then((response: any) => {
+            const { data } : any = response;
+            if(data == 200) {
+                setBackdrop(false)
+                handleOnToast(
+                    "Successfully Deleted.",
+                    "top-right",
+                    false,
+                    true,
+                    true,
+                    true,
+                    undefined,
+                    "dark",
+                    "success"
+                )
+                callBackSyncGetAllUsers()
+            }
+        })
+    }
     const handleContinue = () => {
         setBackdrop(!backdrop)
         handleSubmit(
@@ -631,7 +662,8 @@ export const FormAdditionalDetails = () => {
                 color={modalDetails.color}
                 buttonTextAccept={modalDetails.buttonTextAccept}
                 buttonTextDecline={modalDetails.buttonTextDecline}
-                handleClose={OnModalClose}
+                handleClose={() => setOpen(false)}
+                handleSubmit={OnModalClose}
                 handleDecline={() => setOpen(false)}
             />
             <ControlledModal 
@@ -681,9 +713,25 @@ export const FormAdditionalDetails = () => {
                 color={'primary'}
                 buttonTextAccept={'CONFIRM'}
                 buttonTextDecline={'CANCEL'}
-                handleClose={handleContinue}
+                handleClose={() => setEditModal(false)}
+                handleSubmit={handleContinue}
                 handleDecline={() => setEditModal(false)}
             />
+            <ControlledModal 
+                open={deleteModal}
+                title="User Deletion"
+                color='primary'
+                buttonTextAccept="YES"
+                buttonTextDecline="NO"
+                handleClose={() => setDeleteModal(false)}
+                handleSubmit={handleYes}
+                handleDecline={() => setDeleteModal(false)}
+            >
+                <ControlledTypography 
+                text="Are you sure you want to delete this user?"
+                variant='subtitle1'
+                />
+            </ControlledModal>
             <ControlledBackdrop 
                     open={backdrop}
                 />

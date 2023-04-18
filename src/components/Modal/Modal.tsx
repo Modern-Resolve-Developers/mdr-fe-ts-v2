@@ -8,6 +8,7 @@ import { Button } from '@mui/material';
 type ModalProps = {
     open?: any
     handleClose?: () => void
+    handleSubmit?: () => void
     handleDecline?: () => void
     title?: string
     children?: React.ReactNode
@@ -21,6 +22,7 @@ const ControlledModal: React.FC<ModalProps> = ({
     open,
     handleClose,
     handleDecline,
+    handleSubmit,
     title, 
     children,
     buttonTextAccept,
@@ -52,7 +54,7 @@ const ControlledModal: React.FC<ModalProps> = ({
                 }} variant='outlined' onClick={handleDecline}>{buttonTextDecline}</Button>
                 <Button sx={{
                     display: buttonTextAccept == 'NO-BTN' ? 'none' : ''
-                }} variant='outlined' color={color} onClick={handleClose} autoFocus>
+                }} variant='outlined' color={color} onClick={handleSubmit} autoFocus>
                     {buttonTextAccept}
                 </Button>
                 </DialogActions>
