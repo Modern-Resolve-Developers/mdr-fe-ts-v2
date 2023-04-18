@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { AdminSidebarProps } from ".";
 import { Box , List, Divider, IconButton, ListItem, ListItemButton, ListItemIcon, ListItemText, Collapse, Typography } from '@mui/material'
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
@@ -18,6 +18,14 @@ const ControlledAdministratorSidebar: React.FC<AdminSidebarProps> = (props) => {
         open, handleDrawerClose, theme, handleClick, dropDown, Drawer, DrawerHeader, sidebarConfig, subsidebarConfig
     } = props
     const router = useRouter()
+    const [selectedIndex, setSelectedIndex] = useState(0)
+
+    const handleSelectedIndex = (
+        event: React.MouseEvent<HTMLDivElement, MouseEvent>,
+        index: number
+    ) => {
+        setSelectedIndex(index)
+    }
     return (
         <React.Fragment>
             <Drawer
@@ -76,7 +84,10 @@ const ControlledAdministratorSidebar: React.FC<AdminSidebarProps> = (props) => {
                                                 {
                                                     text.dropDownChildren?.length > 0 && text.dropDownChildren?.map((item : any, innerIndex: any) => (
                                                         <>
-                                                            <ListItemButton key={innerIndex} disabled={item.disable} onClick={() => handleClick(outerIndex, innerIndex)}>
+                                                            <ListItemButton selected={selectedIndex == innerIndex} key={innerIndex} disabled={item.disable} onClick={(event) => {
+                                                                handleClick(outerIndex, innerIndex),
+                                                                handleSelectedIndex(event, innerIndex)
+                                                            }}>
                                                                 {item.icon}
                                                                 <ListItemText primary={item.parentMenu} />
                                                                 {item.dropDown ? <ExpandLess /> : <ExpandMore />}
@@ -102,12 +113,16 @@ const ControlledAdministratorSidebar: React.FC<AdminSidebarProps> = (props) => {
                                             ) : (
                                                 <>
                                                     <ListItemButton
+                                                    selected={selectedIndex == outerIndex}
                                                     sx={{
                                                         minHeight: 48,
                                                         justifyContent: open? "initial" : "center",
                                                         px: 2.5
                                                     }}
-                                                    onClick={() => router.push(text.uri)}
+                                                    onClick={(event) => {
+                                                        router.push(text.uri),
+                                                        handleSelectedIndex(event, outerIndex)
+                                                    }}
                                                     disabled={text.disable}
                                                     >
                                                         <ListItemIcon
