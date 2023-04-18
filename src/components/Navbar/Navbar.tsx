@@ -1,10 +1,18 @@
 import { useEffect, useState } from "react";
 import { AdminNavbarProps } from ".";
-import { Box, Toolbar, IconButton, Avatar, Menu, MenuItem, Autocomplete, TextField } from '@mui/material'
+import { Box, Toolbar, IconButton, Avatar, Menu, MenuItem, Autocomplete, TextField,
+List, ListItemButton, ListItemText, ListItem } from '@mui/material'
 import MenuIcon from "@mui/icons-material/Menu";
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import algoliasearch from 'algoliasearch'
-const client = algoliasearch("EJNUDUL5B2", "ad45b044260204eb353de721ab3500a8")
+import { sidebarList } from "@/utils/sys-routing/sys-routing";
+import { useRouter } from "next/router";
+import ControlledBackdrop from "../Backdrop/Backdrop";
+import ControlledModal from "../Modal/Modal";
+import ControlledTypography from "../Typography/Typography";
+import React from "react";
+
+const client = algoliasearch(`${process.env.NEXT_PUBLIC_ALGOLIA_APP_ID}`, `${process.env.NEXT_PUBLIC_ALGOLIA_ADMIN_API_KEY}`)
 const index = client.initIndex("dev_mdr")
 
 
@@ -13,9 +21,12 @@ const ControlledAdministratorNavbar: React.FC<AdminNavbarProps> = (props) => {
     const { 
         open, handleDrawerOpen, AppBar, token, signoutDestroy, signoutModal
     } = props
-
+    const router = useRouter()
+    const [backdrop, setBackdrop] = useState(false)
     const [anchorEl, setAnchorEl] = useState(null)
     const [searched, setSearched] = useState([])
+    const [childMenus, setChildMenus] = useState([])
+    const [algoSearchModal, setAlgoSearchModal] = useState(false)
     const logout = Boolean(anchorEl);
     const handleClose = () => {
         setAnchorEl(null);
@@ -24,21 +35,9 @@ const ControlledAdministratorNavbar: React.FC<AdminNavbarProps> = (props) => {
         setAnchorEl(event.currentTarget)
       }
     useEffect(() => {
-      const objects: Array<{
-        objectID: number
-        name: string,
-        value: string
-      }> = [
-        {
-          objectID: 1,
-          name: "MDR",
-          value:'mdr'
-        }
-      ]
       index
-      .saveObjects(objects)
+      .saveObjects(sidebarList)
       .then(({ objectIDs }) => {
-        console.log(objectIDs);
       })
       .catch(err => {
         console.log(err);
@@ -55,8 +54,28 @@ const ControlledAdministratorNavbar: React.FC<AdminNavbarProps> = (props) => {
       });
     }
     const handleChangeAutoCompleteSearch = (event: any, values: any) => {
-      console.log(values)
+      if(values?.dropDownChildren?.length > 0) {
+        setAlgoSearchModal(!algoSearchModal)
+        values?.dropDownChildren?.length > 0 && values.dropDownChildren.map((item: any) => {
+          item?.childMenu?.length > 0 && setChildMenus(item.childMenu)
+        })
+      } else {
+        if(values == null) return;
+        setBackdrop(!backdrop)
+        setTimeout(() => {
+          router.push(values.uri)
+        }, 2000)
+      }
     }
+
+    const handleNavigateSubPages = (uri: string) => {
+      setAlgoSearchModal(false)
+      setBackdrop(!backdrop)
+      setTimeout(() => {
+        router.push(uri)
+      }, 2000)
+    }
+    
     return (
         <>
         <AppBar position='fixed' open={open}>
@@ -82,7 +101,8 @@ const ControlledAdministratorNavbar: React.FC<AdminNavbarProps> = (props) => {
                     id="free-solo-demo"
                     freeSolo
                     options={searched}
-                    getOptionLabel={(option : any) => option.name}
+                    groupBy={(option: any) => option.name}
+                    getOptionLabel={(option : any) => option.title}
                     sx={{ width: 300 }}
                     onChange={(e: any, values: any) =>
                       handleChangeAutoCompleteSearch(e, values)
@@ -118,6 +138,27 @@ const ControlledAdministratorNavbar: React.FC<AdminNavbarProps> = (props) => {
                 </Box>
             </Toolbar>
         </AppBar>
+        <ControlledBackdrop 
+          open={backdrop}
+        />
+        <ControlledModal 
+          open={algoSearchModal}
+          handleClose={() => setAlgoSearchModal(false)}
+          title="SUB PAGES"
+          buttonTextAccept="NO-BTN"
+        >
+          <List>
+                {
+                  childMenus?.length > 0 && childMenus.map((item : any) => (
+                    <ListItem disablePadding>
+                      <ListItemButton onClick={() => handleNavigateSubPages(item.uri)}>
+                        <ListItemText primary={item.title} />
+                      </ListItemButton>
+                    </ListItem>
+                  ))
+                }
+          </List>
+        </ControlledModal>
         </>
     )
 }

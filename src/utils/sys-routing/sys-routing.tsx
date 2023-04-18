@@ -9,6 +9,8 @@ import FolderSharedIcon from '@mui/icons-material/FolderShared';
 import CategoryIcon from '@mui/icons-material/Category';
 import AddBoxIcon from '@mui/icons-material/AddBox';
 type sidebarProps = {
+    objectID: number
+    name: string
     title: string
     dropDown: boolean
     uri?: string
@@ -34,6 +36,8 @@ type sidebarExpandProps = {
 
 export const sidebarList: sidebarProps[] = [
     {
+        objectID: 1,
+        name: "Admin",
         title: 'Admin Overview',
         dropDown: false,
         uri: '/sys-admin/admin-dashboard',
@@ -42,6 +46,8 @@ export const sidebarList: sidebarProps[] = [
         )
     },
     {
+        objectID: 2,
+        name: "User Access Management",
         title: 'UAM',
         dropDown: false,
         uri: '/sys-admin/user-management',
@@ -50,6 +56,8 @@ export const sidebarList: sidebarProps[] = [
         )
     },
     {
+        objectID: 3,
+        name: "Products",
         title: 'System Products',
         dropDown: false,
         uri: '/sys-admin/product-management',
@@ -58,6 +66,8 @@ export const sidebarList: sidebarProps[] = [
         )
     },
     {
+        objectID: 4,
+        name: "Category Management",
         title: 'C-Management',
         dropDown: true,
         icon: (
@@ -92,6 +102,8 @@ export const sidebarList: sidebarProps[] = [
         ]
     },
     {
+        objectID: 5,
+        name: "Task",
         title: 'Task',
         dropDown: true,
         icon: (
@@ -138,6 +150,8 @@ export const sidebarList: sidebarProps[] = [
         ]
     },
     {
+        objectID: 6,
+        name: "Client Profile",
         title: 'Client Profiles',
         dropDown: false,
         icon: (
