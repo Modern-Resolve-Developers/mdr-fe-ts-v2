@@ -26,6 +26,7 @@ import { useApiCallBack } from "@/utils/hooks/useApi";
 
 import { UAMAddRequestArgs } from "@/pages/api/users/types";
 import { AuthenticationJwtCreateAccount } from "@/pages/api/Authentication/types";
+import { useMutation, useQuery } from "react-query";
 const credentialsBaseSchema = z.object({
     email : requiredString("Your email is required.").email(),
     password: requiredString("Your password is required."),
@@ -81,7 +82,7 @@ export const CredentialsOwnershipDetailsForm = () => {
     const [credentialsDetailAtom, setCredentialsDetailAtom] = useAtom(credentialAccountDetailsAtom)
     const [personalDetailsAtom, setPersonalDetailsAtom] = useAtom(personalAccountDetailsAtom)
     const [open, setOpen] = useState(false)
-    const uamcheckemail = useApiCallBack((api, email: string) => api.users.UAMCheckEmail(email))
+    const uamcheckemail = useApiCallBack(async (api, email: string) => await api.users.UAMCheckEmail(email))
     const uamadduser = useApiCallBack(async (api, args : UAMAddRequestArgs) => await api.users.UAMAddUsersFunc(args))
     const authjwtAccountCreation = useApiCallBack(
         async (api, args: AuthenticationJwtCreateAccount) => await api.authentication.authenticationJwtCreateAccount(args)
@@ -100,6 +101,18 @@ export const CredentialsOwnershipDetailsForm = () => {
         reset
     } = form
     const { next } = useActiveStep()
+    const useCheckEmail = () => {
+        return useMutation((email: string) => 
+            uamcheckemail.execute(email).then((response) => response.data)
+        )
+    };
+    const useAddNewUser = useMutation((props: UAMAddRequestArgs) => 
+        uamadduser.execute(props).then((response) => response.data)
+    )
+    const useJwtCreation = useMutation((args : AuthenticationJwtCreateAccount) => 
+        authjwtAccountCreation.execute(args).then((response) => response.data)
+    )
+    const { mutate } = useCheckEmail()
     const handleContinue = () => {
         setOpen(!open)
         handleSubmit(
@@ -112,53 +125,61 @@ export const CredentialsOwnershipDetailsForm = () => {
                     password : values.password,
                     userType: personalDetailsAtom?.userType
                 }
-                uamcheckemail.execute(uam_add_request_data.email)
-                .then((logger: any) => {
-                    if(logger?.data == 'email_exist'){
-                        setOpen(false)
-                        reset({})
-                        handleOnToast(
-                            "This email is already taken.",
-                            "top-right",
-                            false,
-                            true,
-                            true,
-                            true,
-                            undefined,
-                            "dark",
-                            "error"
-                        )
-                        return;
-                    } else {
-                        console.log(uam_add_request_data)
-                        uamadduser.execute(uam_add_request_data)
-                        .then((repository: any) => {
-                            const { data } : any = repository
-                            if(data == 'success') {
-                                const jwtobj = {
-                                    jwtusername : uam_add_request_data.email,
-                                    jwtpassword: uam_add_request_data.password,
-                                    isValid : "1"
-                                }
-                                authjwtAccountCreation.execute(jwtobj).then((turbo) => {
-                                    if(turbo?.data?.status === 'Success') {
-                                        handleOnToast(
-                                            "Successfully added",
-                                            "top-right",
-                                            false,
-                                            true,
-                                            true,
-                                            true,
-                                            undefined,
-                                            "dark",
-                                            "success"
-                                        )
-                                        setCredentialsDetailAtom(values)
-                                        next()
+                mutate(uam_add_request_data.email, {
+                    onSuccess: (data) => {
+                        if(data == 'email_exist'){
+                            setOpen(false)
+                            reset({})
+                            handleOnToast(
+                                "This email is already taken.",
+                                "top-right",
+                                false,
+                                true,
+                                true,
+                                true,
+                                undefined,
+                                "dark",
+                                "error"
+                            )
+                            return;
+                        } else {
+                            useAddNewUser.mutate(uam_add_request_data, {
+                                onSuccess: (res) => {
+                                    if(res == 'success') {
+                                        const jwtobj = {
+                                            jwtusername : uam_add_request_data.email,
+                                            jwtpassword: uam_add_request_data.password,
+                                            isValid : "1"
+                                        }
+                                        useJwtCreation.mutate(jwtobj, {
+                                            onSuccess: (turbo) => {
+                                                if(turbo?.status === 'Success') {
+                                                    handleOnToast(
+                                                        "Successfully added",
+                                                        "top-right",
+                                                        false,
+                                                        true,
+                                                        true,
+                                                        true,
+                                                        undefined,
+                                                        "dark",
+                                                        "success"
+                                                    )
+                                                    setCredentialsDetailAtom(values)
+                                                    next()
+                                                }
+                                            },
+                                            onError: (turboError) => {
+                                                console.log(turboError)
+                                            }
+                                        })
                                     }
-                                })
-                            }
-                        })
+                                }
+                            })
+                        }
+                    },
+                    onError : (error) => {
+                        console.log(error)
                     }
                 })
             },

@@ -150,6 +150,16 @@ export const sidebarList: sidebarProps[] = [
         ]
     },
     {
+       objectID: 7,
+       name: 'Digital Meet',
+       title: 'Digital Meet',
+       dropDown: false,
+       uri: '/sys-admin/digital-meet',
+       icon: (
+        <ProductionQuantityLimitsIcon className='text-white' />
+       ) 
+    },
+    {
         objectID: 6,
         name: "Client Profile",
         title: 'Client Profiles',

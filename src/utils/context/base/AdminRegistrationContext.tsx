@@ -1,9 +1,11 @@
-import { createContext, useState, useCallback, useContext } from 'react'
+import { createContext, useState, useCallback, useContext, useEffect } from 'react'
 import { ContextSetup, ToastContextSetup } from '..'
 import { useApiCallBack } from '@/utils/hooks/useApi'
 import { useAccessToken, useRefreshToken } from "../hooks/hooks";
 import { useRouter } from 'next/router';
-import { ToastContextContinue } from './ToastContext';
+
+import { useQuery } from 'react-query'
+
 export const ARContext = createContext<ContextSetup | null>(null)
 
 type ARContextProps = {
@@ -21,7 +23,7 @@ const AdminRegistrationContext: React.FC<ARContextProps> = ({
 }) => {
     const [accessToken, setAccessToken] = useAccessToken()
     const [refreshToken, setRefreshToken] = useRefreshToken()
-    const fetchAllUsersExecutioner = useApiCallBack(api => api.users.fetchAllUsersFunc())
+    const fetchAllUsersExecutioner = useApiCallBack(async (api) => await api.users.fetchAllUsersFunc())
     const [isHidden, setIsHidden] = useState(false)
     const [users, setUsers] = useState([])
     const FetchAuthentication = useApiCallBack(async (api, args: AuthenticationProps) => {

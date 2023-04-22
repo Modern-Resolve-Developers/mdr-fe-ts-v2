@@ -39,6 +39,7 @@ import { useAccessToken, useRefreshToken } from "@/utils/context/hooks/hooks";
 
 import { useCookies } from 'react-cookie'
 import { LockClosedIcon } from '@heroicons/react/20/solid'
+import { useMutation, useQuery } from "react-query";
 
 const baseSchema = z.object({
     email : requiredString("Your email is required.").email(),
@@ -82,7 +83,7 @@ const Login: React.FC = () => {
     const [user, setUser] = useState<any>({})
     const [profile, setProfile] = useState([])
     const [open, setOpen] = useState(false)
-
+    const [userId, setUserId] = useState(0)
     /* api callbacks */
     const authSignin = useApiCallBack(async (api, args: LoginProps) => {
       const result = await api.authentication.userAuthLogin(args)
@@ -98,7 +99,7 @@ const Login: React.FC = () => {
     })
     const jwtAuthLogin = useApiCallBack(async (api, args : JWTAuthLoginTypes) => await api.authentication.authenticationJwtLogin(args.jwtusername, args.jwtpassword))
     const IdentifyUsertype = useApiCallBack((api, uuid: any) => api.mdr.IdentifyUserTypeFunc(uuid))
-    const fetchCreatedAuthHistory = useApiCallBack((api, userId: number | any) => api.authentication.fetchCreatedAuthHistory(userId))
+    const fetchCreatedAuthHistory = useApiCallBack(async (api, userId: number | any) => await api.authentication.fetchCreatedAuthHistory(userId))
     const FetchAuthentication = useApiCallBack(async (api, args: AuthenticationProps) => {
       const result = await api.authentication.userAvailabilityCheck(args)
       return result
@@ -108,54 +109,11 @@ const Login: React.FC = () => {
         onError: (error : any) => console.log("Try failed", error)
     })
 
-    
+    const { checkAuthentication } = useAuthContext()
     
     useEffect(
       () => {
-        setOpen(!open)
-        let savedAuthStorage;
-        const savedTokenStorage = localStorage.getItem('token')
-        if(typeof savedTokenStorage == 'string'){
-            savedAuthStorage = JSON.parse(savedTokenStorage)
-        }
-        const uuid = localStorage.getItem('uid') === null ? 0 : localStorage.getItem('uid')
-        if(savedAuthStorage == undefined && uuid == 0) {
-          setOpen(false)
-          return;
-        } else {
-            /* if the token is not valid or neither expired -> fetching API to get the user data breakdown will prohibited.  */
-            FetchAuthentication.execute({
-              userId : uuid == null ? 0 : uuid,
-              savedAuth: savedAuthStorage == null ? null : savedAuthStorage
-            }).then((res : any) => {
-              if(res == 'no_saved_storage') {
-                  setOpen(false)
-                }
-                else if(res?.data == 'no_records'){
-                  setOpen(false)
-                } else if(res?.data == 'not_match'){
-                  setOpen(false)
-                } else {
-                  IdentifyUsertype.execute(uuid)
-                  .then((identified: any) => {
-                    if(identified?.data == 'Administrator') {
-                      setOpen(false)
-                      router.push('/sys-admin/admin-dashboard')
-                    } else if(identified?.data == 'Developers') {
-                      setOpen(false)
-                      router.push('/sys-dev/dev-dashboard')
-                    }
-                  }).catch(error => {
-                    setOpen(false)
-                    return;
-                  })
-                }
-          }).catch(error => {
-            setOpen(false)
-            return;
-          })
-        }
-        
+        checkAuthentication("login")
       },
       [accessSavedAuth, accessUserId]
     )
@@ -202,6 +160,24 @@ const Login: React.FC = () => {
         localStorage.removeItem('rm')
       }
     }
+    const useAuthSignIn = () => {
+      return useMutation((args : LoginProps) => authSignin.execute(args))
+    }
+    const { data }: any = useQuery<{userId: number}>({
+      queryKey: ['fetchCreatedAuthHistory', userId],
+      queryFn: () => fetchCreatedAuthHistory.execute(1).then((response) => response.data)
+    })
+    useEffect(() => {}, [data])
+    const useCreateToken = useMutation((data: {userId: any, token: string}) =>
+    createtoken.execute(data))
+    const useCreateAuthHistory = useMutation((data: CreateAuthHistoryArgs) => 
+    createAuthHistory.execute(data))
+    const useJwtAuthLogin = useMutation((data : JWTAuthLoginTypes) =>
+    jwtAuthLogin.execute(data))
+    const useIdentifyUserType = useMutation((uuid: any) => 
+    IdentifyUsertype.execute(uuid))
+    const { mutate } = useAuthSignIn()
+    
     const handleSignin = async () => {
         const value = getValues()
         const obj = {
@@ -210,124 +186,124 @@ const Login: React.FC = () => {
         }
         setAccountLogin(obj)
         setOpen(!open)
-        const params = authSignin.execute(obj)
-        params.then(res => {
-          const { data } : any = res;
-          if(data == 'NOT_FOUND') {
-            setOpen(false)
-            handleOnToast(
-                "User not found",
-                "top-right",
-                false,
-                true,
-                true,
-                true,
-                undefined,
-                "dark",
-                "error"
-            )
-        } else if(data == 'INVALID_PASSWORD'){
-            setOpen(false)
-            handleOnToast(
-                "Invalid Password, Please try again.",
-                "top-right",
-                false,
-                true,
-                true,
-                true,
-                undefined,
-                "dark",
-                "error"
-            )
-        } else if(data == 'ACCOUNT_LOCK') {
-          setOpen(false)
-            handleOnToast(
-                "Your account is currently lock. Please contact administrator.",
-                "top-right",
-                false,
-                true,
-                true,
-                true,
-                undefined,
-                "dark",
-                "error"
-            )
-        }else {
-            const objTokenCreation = {
-              userId: data?.bundle[0]?.id,
-              token: "auto-generated-token-backend-side"
-            }
-            createtoken.execute(objTokenCreation)
-            .then((res : any) => {
-              if(res.data?.message == 'token-creation-success' || res.data?.message == 'token-exist-success'){
-                const savedObj = {
-                  firstname : data?.bundle[0]?.firstname,
-                  lastname : data?.bundle[0]?.lastname,
-                  email : data?.bundle[0]?.email,
-                  userId : data?.bundle[0]?.Id,
-                  token: res.data?.tokenResult[0]?.token
-                }
-                const structure = {
-                  userId : data?.bundle[0]?.id,
-                  savedAuth: "auto-generated-backend-area",
-                  preserve_data : JSON.stringify(savedObj)
-                }
-                createAuthHistory.execute(structure)
-                .then((repository : any) => {
-                  if(repository?.data == 'success-save-auth-history' || repository?.data == 'save-auth-exist'){
-                    fetchCreatedAuthHistory.execute(structure.userId)
-                    .then((api : any) => {
-                      const jwtprops = {
-                        jwtusername : obj.email,
-                        jwtpassword : obj.password
-                      }
-                      jwtAuthLogin.execute(jwtprops)
-                      .then((authLoginResponse : any) => {
-                        setAccessToken(
-                          authLoginResponse?.data?.token
-                        )
-                        setRefreshToken(
-                          authLoginResponse?.data?.refreshToken
-                        )
-                        const expiry = new Date()
-                        expiry.setDate(expiry.getDate() + 3)
-                        setCookies('auth', authLoginResponse?.data?.token, {
-                          path: '/',
-                          expires: expiry
-                        })
-                        setAccessSavedAuth(api?.data?.token[0]?.savedAuth)
-                        setAccessUserId(structure.userId)
-                        setOpen(false)
-                        handleOnToast(
-                            "Successfully Logged in.",
-                            "top-right",
-                            false,
-                            true,
-                            true,
-                            true,
-                            undefined,
-                            "dark",
-                            "success"
-                        )
-                        if(api?.data?.message == 'fetched'){
-                          IdentifyUsertype.execute(structure.userId)
-                          .then((identified: any) => {
-                            if(identified?.data == 'Administrator') {
-                              router.push('/sys-admin/admin-dashboard')
-                            } else if(identified?.data == 'Developers') {
-                              router.push('/sys-dev/dev-dashboard')
+        mutate(obj, {
+          onSuccess: (response: any) => {
+            if(response.data == 'NOT_FOUND') {
+              setOpen(false)
+              handleOnToast(
+                  "User not found",
+                  "top-right",
+                  false,
+                  true,
+                  true,
+                  true,
+                  undefined,
+                  "dark",
+                  "error"
+              )
+            } else if (response.data == 'INVALID_PASSWORD') {
+              setOpen(false)
+              handleOnToast(
+                  "Invalid Password, Please try again.",
+                  "top-right",
+                  false,
+                  true,
+                  true,
+                  true,
+                  undefined,
+                  "dark",
+                  "error"
+              )
+            }else if(response.data == 'ACCOUNT_LOCK') {
+                setOpen(false)
+                handleOnToast(
+                    "Your account is currently lock. Please contact administrator.",
+                    "top-right",
+                    false,
+                    true,
+                    true,
+                    true,
+                    undefined,
+                    "dark",
+                    "error"
+                )
+            } else {
+              const objTokenCreation = {
+                userId: response.data?.bundle[0]?.id,
+                token: "auto-generated-token-backend-side"
+              }
+              useCreateToken.mutate(objTokenCreation, {
+                onSuccess: (res: any) => {
+                  if(res.data?.message == 'token-creation-success' || res.data?.message == 'token-exist-success') {
+                    const savedObj = {
+                      firstname : response.data?.bundle[0]?.firstname,
+                      lastname : response.data?.bundle[0]?.lastname,
+                      email : response.data?.bundle[0]?.email,
+                      userId : response.data?.bundle[0]?.Id,
+                      token: res.data?.tokenResult[0]?.token
+                    }
+                    const structure = {
+                      userId : response.data?.bundle[0]?.id,
+                      savedAuth: "auto-generated-backend-area",
+                      preserve_data : JSON.stringify(savedObj)
+                    }
+                    useCreateAuthHistory.mutate(structure, {
+                      onSuccess: (repository: any) => {
+                        if(repository?.data == 'success-save-auth-history' || repository?.data == 'save-auth-exist') {
+                          setUserId(structure.userId)
+                          const jwtprops = {
+                            jwtusername : obj.email,
+                            jwtpassword : obj.password
+                          }
+                          useJwtAuthLogin.mutate(jwtprops, {
+                            onSuccess: (authLoginResponse: any) => {
+                              setAccessToken(
+                                authLoginResponse?.data?.token
+                              )
+                              setRefreshToken(
+                                authLoginResponse?.data?.refreshToken
+                              )
+                              const expiry = new Date()
+                              expiry.setDate(expiry.getDate() + 3)
+                              setCookies('auth', authLoginResponse?.data?.token, {
+                                path: '/',
+                                expires: expiry
+                              })
+                              setAccessSavedAuth(data?.token[0]?.savedAuth)
+                              setAccessUserId(structure.userId)
+                              setOpen(false)
+                              handleOnToast(
+                                  "Successfully Logged in.",
+                                  "top-right",
+                                  false,
+                                  true,
+                                  true,
+                                  true,
+                                  undefined,
+                                  "dark",
+                                  "success"
+                              )
+                              if(data?.message == 'fetched'){
+                                useIdentifyUserType.mutate(structure.userId, {
+                                  onSuccess: (identified: any) => {
+                                    if(identified?.data == 'Administrator') {
+                                      router.push('/sys-admin/admin-dashboard')
+                                    } else if(identified?.data == 'Developers') {
+                                      router.push('/sys-dev/dev-dashboard')
+                                    }
+                                  }
+                                })
+                              }
                             }
                           })
                         }
-                      })
-                    }).catch(error => {
-                      return;
+                      }
                     })
                   }
-                })
-              }
-            })
-        }
+                }
+              })
+            }
+          }
         })
     }
 
@@ -347,12 +323,13 @@ const Login: React.FC = () => {
           <div>
             <img
               className="mx-auto h-12 w-auto"
-              src="/mdr.png"
+              src="/drlogo.png"
               alt="Your Company"
+              style={{ width: '25%', height: 'auto'}}
             />
-            <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
+            <Typography className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
               Sign in to your account
-            </h2>
+            </Typography>
             <p className="mt-2 text-center text-sm text-gray-600">
               Or{' '}
               <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500">
