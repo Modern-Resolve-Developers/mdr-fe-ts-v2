@@ -36,3 +36,10 @@ export type CreateProducts = {
     maintainedBy: string | undefined
     repositoryZipUrl?: string | undefined
 }
+
+export type JitserStoreDetails = {
+    username: string
+    roomName: string
+    roomPassword: string
+    isPrivate: string
+}

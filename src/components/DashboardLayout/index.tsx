@@ -179,7 +179,8 @@ export default function DashboardLayout({children, sidebarConfig, subsidebarConf
             </Box>
             <ControlledModal 
             open={modalOpen}
-            handleClose={handleSignout}
+            handleClose={() => setModalOpen(false)}
+            handleSubmit={handleSignout}
             title="Account signout"
             buttonTextAccept="SIGNOUT"
             buttonTextDecline="CANCEL"

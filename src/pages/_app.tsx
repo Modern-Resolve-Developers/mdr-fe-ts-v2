@@ -18,6 +18,12 @@ import TableSearchContext from '@/utils/context/base/TableSearchContext';
 import { AuthProvider } from '@/utils/context/base/AuthContext';
 import { useRefreshTokenHandler } from '@/utils/hooks/useRefreshTokenHandler';
 import { CookiesProvider } from 'react-cookie'
+import { MeetProvider } from '@/utils/context/base/MeetContext';
+
+import { QueryClient, QueryClientProvider } from 'react-query'
+import { ReactQueryDevtools } from 'react-query-devtools'
+
+
 export type NextPageWithLayout<P = any, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode
 }
@@ -33,15 +39,20 @@ const darkTheme = createTheme({
   
 })
 
+const queryClient = new QueryClient({})
+
 export default function App({ Component, pageProps }: AppPropsWithLayout) {
   useRefreshTokenHandler()
   const getLayout = Component.getLayout ?? ((page) => page);
   return (
+    <>
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
+      <QueryClientProvider client={queryClient}>
       <GoogleOAuthProvider clientId='643485254029-mmi46n2kojuce223b8cpfqkck1s4gv0c.apps.googleusercontent.com'>
         <AuthProvider>
-        <TableSearchContext>
+          <MeetProvider>
+          <TableSearchContext>
         <AdminRegistrationContext>
         <SessionContext>
         <ToastContext>
@@ -64,8 +75,11 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
         </SessionContext>
       </AdminRegistrationContext>
         </TableSearchContext>
+          </MeetProvider>
         </AuthProvider>
       </GoogleOAuthProvider>
+      </QueryClientProvider>
     </ThemeProvider>
+    </>
   )
 }

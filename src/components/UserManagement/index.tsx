@@ -41,6 +41,7 @@ import { UpdateUsersDetailsArgs } from "@/pages/api/users/types";
 import { ARContext } from "@/utils/context/base/AdminRegistrationContext";
 import { ContextSetup } from "@/utils/context";
 import ControlledTypography from "../Typography/Typography";
+import { useMutation } from "react-query";
 
 
 const FORM_MAP: Array<{ label: string; form: React.FC }> = [
@@ -87,10 +88,7 @@ export const FormAdditionalDetails = () => {
         const result = await api.users.UpdateUsersVerifiedStatusFunc(args)
         return result
     })
-    const updateUsersDetailsExecutioner = useApiCallBack(async (api, args : UpdateUsersDetailsArgs) => {
-        const result = await api.users.UpdateUsersDetailsFunc(args)
-        return result
-    })
+    const updateUsersDetailsExecutioner = useApiCallBack(async (api, args : UpdateUsersDetailsArgs) => await api.users.UpdateUsersDetailsFunc(args))
     const [editformAtom , setEditFormAtom] = useAtom(editFormUserAccountAtom)
     const form = useForm<EditFormUserAccount>({
         mode: 'all',
@@ -362,6 +360,11 @@ export const FormAdditionalDetails = () => {
             }
         })
     }
+    const useUpdateUsersDetails = () => {
+        return useMutation((data : UpdateUsersDetailsArgs) => 
+        updateUsersDetailsExecutioner.execute(data).then((response) => response.data))
+    }
+    const { mutate } = useUpdateUsersDetails()
     const handleContinue = () => {
         setBackdrop(!backdrop)
         handleSubmit(
@@ -374,27 +377,28 @@ export const FormAdditionalDetails = () => {
                     middlename : values.middleName,
                     lastname: values.lastName
                 }
-                updateUsersDetailsExecutioner.execute(edit_uam_request_data).then((response: any) => {
-                    const { data } : any = response;
-                    if(data == 200) {
-                        setBackdrop(false)
-                        handleOnToast(
-                            "Successfully Modify User.",
-                            "top-right",
-                            false,
-                            true,
-                            true,
-                            true,
-                            undefined,
-                            "dark",
-                            "success"
-                        )
-                        setUsersData(prevState => ({
-                            ...prevState,
-                            id: 0
-                        }))
-                        reset({})
-                        callBackSyncGetAllUsers()
+                mutate(edit_uam_request_data, {
+                    onSuccess: (response) => {
+                        if(response == 200) {
+                            setBackdrop(false)
+                            handleOnToast(
+                                "Successfully Modify User.",
+                                "top-right",
+                                false,
+                                true,
+                                true,
+                                true,
+                                undefined,
+                                "dark",
+                                "success"
+                            )
+                            setUsersData(prevState => ({
+                                ...prevState,
+                                id: 0
+                            }))
+                            reset({})
+                            callBackSyncGetAllUsers()
+                        }
                     }
                 })
             }

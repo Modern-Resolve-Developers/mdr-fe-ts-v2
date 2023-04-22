@@ -9,6 +9,7 @@ import HomeFeatureSection from "@/components/Content/Home/FeatureSection";
 import HomeFooterSection from "@/components/Content/Home/FooterSection";
 import HomeFeatureSectionSecondLayer from "@/components/Content/Home/FeatureSectionSecondLayer";
 import { useRefreshTokenHandler } from "@/utils/hooks/useRefreshTokenHandler";
+import { useQuery } from "react-query";
 
 const Home: React.FC = () => {
   useRefreshTokenHandler()
@@ -45,17 +46,19 @@ const Home: React.FC = () => {
       icon: FingerPrintIcon,
     },
   ]
+  const { 
+    data,
+    isLoading,
+    error
+  } = useQuery("checkUser", () => 
+  UAMCheckAcc.execute(1).then((response) => response.data)
+  )
   useEffect(() => {
-    UAMCheckAcc.execute(1).then((response : any) => {
-      const { data } : any = response;
-      if(data === "not_exist"){
-        setIsHidden(true)
-        router.push('/create-account')
-      }else{}
-    }).catch(error => {
-      return;
-    })
-  }, [])
+    if(data == 'not_exist') {
+      setIsHidden(true)
+      router.push('/create-account')
+    } else {}
+  }, [data, isLoading, error])
 
   return (
     <>

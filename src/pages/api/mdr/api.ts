@@ -1,6 +1,6 @@
 import { AxiosInstance } from 'axios'
 
-import { CreateTask, CreateProducts } from '../types'
+import { CreateTask, CreateProducts, JitserStoreDetails } from '../types'
 export class MdrApi {
     constructor(private readonly axios: AxiosInstance){}
 
@@ -42,5 +42,12 @@ export class MdrApi {
     }
     public FetchAllCategories(){
         return this.axios.get('/api/productcategory/get-all-new-categories')
+    }
+    // Jitser
+    public StoreMeetDetails(props : JitserStoreDetails){
+        return this.axios.post('/api/jitser/store-jitser-details', props)
+    }
+    public GetAllRooms(){
+        return this.axios.get('/api/jitser/get-all-rooms')
     }
 }
