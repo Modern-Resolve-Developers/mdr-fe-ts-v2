@@ -84,6 +84,7 @@ const Login: React.FC = () => {
     const [profile, setProfile] = useState([])
     const [open, setOpen] = useState(false)
     const [userId, setUserId] = useState(0)
+    const [loginObject, setLoginObject] = useState<any>({})
     /* api callbacks */
     const authSignin = useApiCallBack(async (api, args: LoginProps) => {
       const result = await api.authentication.userAuthLogin(args)
@@ -227,7 +228,8 @@ const Login: React.FC = () => {
                     "dark",
                     "error"
                 )
-            } else {
+            }
+            else {
               const objTokenCreation = {
                 userId: response.data?.bundle[0]?.id,
                 token: "auto-generated-token-backend-side"
@@ -287,6 +289,7 @@ const Login: React.FC = () => {
                                 useIdentifyUserType.mutate(structure.userId, {
                                   onSuccess: (identified: any) => {
                                     if(identified?.data == 'Administrator') {
+                                      localStorage.setItem('ut', '1')
                                       router.push('/sys-admin/admin-dashboard')
                                     } else if(identified?.data == 'Developers') {
                                       router.push('/sys-dev/dev-dashboard')

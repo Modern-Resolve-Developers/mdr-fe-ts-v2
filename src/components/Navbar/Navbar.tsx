@@ -28,12 +28,21 @@ const ControlledAdministratorNavbar: React.FC<AdminNavbarProps> = (props) => {
     const [childMenus, setChildMenus] = useState([])
     const [algoSearchModal, setAlgoSearchModal] = useState(false)
     const logout = Boolean(anchorEl);
+    const [currentUser, setCurrentUser] = useState<any>('')
     const handleClose = () => {
         setAnchorEl(null);
       };
       const handleClick = (event: any) => {
         setAnchorEl(event.currentTarget)
       }
+    useEffect(() => {
+      let savedCurrentUser;
+      const getSavedCurrentUser = localStorage.getItem('ut')
+      if(typeof getSavedCurrentUser == 'string'){
+        savedCurrentUser = getSavedCurrentUser
+      }
+      setCurrentUser(savedCurrentUser)
+    }, [currentUser])
     useEffect(() => {
       index
       .saveObjects(sidebarList)
@@ -94,7 +103,10 @@ const ControlledAdministratorNavbar: React.FC<AdminNavbarProps> = (props) => {
                 </IconButton>
                 <Box className="flex items-center justify-between w-full">
                     <h3 className="text-2xl font-medium font-body text-white">
-                        Hi, Administrator
+                        Hi, {
+                          currentUser == '1' ?
+                          'Administrator' : 'Unknown'
+                        }
                     </h3>
                    <Box className='flex item-center gap-3'>
                    <Autocomplete 
