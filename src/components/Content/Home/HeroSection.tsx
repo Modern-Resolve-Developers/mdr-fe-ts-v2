@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Dialog } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
+import { Typography } from '@mui/material'
 
 const navigation = [
     { name: 'Product', href: '#' },
@@ -43,7 +44,9 @@ const HomeHeroSection = () => {
           <div className="flex lg:flex-1">
             <a href="#" className="-m-1.5 p-1.5">
               <span className="sr-only">Your Company</span>
-              <img className="h-8" src="/mdr.png" alt="" />
+              <img className="h-8" style={{
+                width: '30%', height: 'auto'
+              }} src="/drlogo.png" alt="" />
             </a>
           </div>
           <div className="flex lg:hidden">
@@ -124,9 +127,9 @@ const HomeHeroSection = () => {
               </div>
             </div>
             <div className="text-center">
-              <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
-                Modern Resolve Technologies
-              </h1>
+              <Typography className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
+                Digital Resolve
+              </Typography>
               <p className="mt-6 text-lg leading-8 text-gray-600">
                 Let's make your business digital.
               </p>

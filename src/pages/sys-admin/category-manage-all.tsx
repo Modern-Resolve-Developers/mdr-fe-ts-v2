@@ -28,6 +28,8 @@ import {ProjectTable} from "@/components";
 import { ControlledPopoverButton } from "@/components/Button/PopoverButton";
 import { NormalButton } from "@/components/Button/NormalButton";
 
+import { useQuery } from 'react-query'
+
 const categoryManagementBaseSchema = z.object({
     label: requiredString('Label is required.'),
     type: requiredString('kindly select type.')
@@ -163,32 +165,13 @@ const CategoryManageAll: React.FC = () => {
         reset,
         setValue
     } = form
-    const GellAllCategories = useCallback(() => {
-        GetAllProductCategory.execute()
-        .then((response : any) => {
-            const { data } : any = response;
-            setCategory(data)
-        }).catch(error => {
-            if(error?.response?.status == 401) {
-                handleOnToast(
-                    "Token Expired.",
-                    "top-right",
-                    false,
-                    true,
-                    true,
-                    true,
-                    undefined,
-                    "dark",
-                    "error"
-                )
-                localStorage.clear()
-                router.push('/login')
-            }
-        })
-    }, [])
-    useEffect(() => {
-        GellAllCategories()
-    }, [])
+    
+    const {
+        data,
+    } = useQuery('category-list', async () => {
+        const result = await GetAllProductCategory.execute()
+        return result.data
+    }, { initialData: undefined })
     const handleContinue = () => {
         handleSubmit(
             (values) => {
@@ -285,7 +268,7 @@ const CategoryManageAll: React.FC = () => {
                             <>
                                 <ProjectTable 
                                 columns={columns}
-                                data={category}
+                                data={data}
                                 sx={{marginTop: '10px'}}
                                 rowIsCreativeDesign={false}
                                 />
