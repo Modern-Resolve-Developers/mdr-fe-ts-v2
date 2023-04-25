@@ -2,6 +2,7 @@ import { useState } from 'react'
 import HomeFooterSection from "@/components/Content/Home/FooterSection";
 import { Dialog } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
+import { Typography } from '@mui/material'
 
 const navigation = [
     { name: 'Product', href: '#' },
@@ -44,7 +45,9 @@ const TermsAndCondition : React.FC = () => {
           <div className="flex lg:flex-1">
             <a href="#" className="-m-1.5 p-1.5">
               <span className="sr-only">Your Company</span>
-              <img className="h-8" src="/mdr.png" alt="" />
+              <img className="h-8" style={{
+                width: '30%', height: 'auto'
+              }} src="/drlogo.png" alt="" />
             </a>
           </div>
           <div className="flex lg:hidden">
@@ -115,9 +118,9 @@ const TermsAndCondition : React.FC = () => {
       <main>
         <div className="mx-10">
           <div className='my-20 px-6'>
-            <h1 className="p-4 text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
-              Terms And Condition
-            </h1>
+              <Typography className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
+                Terms and Condition
+              </Typography>
           </div>
           <div className=' p-4'>
             <div className="pl-6 w-auto md:w-3/4">
