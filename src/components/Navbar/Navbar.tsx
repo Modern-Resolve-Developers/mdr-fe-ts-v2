@@ -13,6 +13,7 @@ import {
   ListItemButton,
   ListItemText,
   ListItem,
+  Divider,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
@@ -178,6 +179,8 @@ const ControlledAdministratorNavbar: React.FC<AdminNavbarProps> = (props) => {
                   "aria-labelledby": "basic-button",
                 }}
               >
+                <MenuItem>Profile</MenuItem>
+                <Divider>Others</Divider>
                 <MenuItem onClick={signoutModal} data-testid={"btnsignouttest"}>
                   Log out
                 </MenuItem>
