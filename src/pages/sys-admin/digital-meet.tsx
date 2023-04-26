@@ -12,16 +12,20 @@ import {
 import { Container } from "@mui/material";
 import { StartupPage } from "@/components/Jitsi/StartupPage";
 import { ControlledTabs } from "@/components/Tabs/Tabs";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useMeetContext } from "@/utils/context/base/MeetContext";
 import { NormalButton } from "@/components/Button/NormalButton";
 import { useRouter } from "next/router";
 import { useDynamicDashboardContext } from "@/utils/context/base/DynamicDashboardContext";
+import { SessionContextMigrate } from "@/utils/context/base/SessionContext";
+import { SessionStorageContextSetup } from "@/utils/context";
+import { useAuthContext } from "@/utils/context/base/AuthContext";
 const DigitalMeet: React.FC = () => {
   const [valueChange, setValueChange] = useState(0);
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValueChange(newValue);
   };
+  const { checkAuthentication } = useAuthContext();
   const router = useRouter();
   const { getAllRooms, rooms, setRooms } = useMeetContext();
   useEffect(() => {
@@ -110,7 +114,9 @@ const DigitalMeet: React.FC = () => {
     },
   ];
   const [idetifiedUser, setIdentifiedUser] = useState<any>("");
-
+  const { accessSavedAuth, accessUserId } = useContext(
+    SessionContextMigrate
+  ) as SessionStorageContextSetup;
   const { getPropsDynamic } = useDynamicDashboardContext();
 
   useEffect(() => {
@@ -118,6 +124,9 @@ const DigitalMeet: React.FC = () => {
       setIdentifiedUser(repo?.data);
     });
   }, []);
+  useEffect(() => {
+    checkAuthentication("admin");
+  }, [accessSavedAuth, accessUserId]);
   return (
     <DashboardLayout
       sidebarConfig={

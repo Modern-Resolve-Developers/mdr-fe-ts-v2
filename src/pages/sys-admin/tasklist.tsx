@@ -35,6 +35,9 @@ import {
   sidebarList,
   sidebarExpand,
 } from "../../utils/sys-routing/sys-routing";
+import { SessionContextMigrate } from "@/utils/context/base/SessionContext";
+import { SessionStorageContextSetup } from "@/utils/context";
+import { useAuthContext } from "@/utils/context/base/AuthContext";
 import { useDynamicDashboardContext } from "@/utils/context/base/DynamicDashboardContext";
 const TaskManagementList: React.FC = () => {
   const { handleOnToast } = useContext(
@@ -46,6 +49,10 @@ const TaskManagementList: React.FC = () => {
   const deleteTaskExecutioner = useApiCallBack((api, uuid: any) =>
     api.mdr.deletionTask(uuid)
   );
+  const { accessSavedAuth, accessUserId } = useContext(
+    SessionContextMigrate
+  ) as SessionStorageContextSetup;
+  const { checkAuthentication } = useAuthContext();
   const fetchAllTask = useApiCallBack((api) => api.mdr.fetchAllTask());
   const [searched, setSearched] = useState<string>("");
   const [taskOriginalArray, setTaskOriginalArray] = useState([]);
@@ -74,7 +81,9 @@ const TaskManagementList: React.FC = () => {
   useEffect(() => {
     fetchAllTaskDynamically();
   }, []);
-
+  useEffect(() => {
+    checkAuthentication("admin");
+  }, [accessSavedAuth, accessUserId]);
   const globalSearch = (): TableSearchProps[] => {
     const filteredRepositories = tableSearchList.filter((value: any) => {
       return (

@@ -7,17 +7,25 @@ import {
   sidebarExpand,
 } from "../../utils/sys-routing/sys-routing";
 import { useDynamicDashboardContext } from "@/utils/context/base/DynamicDashboardContext";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { SessionContextMigrate } from "@/utils/context/base/SessionContext";
+import { SessionStorageContextSetup } from "@/utils/context";
+import { useAuthContext } from "@/utils/context/base/AuthContext";
 const Task: React.FC = () => {
   const [idetifiedUser, setIdentifiedUser] = useState<any>("");
-
+  const { accessSavedAuth, accessUserId } = useContext(
+    SessionContextMigrate
+  ) as SessionStorageContextSetup;
   const { getPropsDynamic } = useDynamicDashboardContext();
-
+  const { checkAuthentication } = useAuthContext();
   useEffect(() => {
     getPropsDynamic(localStorage.getItem("uid")).then((repo: any) => {
       setIdentifiedUser(repo?.data);
     });
   }, []);
+  useEffect(() => {
+    checkAuthentication("admin");
+  }, [accessSavedAuth, accessUserId]);
   return (
     <>
       <DashboardLayout

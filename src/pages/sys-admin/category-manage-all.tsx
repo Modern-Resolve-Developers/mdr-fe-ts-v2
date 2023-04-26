@@ -28,9 +28,11 @@ import { useRouter } from "next/router";
 import { ProjectTable } from "@/components";
 import { ControlledPopoverButton } from "@/components/Button/PopoverButton";
 import { NormalButton } from "@/components/Button/NormalButton";
-
+import { SessionContextMigrate } from "@/utils/context/base/SessionContext";
+import { SessionStorageContextSetup } from "@/utils/context";
 import { useQuery } from "react-query";
 import { useDynamicDashboardContext } from "@/utils/context/base/DynamicDashboardContext";
+import { useAuthContext } from "@/utils/context/base/AuthContext";
 const categoryManagementBaseSchema = z.object({
   label: requiredString("Label is required."),
   type: requiredString("kindly select type."),
@@ -96,6 +98,10 @@ const CategoryManageAll: React.FC = () => {
   const handleChangeTabs = (event: React.SyntheticEvent, newValue: number) => {
     setValueChange(newValue);
   };
+  const { checkAuthentication } = useAuthContext();
+  const { accessSavedAuth, accessUserId } = useContext(
+    SessionContextMigrate
+  ) as SessionStorageContextSetup;
   const router = useRouter();
   const CreationProductCategory = useApiCallBack(
     async (api, args: { label: string; value: string; type: string }) =>
@@ -184,6 +190,9 @@ const CategoryManageAll: React.FC = () => {
       setIdentifiedUser(repo?.data);
     });
   }, []);
+  useEffect(() => {
+    checkAuthentication("admin");
+  }, [accessSavedAuth, accessUserId]);
   const {
     formState: { isValid },
     handleSubmit,

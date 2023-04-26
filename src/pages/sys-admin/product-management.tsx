@@ -44,6 +44,10 @@ import { NormalButton } from "@/components/Button/NormalButton";
 import { DevTool } from "@hookform/devtools";
 import { ControlledProgressWithLabel } from "@/components/Progress/CircularProgress";
 import { useDynamicDashboardContext } from "@/utils/context/base/DynamicDashboardContext";
+import { SessionContextMigrate } from "@/utils/context/base/SessionContext";
+
+import { SessionStorageContextSetup } from "@/utils/context";
+
 export const productManagementBaseSchema = z.object({
   productName: requiredString("Product name is required."),
   productDescription: requiredString("Product Description is required."),
@@ -834,9 +838,13 @@ const ProductManagement: React.FC = () => {
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValueChange(newValue);
   };
+  const { checkAuthentication } = useAuthContext();
   const { handleOnToast } = useContext(
     ToastContextContinue
   ) as ToastContextSetup;
+  const { accessSavedAuth, accessUserId } = useContext(
+    SessionContextMigrate
+  ) as SessionStorageContextSetup;
   const [open, setOpen] = useState(false);
   const form = useForm<ProductManagementCreation>({
     resolver: zodResolver(productManagementBaseSchema),
@@ -849,6 +857,10 @@ const ProductManagement: React.FC = () => {
     reset,
     setValue,
   } = form;
+
+  useEffect(() => {
+    checkAuthentication("admin");
+  }, [accessSavedAuth, accessUserId]);
 
   const getAllProducts = () => {
     PMList.execute().then((res: any) => {
