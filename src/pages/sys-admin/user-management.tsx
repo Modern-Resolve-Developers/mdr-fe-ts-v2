@@ -10,7 +10,9 @@ import { ToastContextContinue } from "@/utils/context/base/ToastContext";
 import { ToastContextSetup } from "@/utils/context";
 import { ContextSetup } from "@/utils/context";
 import { ARContext } from "@/utils/context/base/AdminRegistrationContext";
-
+import { SessionContextMigrate } from "@/utils/context/base/SessionContext";
+import { SessionStorageContextSetup } from "@/utils/context";
+import { useAuthContext } from "@/utils/context/base/AuthContext";
 import { FormAdditionalDetails } from "@/components/UserManagement";
 import {
   sidebarList,
@@ -26,7 +28,10 @@ const UserManagement: React.FC = () => {
   ) as ToastContextSetup;
   const { CheckAuthentication } = useContext(ARContext) as ContextSetup;
   const [idetifiedUser, setIdentifiedUser] = useState<any>("");
-
+  const { accessSavedAuth, accessUserId } = useContext(
+    SessionContextMigrate
+  ) as SessionStorageContextSetup;
+  const { checkAuthentication } = useAuthContext();
   const { getPropsDynamic } = useDynamicDashboardContext();
 
   useEffect(() => {
@@ -35,31 +40,8 @@ const UserManagement: React.FC = () => {
     });
   }, []);
   useEffect(() => {
-    setOpen(!open);
-    CheckAuthentication().then((repository: any) => {
-      const { data }: any = repository;
-      if (data == "no_records" || data == "not_match") {
-        setOpen(false);
-        handleOnToast(
-          "Invalid Token.",
-          "top-right",
-          false,
-          true,
-          true,
-          true,
-          undefined,
-          "dark",
-          "error"
-        );
-        router.push("/login");
-      } else if (data == "no_saved_storage") {
-        setOpen(false);
-      } else {
-        setOpen(false);
-        setSavedAuth(data);
-      }
-    });
-  }, []);
+    checkAuthentication("admin");
+  }, [accessSavedAuth, accessUserId]);
 
   return (
     <>

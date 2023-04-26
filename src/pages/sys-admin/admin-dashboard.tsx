@@ -7,19 +7,10 @@ import {
   ControlledGrid,
   UncontrolledCard,
   ControlledTypography,
-  ProjectTable,
-  ControlledHighCharts,
 } from "@/components";
-import { ControlledStorage } from "@/utils/storage";
 
 import { ToastContextContinue } from "@/utils/context/base/ToastContext";
 import { ToastContextSetup } from "@/utils/context";
-
-import { ContextSetup } from "@/utils/context";
-import {
-  ARContext,
-  AuthenticationProps,
-} from "@/utils/context/base/AdminRegistrationContext";
 
 import { useRouter } from "next/router";
 
@@ -30,18 +21,14 @@ import offlineExporting from "highcharts/modules/offline-exporting";
 import Highcharts, { Chart } from "highcharts";
 import HighchartsReact from "highcharts-react-official";
 
-import { SessionContextMigrate } from "@/utils/context/base/SessionContext";
-import { SessionStorageContextSetup } from "@/utils/context";
-
 import { useApiCallBack } from "@/utils/hooks/useApi";
-import TaskAltIcon from "@mui/icons-material/TaskAlt";
-import AddTaskIcon from "@mui/icons-material/AddTask";
 
-import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
 import {
   sidebarList,
   sidebarExpand,
 } from "../../utils/sys-routing/sys-routing";
+import { SessionContextMigrate } from "@/utils/context/base/SessionContext";
+import { SessionStorageContextSetup } from "@/utils/context";
 import { useAuthContext } from "@/utils/context/base/AuthContext";
 import { useQuery } from "react-query";
 import { useDynamicDashboardContext } from "@/utils/context/base/DynamicDashboardContext";
