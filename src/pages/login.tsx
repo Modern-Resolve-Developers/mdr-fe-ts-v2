@@ -19,6 +19,7 @@ import GoogleButton from "react-google-button";
 import { useGoogleLogin } from "@react-oauth/google";
 import axios from "axios";
 import { useRouter } from "next/router";
+import Link from "next/link";
 
 import { useSetAtom, useAtomValue } from "jotai";
 import { accountLoginAtom } from "@/utils/hooks/useAccountAdditionValues";
@@ -416,12 +417,20 @@ const Login: React.FC = () => {
               </div>
 
               <div className="text-sm">
-                <a
-                  href="#"
+                {/* <a
+                  
                   className="font-medium text-indigo-600 hover:text-indigo-500"
                 >
                   Forgot your password?
-                </a>
+                </a> */}
+                <Link
+                  href={{
+                    pathname: "/forgot-password",
+                  }}
+                  className="font-medium text-indigo-600 hover:text-indigo-500"
+                >
+                  Forgot your password?
+                </Link>
               </div>
             </div>
 

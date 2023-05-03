@@ -9,55 +9,77 @@ import { TaskAssigneeCreation } from "@/components/TaskManagement/forms/TaskAssi
 import { ProductManagementCreation } from "@/pages/sys-admin/product-management";
 import { categoryManagementCreation } from "@/pages/sys-admin/category-manage-all";
 import { MeetCreation } from "@/components/Jitsi/StartupPage";
+import { EmailAccountCreation } from "@/components/ForgotPassword/forms/EmailDetailsForms";
+import { VerificationAccountCreation } from "@/components/ForgotPassword/forms/VerificationDetailsForms";
 
 type AccountCreationFormData = {
-    accountCreation: AccountCreation
-}
+  accountCreation: AccountCreation;
+};
 
 type AccountLoginFormData = {
-    accountLoginFrmData : loginAccount
-}
+  accountLoginFrmData: loginAccount;
+};
 
-export const meetAtom = atom<MeetCreation | undefined>(undefined)
+export const verificationAtom = atom<VerificationAccountCreation | undefined>(
+  undefined
+);
 
-export const categoryManagementAtom = atom<categoryManagementCreation | undefined>(undefined)
+export const emailAtom = atom<EmailAccountCreation | undefined>(undefined);
 
-export const productManagementAtom = atom<ProductManagementCreation | undefined>(undefined)
+export const meetAtom = atom<MeetCreation | undefined>(undefined);
 
-export const taskAssigneeAtom = atom<TaskAssigneeCreation | undefined>(undefined)
+export const categoryManagementAtom = atom<
+  categoryManagementCreation | undefined
+>(undefined);
 
-export const taskInformationAtom = atom<TaskInformationCreation | undefined>(undefined)
+export const productManagementAtom = atom<
+  ProductManagementCreation | undefined
+>(undefined);
 
-export const personalAccountDetailsAtom = atom<PersonalAccountCreation | undefined>(undefined)
+export const taskAssigneeAtom = atom<TaskAssigneeCreation | undefined>(
+  undefined
+);
 
-export const editFormUserAccountAtom = atom<EditFormUserAccount | undefined>(undefined)
+export const taskInformationAtom = atom<TaskInformationCreation | undefined>(
+  undefined
+);
 
-export const credentialAccountDetailsAtom = atom<CredentialsAccountCreation | undefined>(undefined)
+export const personalAccountDetailsAtom = atom<
+  PersonalAccountCreation | undefined
+>(undefined);
 
-export const accountCreationAtom = atom<AccountCreation | undefined>(undefined)
+export const editFormUserAccountAtom = atom<EditFormUserAccount | undefined>(
+  undefined
+);
 
-export const accountLoginAtom = atom<loginAccount | undefined>(undefined)
+export const credentialAccountDetailsAtom = atom<
+  CredentialsAccountCreation | undefined
+>(undefined);
+
+export const accountCreationAtom = atom<AccountCreation | undefined>(undefined);
+
+export const accountLoginAtom = atom<loginAccount | undefined>(undefined);
 
 export const accountAtom = atom(
-    (get) => {
-        const accountCreation = get(accountCreationAtom)
-        return {
-            accountCreation
-        }
-    },
-    (_, set, { accountCreation } : AccountCreationFormData) => {
-        set(accountCreationAtom, accountCreation)
-    }
-)
+  (get) => {
+    const accountCreation = get(accountCreationAtom);
+    return {
+      accountCreation,
+    };
+  },
+  (_, set, { accountCreation }: AccountCreationFormData) => {
+    set(accountCreationAtom, accountCreation);
+  }
+);
 
 export const loginAtom = atom(
-    (get) => {
-        const accountLoginFrmData = get(accountLoginAtom)
-        return {
-            accountLoginFrmData
-        }
-    },
-    (_, set, { accountLoginFrmData } : AccountLoginFormData) => {
-        set(accountLoginAtom, accountLoginFrmData)
-    }
-)
+  (get) => {
+    const accountLoginFrmData = get(accountLoginAtom);
+    return {
+      accountLoginFrmData,
+    };
+  },
+  (_, set, { accountLoginFrmData }: AccountLoginFormData) => {
+    set(accountLoginAtom, accountLoginFrmData);
+  }
+);
