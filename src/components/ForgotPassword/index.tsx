@@ -4,6 +4,7 @@ import { EmailDetailsForm, VerificationDetailsForm } from "./forms";
 import { usefpActiveStep } from "./usefpActiveSteps";
 import { FormProvider } from "react-hook-form";
 import UncontrolledCard from "../Cards/Card";
+import { useActiveStep } from "../UserManagement/useActiveStep";
 
 const FORGOT_FORM_MAP: Array<{ label: string; form: React.FC }> = [
   {
@@ -19,7 +20,7 @@ const FORGOT_FORM_MAP: Array<{ label: string; form: React.FC }> = [
 export const MAX_FORGOT_FORM_STEPS = FORGOT_FORM_MAP.length;
 
 export const ForgotPasswordAdditionalDetails = () => {
-  const { activeStep } = usefpActiveStep();
+  const { activeStep } = useActiveStep(MAX_FORGOT_FORM_STEPS);
   const { label, form: ActiveForm } = FORGOT_FORM_MAP[activeStep];
 
   return (
@@ -37,7 +38,7 @@ export const ForgotPasswordAdditionalDetails = () => {
               "Completed",
             ]}
             sx={{ mt: 3 }}
-            activeStep={0}
+            activeStep={activeStep}
           />
           <Box mt={2} width="100%">
             <ActiveForm />

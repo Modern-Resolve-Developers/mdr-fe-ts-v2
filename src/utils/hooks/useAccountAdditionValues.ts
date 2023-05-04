@@ -28,6 +28,8 @@ export const emailAtom = atom<EmailAccountCreation | undefined>(undefined);
 
 export const meetAtom = atom<MeetCreation | undefined>(undefined);
 
+export const fpIdAtom = atom(0);
+
 export const categoryManagementAtom = atom<
   categoryManagementCreation | undefined
 >(undefined);

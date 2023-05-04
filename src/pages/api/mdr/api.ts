@@ -58,4 +58,12 @@ export class MdrApi {
   public sendVerificationFP(email: string) {
     return this.axios.post(`/api/fp/send-fp-email/${email}`);
   }
+  public checkVerification(props: { email: string | undefined; code: string }) {
+    return this.axios.post(
+      `/api/fp/check-code-verification/${props.code}/${props.email}`
+    );
+  }
+  public resendVerification(email: string | undefined) {
+    return this.axios.post(`/api/fp/resend-code-verification/${email}`);
+  }
 }

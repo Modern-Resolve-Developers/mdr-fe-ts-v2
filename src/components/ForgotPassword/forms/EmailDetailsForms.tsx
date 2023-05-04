@@ -19,6 +19,8 @@ import {
   useToastContext,
 } from "@/utils/context/base/ToastContext";
 import { ToastContextSetup } from "@/utils/context";
+import { useActiveStep } from "@/components/UserManagement/useActiveStep";
+import { MAX_FORGOT_FORM_STEPS } from "..";
 
 const emailBaseSchema = z.object({
   email: requiredString("Email is required").email(),
@@ -71,7 +73,7 @@ export const EmailDetailsForm = () => {
     formState: { isValid },
     handleSubmit,
   } = form;
-  const { next } = usefpActiveStep();
+  const { next, previous } = useActiveStep(MAX_FORGOT_FORM_STEPS);
   const handleContinue = () => {
     handleSubmit(
       (values) => {
@@ -84,7 +86,7 @@ export const EmailDetailsForm = () => {
               setBackdrop(false);
               next();
               handleOnToast(
-                "A verification code has sent to your email",
+                "A verification code was sent to your email",
                 "top-right",
                 false,
                 true,
@@ -109,6 +111,8 @@ export const EmailDetailsForm = () => {
       <BottomButtonGroup
         disabledContinue={!isValid}
         onContinue={handleContinue}
+        hideBack
+        previous={previous}
       />
     </FormProvider>
   );
