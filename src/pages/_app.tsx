@@ -23,7 +23,7 @@ import { MeetProvider } from "@/utils/context/base/MeetContext";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { ReactQueryDevtools } from "react-query-devtools";
 import { DynamicDashboardProvider } from "@/utils/context/base/DynamicDashboardContext";
-
+import { ActiveStepsProvider } from "@/utils/context/base/ActiveStepsContext";
 export type NextPageWithLayout<P = any, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode;
 };
@@ -49,6 +49,7 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
         <CssBaseline />
         <QueryClientProvider client={queryClient}>
           <GoogleOAuthProvider clientId="643485254029-mmi46n2kojuce223b8cpfqkck1s4gv0c.apps.googleusercontent.com">
+            <ActiveStepsProvider>
             <DynamicDashboardProvider>
               <AuthProvider>
                 <MeetProvider>
@@ -78,6 +79,7 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
                 </MeetProvider>
               </AuthProvider>
             </DynamicDashboardProvider>
+            </ActiveStepsProvider>
           </GoogleOAuthProvider>
         </QueryClientProvider>
       </ThemeProvider>

@@ -43,3 +43,9 @@ export type JitserStoreDetails = {
     roomPassword: string
     isPrivate: string
 }
+
+export type FPChangePasswordProps = {
+    email: string | undefined
+    newPassword: string | undefined
+    currentVerificationCode: string | undefined
+}

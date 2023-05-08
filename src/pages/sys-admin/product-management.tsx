@@ -47,7 +47,7 @@ import { useDynamicDashboardContext } from "@/utils/context/base/DynamicDashboar
 import { SessionContextMigrate } from "@/utils/context/base/SessionContext";
 
 import { SessionStorageContextSetup } from "@/utils/context";
-
+import { useAuthContext } from "@/utils/context/base/AuthContext";
 export const productManagementBaseSchema = z.object({
   productName: requiredString("Product name is required."),
   productDescription: requiredString("Product Description is required."),
