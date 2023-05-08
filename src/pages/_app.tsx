@@ -6,7 +6,7 @@ import "@fontsource/roboto/700.css";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import type { AppProps } from "next/app";
 import { NextPage } from "next";
-import React, { ReactElement, ReactNode, useEffect } from "react";
+import React, { ReactElement, ReactNode } from "react";
 import AdminRegistrationContext from "../utils/context/base/AdminRegistrationContext";
 import ToastContext from "../utils/context/base/ToastContext";
 import { ControlledToast } from "@/components";
@@ -21,7 +21,6 @@ import { CookiesProvider } from "react-cookie";
 import { MeetProvider } from "@/utils/context/base/MeetContext";
 
 import { QueryClient, QueryClientProvider } from "react-query";
-import { ReactQueryDevtools } from "react-query-devtools";
 import { DynamicDashboardProvider } from "@/utils/context/base/DynamicDashboardContext";
 import { ActiveStepsProvider } from "@/utils/context/base/ActiveStepsContext";
 export type NextPageWithLayout<P = any, IP = P> = NextPage<P, IP> & {
