@@ -7,6 +7,7 @@ import {
  import { useAtom } from 'jotai'
  import { taskInformationAtom, taskAssigneeAtom } from '@/utils/hooks/useAccountAdditionValues'
 
+
  export const Completed = () => {
     const { setActiveStep, activeStep } = useActiveStepTask()
     const [taskInfoAtom , setTaskInfoAtom] = useAtom(taskInformationAtom)

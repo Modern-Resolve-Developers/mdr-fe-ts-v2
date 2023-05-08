@@ -30,4 +30,7 @@ export class UsersApi {
     public SetupAccountCreationCheckEmail(email: string){
         return this.axios.get(`/api/users/uam-check-email-setup/${email}`)
     }
+    public AccountDeletion(uid: number){
+        return this.axios.delete(`/api/users/temp-delete-uam-user/${uid}`)
+    }
 }
