@@ -1,11 +1,12 @@
 import { atom, useAtom } from "jotai";
+import { MAX_TASK_UAM_STEPS } from "../TaskManagement";
 
 export const activeStepAtom = atom(0);
-export const useActiveStep = (max_array_steps: number) => {
+export const useActiveStep = () => {
   const [activeStep, setActiveStep] = useAtom(activeStepAtom);
 
   const next = () => {
-    if (activeStep >= max_array_steps) {
+    if (activeStep >= MAX_TASK_UAM_STEPS) {
       return;
     }
     setActiveStep(activeStep + 1);

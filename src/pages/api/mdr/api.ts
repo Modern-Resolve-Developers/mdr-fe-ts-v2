@@ -1,6 +1,6 @@
 import { AxiosInstance } from "axios";
 
-import { CreateTask, CreateProducts, JitserStoreDetails } from "../types";
+import { CreateTask, CreateProducts, JitserStoreDetails, FPChangePasswordProps } from "../types";
 export class MdrApi {
   constructor(private readonly axios: AxiosInstance) {}
 
@@ -65,5 +65,8 @@ export class MdrApi {
   }
   public resendVerification(email: string | undefined) {
     return this.axios.post(`/api/fp/resend-code-verification/${email}`);
+  }
+  public changePassword(props : FPChangePasswordProps) {
+    return this.axios.post('/api/fp/fp-change-password', props)
   }
 }

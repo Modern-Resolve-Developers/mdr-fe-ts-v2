@@ -114,7 +114,7 @@ export const FormAdditionalDetails = () => {
     resetField,
     setValue,
   } = form;
-  const { activeStep } = useActiveStep(MAX_UAM_STEPS);
+  const { activeStep } = useActiveStep();
   const { label, form: ActiveForm } = FORM_MAP[activeStep];
   const [valueChange, setValueChange] = useState(0);
 

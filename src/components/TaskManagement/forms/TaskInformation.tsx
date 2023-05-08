@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { requiredString } from "@/utils/formSchema";
-import { BottomButtonGroup } from "@/components/UserManagement/forms/BottomButtonGroup";
+import { BottomButtonGroup } from "@/components/TaskManagement/forms/BottomButtonGroup";
 
 import {
   useForm,
@@ -26,8 +26,7 @@ import UncontrolledCard from "@/components/Cards/Card";
 import { ControlledSelectField } from "@/components/SelectField";
 
 import DeleteIcon from "@mui/icons-material/Delete";
-import { useActiveStep } from "@/components/UserManagement/useActiveStep";
-import { MAX_TASK_UAM_STEPS } from "..";
+
 const taskInformationBaseSchema = z.object({
   title: requiredString("Title is required."),
   description: requiredString("Description is required."),
@@ -175,7 +174,7 @@ export const TaskInformationDetailsForm = () => {
     handleSubmit,
   } = form;
 
-  const { next, previous } = useActiveStep(MAX_TASK_UAM_STEPS);
+  const { next } = useActiveStepTask();
   const handleContinue = () => {
     handleSubmit(
       (values) => {
@@ -191,8 +190,6 @@ export const TaskInformationDetailsForm = () => {
     <FormProvider {...form}>
       <TaskInformationForm />
       <BottomButtonGroup
-        next={next}
-        previous={previous}
         disabledContinue={!isValid}
         onContinue={handleContinue}
       ></BottomButtonGroup>

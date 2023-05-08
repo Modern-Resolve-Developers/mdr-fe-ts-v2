@@ -3,13 +3,13 @@ import { useContext, useEffect, useState } from "react";
 import { string, z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { requiredString } from "@/utils/formSchema";
-import { BottomButtonGroup } from "@/components/UserManagement/forms/BottomButtonGroup";
+import { BottomButtonGroup } from "@/components/ForgotPassword/forms/BottomButtonGroup";
 
 import { useForm, FormProvider, useFormContext } from "react-hook-form";
 import { useAtom } from "jotai";
 import ControlledGrid from "@/components/Grid/Grid";
-import { Grid } from "@mui/material";
-import { usefpActiveStep } from "../usefpActiveSteps";
+import { Button, Grid } from "@mui/material";
+
 import { useMutation } from "react-query";
 import { useApiCallBack } from "@/utils/hooks/useApi";
 import ControlledBackdrop from "@/components/Backdrop/Backdrop";
@@ -20,9 +20,8 @@ import {
 import { ToastContextContinue } from "@/utils/context/base/ToastContext";
 import { ToastContextSetup } from "@/utils/context";
 import { emailAtom } from "@/utils/hooks/useAccountAdditionValues";
-import { NormalButton } from "@/components/Button/NormalButton";
-import { useActiveStep } from "@/components/UserManagement/useActiveStep";
-import { MAX_FORGOT_FORM_STEPS } from "..";
+import { useActiveStepContext } from "@/utils/context/base/ActiveStepsContext";
+import { useHideResendButton } from ".";
 
 const verificationBaseSchema = z.object({
   code: requiredString("Verification code is required"),
@@ -103,11 +102,17 @@ export const VerificationDetailsForm = () => {
   const useResendVerification = useMutation((email: string | undefined) =>
     resendVerificationCode.execute(email)
   );
+  const { resendBtnHide } = useHideResendButton()
   const { mutate } = useCheckVerification();
-  const { next, previous } = useActiveStep(MAX_FORGOT_FORM_STEPS);
+  const { next } = useActiveStepContext()
+  useEffect(() => {
+    console.log(resendBtnHide)
+  }, [])
   const handleContinue = () => {
-    handleSubmit((values) => {
-      setVerifyAtom(values);
+    handleSubmit(
+      (values) => {
+        
+        setVerifyAtom(values);
       setBackdrop(!backdrop);
       const obj = {
         email: emailDetailsAtom?.email,
@@ -130,7 +135,7 @@ export const VerificationDetailsForm = () => {
               "success"
             );
             setBackdrop(false);
-            // next();
+            next("forgot-password")
           } else if (data == "expired") {
             handleOnToast(
               "The verification code is already expired. Kindly click re-send",
@@ -177,7 +182,8 @@ export const VerificationDetailsForm = () => {
           console.log(error);
         },
       });
-    })();
+      }
+    )();
     return false;
   };
   const handleResend = () => {
@@ -234,17 +240,7 @@ export const VerificationDetailsForm = () => {
     <FormProvider {...form}>
       <VerificationForm />
       <ControlledBackdrop open={backdrop} />
-
-      <BottomButtonGroup
-        disabledContinue={!isValid}
-        onContinue={handleContinue}
-        resendBtn
-        disableResend={disable}
-        onResend={handleResend}
-        countdown={countdown}
-        previous={previous}
-        hideBack
-      />
+      <BottomButtonGroup resendBtn onresend={handleResend} countdown={countdown} disableBtn={disable} hideBack onContinue={handleContinue} />
     </FormProvider>
   );
 };

@@ -1,11 +1,12 @@
 import { Container, Box, Typography, Grid } from "@mui/material";
 import { OnboardingStepper } from "../Stepper/MuiStepper/MuiStepper";
 import { EmailDetailsForm, VerificationDetailsForm } from "./forms";
-import { usefpActiveStep } from "./usefpActiveSteps";
 import { FormProvider } from "react-hook-form";
 import UncontrolledCard from "../Cards/Card";
-import { useActiveStep } from "../UserManagement/useActiveStep";
 
+import { NewCredentialsDetailsForm } from "./forms/NewCredentialsForms";
+import { useActiveStepContext } from "@/utils/context/base/ActiveStepsContext";
+import { Completed } from "./forms/Completed";
 const FORGOT_FORM_MAP: Array<{ label: string; form: React.FC }> = [
   {
     label: "Email Details",
@@ -15,12 +16,20 @@ const FORGOT_FORM_MAP: Array<{ label: string; form: React.FC }> = [
     label: "Verification Details",
     form: VerificationDetailsForm,
   },
+  {
+    label: 'New Credentials',
+    form: NewCredentialsDetailsForm
+  },
+  {
+    label: 'Completed',
+    form : Completed
+  }
 ];
 
 export const MAX_FORGOT_FORM_STEPS = FORGOT_FORM_MAP.length;
 
 export const ForgotPasswordAdditionalDetails = () => {
-  const { activeStep } = useActiveStep(MAX_FORGOT_FORM_STEPS);
+  const { activeStep } = useActiveStepContext()
   const { label, form: ActiveForm } = FORGOT_FORM_MAP[activeStep];
 
   return (

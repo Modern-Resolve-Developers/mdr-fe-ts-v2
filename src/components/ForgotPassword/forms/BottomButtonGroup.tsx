@@ -1,6 +1,6 @@
 import { Button, Grid } from "@mui/material";
 import { PrimaryButton } from "@/components/Button";
-import { useActiveStep } from "../useActiveStep";
+import { useActiveStepContext } from "@/utils/context/base/ActiveStepsContext";
 
 export type BottomButtonGroupProps = {
   continueButtonLabel?: string;
@@ -8,6 +8,10 @@ export type BottomButtonGroupProps = {
   onBack?: () => boolean;
   hideBack?: boolean;
   disabledContinue?: boolean;
+  resendBtn?: boolean;
+  disableBtn?: boolean;
+  onresend?: () => void
+  countdown?: number
 };
 
 export const BottomButtonGroup: React.FC<BottomButtonGroupProps> = ({
@@ -16,13 +20,18 @@ export const BottomButtonGroup: React.FC<BottomButtonGroupProps> = ({
   onBack,
   hideBack,
   disabledContinue,
+  resendBtn,
+  disableBtn,
+  onresend,
+  countdown
 }) => {
-  const { next, previous } = useActiveStep();
+  // const { nextfp, previous } = usefpActiveStep();
+  const { next, previous } = useActiveStepContext()
   const handleContinue = () => {
     if (onContinue !== undefined) {
       if (!onContinue()) return;
     }
-    next();
+    next("forgot-password");
   };
   const handleBack = () => {
     if (onBack !== undefined) {
@@ -32,6 +41,22 @@ export const BottomButtonGroup: React.FC<BottomButtonGroupProps> = ({
   };
   return (
     <>
+     {
+        resendBtn && <Grid item xs={8} display="flex" justifyContent="center">
+        <Button
+            sx={{ mx: "auto", mt: 2, width: [, 300] }}
+            color="warning"
+            variant="outlined"
+            fullWidth
+            disabled={disableBtn}
+            onClick={onresend}
+          >
+            {disableBtn
+              ? `Resend is disable for ${countdown} seconds`
+              : "Resend"}
+        </Button>
+      </Grid>
+     }
       <Grid item xs={8} display="flex" justifyContent="center">
         <Button
           sx={{ mx: "auto", mt: 2, width: [, 300] }}

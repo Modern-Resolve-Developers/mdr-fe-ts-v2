@@ -156,7 +156,7 @@ export const AccountOwnershipDetailsForm = () => {
     handleSubmit,
   } = form;
 
-  const { next, previous } = useActiveStep(MAX_UAM_STEPS);
+  const { next } = useActiveStep();
   const handleContinue = () => {
     handleSubmit(
       (values) => {
@@ -171,8 +171,6 @@ export const AccountOwnershipDetailsForm = () => {
     <FormProvider {...form}>
       <PersonalDetailsForm />
       <BottomButtonGroup
-        next={next}
-        previous={previous}
         disabledContinue={!isValid}
         onContinue={handleContinue}
       />

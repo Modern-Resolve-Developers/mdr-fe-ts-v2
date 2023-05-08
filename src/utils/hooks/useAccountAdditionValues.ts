@@ -11,6 +11,7 @@ import { categoryManagementCreation } from "@/pages/sys-admin/category-manage-al
 import { MeetCreation } from "@/components/Jitsi/StartupPage";
 import { EmailAccountCreation } from "@/components/ForgotPassword/forms/EmailDetailsForms";
 import { VerificationAccountCreation } from "@/components/ForgotPassword/forms/VerificationDetailsForms";
+import { NewCredentialsAccountCreation } from "@/components/ForgotPassword/forms/NewCredentialsForms";
 
 type AccountCreationFormData = {
   accountCreation: AccountCreation;
@@ -29,6 +30,8 @@ export const emailAtom = atom<EmailAccountCreation | undefined>(undefined);
 export const meetAtom = atom<MeetCreation | undefined>(undefined);
 
 export const fpIdAtom = atom(0);
+
+export const newCredentialsAtom = atom<NewCredentialsAccountCreation | undefined>(undefined)
 
 export const categoryManagementAtom = atom<
   categoryManagementCreation | undefined

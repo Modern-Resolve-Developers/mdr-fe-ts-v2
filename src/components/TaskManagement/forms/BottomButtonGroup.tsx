@@ -1,6 +1,7 @@
 import { Button, Grid } from "@mui/material";
 import { PrimaryButton } from "@/components/Button";
-import { useActiveStep } from "../useActiveStep";
+import { useActiveStepTask } from "../useActiveStep";
+
 
 export type BottomButtonGroupProps = {
   continueButtonLabel?: string;
@@ -17,7 +18,7 @@ export const BottomButtonGroup: React.FC<BottomButtonGroupProps> = ({
   hideBack,
   disabledContinue,
 }) => {
-  const { next, previous } = useActiveStep();
+  const { next, previous } = useActiveStepTask();
   const handleContinue = () => {
     if (onContinue !== undefined) {
       if (!onContinue()) return;

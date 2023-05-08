@@ -113,7 +113,7 @@ export const CredentialsOwnershipDetailsForm = () => {
     handleSubmit,
     reset,
   } = form;
-  const { next, previous } = useActiveStep(MAX_UAM_STEPS);
+  const { next } = useActiveStep();
   const useCheckEmail = () => {
     return useMutation((email: string) =>
       uamcheckemail.execute(email).then((response) => response.data)
@@ -206,8 +206,6 @@ export const CredentialsOwnershipDetailsForm = () => {
     <FormProvider {...form}>
       <CredentialDetailsForm />
       <BottomButtonGroup
-        next={next}
-        previous={previous}
         disabledContinue={!isValid}
         onContinue={handleContinue}
       />

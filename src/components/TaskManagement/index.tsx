@@ -6,7 +6,6 @@ import {
   Completed,
 } from "./forms";
 import { useActiveStepTask } from "./useActiveStep";
-import { useActiveStep } from "../UserManagement/useActiveStep";
 
 const TASK_MAP: Array<{ label: string; form: React.FC }> = [
   {
@@ -26,7 +25,7 @@ const TASK_MAP: Array<{ label: string; form: React.FC }> = [
 export const MAX_TASK_UAM_STEPS = TASK_MAP.length;
 
 export const TaskFormAdditionalDetails = () => {
-  const { activeStep } = useActiveStep(MAX_TASK_UAM_STEPS);
+  const { activeStep } = useActiveStepTask();
   const { form: ActiveForm } = TASK_MAP[activeStep];
   return (
     <Container>

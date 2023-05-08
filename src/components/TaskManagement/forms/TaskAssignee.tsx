@@ -4,7 +4,7 @@ import { useState, useEffect, useContext } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { requiredString } from "@/utils/formSchema";
-import { BottomButtonGroup } from "@/components/UserManagement/forms/BottomButtonGroup";
+import { BottomButtonGroup } from "@/components/TaskManagement/forms/BottomButtonGroup";
 
 import { useForm, FormProvider, useFormContext } from "react-hook-form";
 
@@ -18,13 +18,11 @@ import {
   taskInformationAtom,
 } from "@/utils/hooks/useAccountAdditionValues";
 import ControlledGrid from "@/components/Grid/Grid";
-import { useActiveStep } from "@/components/UserManagement/useActiveStep";
 
 import { CreateTask } from "@/pages/api/types";
 import ControlledBackdrop from "@/components/Backdrop/Backdrop";
 import { ToastContextContinue } from "@/utils/context/base/ToastContext";
 import { ToastContextSetup } from "@/utils/context";
-import { MAX_TASK_UAM_STEPS } from "..";
 
 const taskAssigneeBaseSchema = z.object({
   assignee: requiredString("Please select assignee."),
@@ -160,7 +158,7 @@ export const TaskAssigneeDetailsForm = () => {
     formState: { isValid },
     handleSubmit,
   } = form;
-  const { next, previous } = useActiveStep(MAX_TASK_UAM_STEPS);
+  const { next } = useActiveStepTask();
   const handleContinue = () => {
     handleSubmit((values) => {
       const create_task_request = {
@@ -201,8 +199,6 @@ export const TaskAssigneeDetailsForm = () => {
     <FormProvider {...form}>
       <TaskAssigneeForm />
       <BottomButtonGroup
-        next={next}
-        previous={previous}
         disabledContinue={!isValid}
         onContinue={handleContinue}
       ></BottomButtonGroup>
