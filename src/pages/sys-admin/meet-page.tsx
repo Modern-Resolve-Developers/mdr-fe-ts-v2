@@ -14,8 +14,13 @@ import { useAuthContext } from "@/utils/context/base/AuthContext";
 import { SessionContextMigrate } from "@/utils/context/base/SessionContext";
 import { SessionStorageContextSetup } from "@/utils/context";
 import { useDynamicDashboardContext } from "@/utils/context/base/DynamicDashboardContext";
+import { joinMeetAtom } from "@/utils/hooks/useAccountAdditionValues";
+import { useApiCallBack } from "@/utils/hooks/useApi";
+import { useMutation } from "react-query";
+
 declare var JitsiMeetExternalAPI: any;
 const MeetPage: React.FC = () => {
+  const [joinAtom, setJoinAtom] = useAtom(joinMeetAtom)
   const [meetDetails, setMeetDetails] = useAtom(meetAtom);
   const containerRef = useRef<HTMLDivElement>(null);
   const jitsiApiRef = useRef<any>(null);
@@ -29,7 +34,7 @@ const MeetPage: React.FC = () => {
     SessionContextMigrate
   ) as SessionStorageContextSetup;
   const [idetifiedUser, setIdentifiedUser] = useState<any>("");
-
+  
   const { getPropsDynamic } = useDynamicDashboardContext();
 
   useEffect(() => {
@@ -68,7 +73,7 @@ const MeetPage: React.FC = () => {
     };
   }, []);
   const handleClose = () => {
-    console.log("handleClose");
+    console.log("hang out")
   };
   const handleParticipantLeft = async (participant: any) => {
     console.log("handleParticipantLeft", participant);

@@ -54,6 +54,15 @@ export class MdrApi {
   public GetAllRooms() {
     return this.axios.get("/api/jitser/get-all-rooms");
   }
+  public JoinRoomStoreDetails(props: { roomId : number, name: string }) {
+    return this.axios.post(`/api/jitser/join-meet/${props.name}/${props.roomId}`)
+  }
+  public HangOutCall(name: string){
+    return this.axios.delete(`/api/jitser/hang-out-meeting/${name}`)
+  }
+  public DeleteRoom(id: number) {
+    return this.axios.delete(`/api/jitser/delete-room/${id}`)
+  }
   // fp
   public sendVerificationFP(email: string) {
     return this.axios.post(`/api/fp/send-fp-email/${email}`);

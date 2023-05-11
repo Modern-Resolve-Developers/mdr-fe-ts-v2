@@ -28,6 +28,7 @@ import { useAuthContext } from '@/utils/context/base/AuthContext'
 import { SessionContextMigrate } from '@/utils/context/base/SessionContext'
 
 import { useMutation } from 'react-query'
+import { useRefreshToken } from '@/utils/context/hooks/hooks'
 
 export const meetBaseSchema = z.object({
     username: requiredString('Username is required.'),
@@ -99,14 +100,18 @@ const CreateMeetForm = () => {
     )
 }
 export const StartupPage = () => {
+    useRefreshToken()
     const router = useRouter()
     const [jitsiMeetAtom, setJitsiMeetAtom] = useAtom(meetAtom)
     const [backdrop, setBackdrop] = useState(false)
     const storeMeetDetails = useApiCallBack(async (api, args: JitserStoreDetails) => await api.mdr.StoreMeetDetails(args))
+    const storeMeetJoinedTeam = useApiCallBack(async (api, props : { roomId: number, name: string }) => await api.mdr.JoinRoomStoreDetails(props))
     const useStoreDetails = () => {
         return useMutation((data: JitserStoreDetails) => storeMeetDetails.execute(data).then((response) => response.data))
     }
-
+    const useJoinMeeting = useMutation((props : {roomId: number, name: string}) => 
+        storeMeetJoinedTeam.execute(props)
+    )
     const {mutate} = useStoreDetails()
     const { checkAuthentication } = useAuthContext()
 
@@ -183,12 +188,22 @@ export const StartupPage = () => {
                                 roomPassword: values.isPrivate ? values.roomPassword : "no-password-public-room",
                             }
                             setJitsiMeetAtom(jitserObjectForAtom)
-                            setTimeout(() => {
-                                router.push({
-                                    pathname: '/sys-admin/meet-page',
-                                    query: { match: values.roomName }
-                                })
-                            }, 5000)
+                            const joinobj = {
+                                roomId: response?.id,
+                                name: values.username
+                            }
+                            useJoinMeeting.mutate(joinobj, {
+                                onSuccess: (repository: any) => {
+                                    if(repository?.data == 'joined') {
+                                        setTimeout(() => {
+                                            router.push({
+                                                pathname: '/sys-admin/meet-page',
+                                                query: { match: values.roomName, roomId: response?.id }
+                                            })
+                                        }, 5000)
+                                    }
+                                }
+                            })
                         }
                     },
                     onError: (error) => {
