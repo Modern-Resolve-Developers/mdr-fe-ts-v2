@@ -12,6 +12,7 @@ import { MeetCreation } from "@/components/Jitsi/StartupPage";
 import { EmailAccountCreation } from "@/components/ForgotPassword/forms/EmailDetailsForms";
 import { VerificationAccountCreation } from "@/components/ForgotPassword/forms/VerificationDetailsForms";
 import { NewCredentialsAccountCreation } from "@/components/ForgotPassword/forms/NewCredentialsForms";
+import { JoinMeetingFormAccount } from "@/pages/sys-admin/digital-meet";
 
 type AccountCreationFormData = {
   accountCreation: AccountCreation;
@@ -24,6 +25,8 @@ type AccountLoginFormData = {
 export const verificationAtom = atom<VerificationAccountCreation | undefined>(
   undefined
 );
+
+export const joinMeetAtom = atom<JoinMeetingFormAccount | undefined>(undefined)
 
 export const emailAtom = atom<EmailAccountCreation | undefined>(undefined);
 
