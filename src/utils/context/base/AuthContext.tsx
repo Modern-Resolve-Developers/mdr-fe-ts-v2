@@ -38,7 +38,7 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({
     return result;
   };
   const checkAuthentication = (currentScreen: string) => {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       let savedAuthStorage;
       const savedTokenStorage = localStorage.getItem("token");
       if (typeof savedTokenStorage == "string") {
@@ -82,6 +82,7 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({
                   }
                 })
                 .catch((error) => {
+                  reject(error)
                   localStorage.clear();
                   router.push("/login");
                 });

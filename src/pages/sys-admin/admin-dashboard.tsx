@@ -130,9 +130,9 @@ const TestAdminDashboard: React.FC = () => {
       }
     }
   };
-  useEffect(() => {
-    calculateReport();
-  }, [data]);
+  // useEffect(() => {
+  //   calculateReport();
+  // }, [data]);
 
   useEffect(() => {
     checkAuthentication("admin");

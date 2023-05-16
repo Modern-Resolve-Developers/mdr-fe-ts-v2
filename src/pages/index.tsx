@@ -9,7 +9,7 @@ import HomeFeatureSection from "@/components/Content/Home/FeatureSection";
 import HomeFooterSection from "@/components/Content/Home/FooterSection";
 import HomeFeatureSectionSecondLayer from "@/components/Content/Home/FeatureSectionSecondLayer";
 import { useRefreshTokenHandler } from "@/utils/hooks/useRefreshTokenHandler";
-import { useQuery } from "react-query";
+import { useQuery, useMutation } from "react-query";
 
 const Home: React.FC = () => {
   useRefreshTokenHandler()
@@ -46,19 +46,25 @@ const Home: React.FC = () => {
       icon: FingerPrintIcon,
     },
   ]
-  const { 
-    data,
-    isLoading,
-    error
-  } = useQuery("checkUser", () => 
-  UAMCheckAcc.execute(1).then((response) => response.data)
-  )
+  const useCheckAuth = () => {
+    return useMutation((num: number) => UAMCheckAcc.execute(num));
+  }
+  const { mutate, data, isLoading, error } = useCheckAuth()
   useEffect(() => {
-    if(data == 'not_exist') {
-      setIsHidden(true)
-      router.push('/create-account')
-    } else {}
-  }, [data, isLoading, error])
+    mutate(1, {
+      onSuccess: (response) => {
+        if(response.data == 'not_exist') {
+          setIsHidden(true)
+          router.push('/create-account')
+        } else {}
+      },
+      onError: (error: any) => {
+        if(error?.response?.status == 401) {
+          console.log("401 unauthorized")
+        }
+      }
+    })
+  }, [])
 
   return (
     <>
