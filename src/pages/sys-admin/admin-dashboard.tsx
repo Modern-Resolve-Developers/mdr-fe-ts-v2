@@ -161,13 +161,16 @@ const TestAdminDashboard: React.FC = () => {
               <UncontrolledCard
                 style={{
                   background:
-                    "linear-gradient(to right, #a770ef, #cf8bf3, #fdb99b)",
+                    "#153D77"
                 }}
               >
                 <ControlledTypography
                   variant="subtitle1"
                   isGutterBottom={true}
                   text="Internal Developers"
+                  style={{
+                    color: 'white'
+                  }}
                 />
                 <ControlledTypography
                   variant="h6"
@@ -176,6 +179,7 @@ const TestAdminDashboard: React.FC = () => {
                   style={{
                     float: "right",
                     marginBottom: "10px",
+                    color: 'white'
                   }}
                 />
               </UncontrolledCard>
@@ -184,13 +188,16 @@ const TestAdminDashboard: React.FC = () => {
               <UncontrolledCard
                 style={{
                   background:
-                    "linear-gradient(to left, #a770ef, #cf8bf3, #fdb99b)",
+                    "#153D77"
                 }}
               >
                 <ControlledTypography
                   variant="subtitle1"
                   isGutterBottom={true}
                   text="Clients"
+                  style={{
+                    color: 'white'
+                  }}
                 />
                 <ControlledTypography
                   variant="h6"
@@ -199,21 +206,23 @@ const TestAdminDashboard: React.FC = () => {
                   style={{
                     float: "right",
                     marginBottom: "10px",
+                    color: 'white'
                   }}
                 />
               </UncontrolledCard>
             </Grid>
             <Grid item xs={3}>
               <UncontrolledCard
-                style={{
+                 style={{
                   background:
-                    "linear-gradient(to right, #a770ef, #cf8bf3, #fdb99b)",
+                    "#153D77"
                 }}
               >
                 <ControlledTypography
                   variant="subtitle1"
                   isGutterBottom={true}
                   text="Ready Products"
+                  style={{color: 'white'}}
                 />
                 <ControlledTypography
                   variant="h6"
@@ -222,21 +231,23 @@ const TestAdminDashboard: React.FC = () => {
                   style={{
                     float: "right",
                     marginBottom: "10px",
+                    color: 'white'
                   }}
                 />
               </UncontrolledCard>
             </Grid>
             <Grid item xs={3}>
               <UncontrolledCard
-                style={{
+                 style={{
                   background:
-                    "linear-gradient(to left, #a770ef, #cf8bf3, #fdb99b)",
+                    "#153D77"
                 }}
               >
                 <ControlledTypography
                   variant="subtitle1"
                   isGutterBottom={true}
                   text="Sales"
+                  style={{color: 'white'}}
                 />
                 <ControlledTypography
                   variant="h6"
@@ -245,12 +256,13 @@ const TestAdminDashboard: React.FC = () => {
                   style={{
                     float: "right",
                     marginBottom: "10px",
+                    color: 'white'
                   }}
                 />
               </UncontrolledCard>
             </Grid>
           </ControlledGrid>
-          <UncontrolledCard style={{ marginTop: "10px" }}>
+          <UncontrolledCard style={{ marginTop: "10px", borderRadius: '25px' }}>
             <ControlledTypography
               variant="subtitle1"
               isGutterBottom={true}
