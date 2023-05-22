@@ -32,7 +32,7 @@ import { SessionStorageContextSetup } from "@/utils/context";
 import { useAuthContext } from "@/utils/context/base/AuthContext";
 import { useQuery } from "react-query";
 import { useDynamicDashboardContext } from "@/utils/context/base/DynamicDashboardContext";
-
+import { DashboardSettingsProps } from "@/components/settings";
 if (typeof Highcharts === "object") {
   exportingInit(Highcharts);
   offlineExporting(Highcharts);
@@ -85,7 +85,7 @@ const TestAdminDashboard: React.FC = () => {
   const [idetifiedUser, setIdentifiedUser] = useState<any>("");
 
   const { getPropsDynamic } = useDynamicDashboardContext();
-
+  const [dynamicDashboardEnabled, setDynamicDashboardEnabled] = useState(false);
   useEffect(() => {
     getPropsDynamic(localStorage.getItem("uid")).then((repo: any) => {
       setIdentifiedUser(repo?.data);
@@ -137,6 +137,10 @@ const TestAdminDashboard: React.FC = () => {
   useEffect(() => {
     checkAuthentication("admin");
   }, [accessSavedAuth, accessUserId]);
+  // useEffect(() => {
+  //   const result = DashboardSettingsProps.map((item) => item.dynamicDashboardEnabled)
+
+  // }, [dynamicDashboardEnabled])
   return (
     <>
       <DashboardLayout
@@ -160,14 +164,16 @@ const TestAdminDashboard: React.FC = () => {
             <Grid item xs={3}>
               <UncontrolledCard
                 style={{
-                  background:
-                    "linear-gradient(to right, #a770ef, #cf8bf3, #fdb99b)",
+                  background: "#153D77",
                 }}
               >
                 <ControlledTypography
                   variant="subtitle1"
                   isGutterBottom={true}
                   text="Internal Developers"
+                  style={{
+                    color: "white",
+                  }}
                 />
                 <ControlledTypography
                   variant="h6"
@@ -176,6 +182,7 @@ const TestAdminDashboard: React.FC = () => {
                   style={{
                     float: "right",
                     marginBottom: "10px",
+                    color: "white",
                   }}
                 />
               </UncontrolledCard>
@@ -183,14 +190,16 @@ const TestAdminDashboard: React.FC = () => {
             <Grid item xs={3}>
               <UncontrolledCard
                 style={{
-                  background:
-                    "linear-gradient(to left, #a770ef, #cf8bf3, #fdb99b)",
+                  background: "#153D77",
                 }}
               >
                 <ControlledTypography
                   variant="subtitle1"
                   isGutterBottom={true}
                   text="Clients"
+                  style={{
+                    color: "white",
+                  }}
                 />
                 <ControlledTypography
                   variant="h6"
@@ -199,6 +208,7 @@ const TestAdminDashboard: React.FC = () => {
                   style={{
                     float: "right",
                     marginBottom: "10px",
+                    color: "white",
                   }}
                 />
               </UncontrolledCard>
@@ -206,14 +216,14 @@ const TestAdminDashboard: React.FC = () => {
             <Grid item xs={3}>
               <UncontrolledCard
                 style={{
-                  background:
-                    "linear-gradient(to right, #a770ef, #cf8bf3, #fdb99b)",
+                  background: "#153D77",
                 }}
               >
                 <ControlledTypography
                   variant="subtitle1"
                   isGutterBottom={true}
                   text="Ready Products"
+                  style={{ color: "white" }}
                 />
                 <ControlledTypography
                   variant="h6"
@@ -222,6 +232,7 @@ const TestAdminDashboard: React.FC = () => {
                   style={{
                     float: "right",
                     marginBottom: "10px",
+                    color: "white",
                   }}
                 />
               </UncontrolledCard>
@@ -229,14 +240,14 @@ const TestAdminDashboard: React.FC = () => {
             <Grid item xs={3}>
               <UncontrolledCard
                 style={{
-                  background:
-                    "linear-gradient(to left, #a770ef, #cf8bf3, #fdb99b)",
+                  background: "#153D77",
                 }}
               >
                 <ControlledTypography
                   variant="subtitle1"
                   isGutterBottom={true}
                   text="Sales"
+                  style={{ color: "white" }}
                 />
                 <ControlledTypography
                   variant="h6"
@@ -245,12 +256,13 @@ const TestAdminDashboard: React.FC = () => {
                   style={{
                     float: "right",
                     marginBottom: "10px",
+                    color: "white",
                   }}
                 />
               </UncontrolledCard>
             </Grid>
           </ControlledGrid>
-          <UncontrolledCard style={{ marginTop: "10px" }}>
+          <UncontrolledCard style={{ marginTop: "10px", borderRadius: "25px" }}>
             <ControlledTypography
               variant="subtitle1"
               isGutterBottom={true}
