@@ -3,6 +3,7 @@ import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
+import "@/components/PasswordStrengthMeter/PasswordStrengthMeter.css";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import type { AppProps } from "next/app";
 import { NextPage } from "next";
@@ -49,35 +50,35 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
         <QueryClientProvider client={queryClient}>
           <GoogleOAuthProvider clientId="643485254029-mmi46n2kojuce223b8cpfqkck1s4gv0c.apps.googleusercontent.com">
             <ActiveStepsProvider>
-            <DynamicDashboardProvider>
-              <AuthProvider>
-                <MeetProvider>
-                  <TableSearchContext>
-                    <AdminRegistrationContext>
-                      <SessionContext>
-                        <ToastContext>
-                          <ControlledToast
-                            position="top-right"
-                            autoClose={5000}
-                            hideProgressBar={false}
-                            newestOnTop={false}
-                            closeOnClick
-                            rtl={false}
-                            pauseOnFocusLoss
-                            draggable
-                            pauseOnHover
-                            theme="dark"
-                          />
-                          <CookiesProvider>
-                            {getLayout(<Component {...pageProps} />)}
-                          </CookiesProvider>
-                        </ToastContext>
-                      </SessionContext>
-                    </AdminRegistrationContext>
-                  </TableSearchContext>
-                </MeetProvider>
-              </AuthProvider>
-            </DynamicDashboardProvider>
+              <DynamicDashboardProvider>
+                <AuthProvider>
+                  <MeetProvider>
+                    <TableSearchContext>
+                      <AdminRegistrationContext>
+                        <SessionContext>
+                          <ToastContext>
+                            <ControlledToast
+                              position="top-right"
+                              autoClose={5000}
+                              hideProgressBar={false}
+                              newestOnTop={false}
+                              closeOnClick
+                              rtl={false}
+                              pauseOnFocusLoss
+                              draggable
+                              pauseOnHover
+                              theme="dark"
+                            />
+                            <CookiesProvider>
+                              {getLayout(<Component {...pageProps} />)}
+                            </CookiesProvider>
+                          </ToastContext>
+                        </SessionContext>
+                      </AdminRegistrationContext>
+                    </TableSearchContext>
+                  </MeetProvider>
+                </AuthProvider>
+              </DynamicDashboardProvider>
             </ActiveStepsProvider>
           </GoogleOAuthProvider>
         </QueryClientProvider>
