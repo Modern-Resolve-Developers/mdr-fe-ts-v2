@@ -4,6 +4,7 @@ import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 import "@/components/PasswordStrengthMeter/PasswordStrengthMeter.css";
+import "@/pages/screen.css";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import type { AppProps } from "next/app";
 import { NextPage } from "next";
