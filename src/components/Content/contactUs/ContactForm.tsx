@@ -1,11 +1,13 @@
 import React from 'react';
-import { Container, Grid, FormControlLabel, Checkbox } from '@mui/material';
+import { Container, Grid, FormControlLabel } from '@mui/material';
 import { NormalButton } from '@/components/Button/NormalButton';
 import { ControlledTextField } from '@/components/TextField/TextField';
-import { useForm, FormProvider } from 'react-hook-form';
+import { useForm, FormProvider, useFormContext } from 'react-hook-form'; 
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import ControlledTypography from '@/components/Typography/Typography';
+import { ControlledCheckbox } from '@/components/Checkbox/Checkbox';
+import ControlledGrid from '@/components/Grid/Grid';
 import { requiredString } from "@/utils/formSchema";
 
 const schema = z.object({
@@ -18,99 +20,118 @@ const schema = z.object({
 });
 
 const ContactForm = () => {
-  const methods = useForm({
-    mode: 'all',
-    resolver: zodResolver(schema),
-  });
+  const { control, handleSubmit } = useFormContext();
 
-  const onSubmit = (data: any) => {
-    console.log(data);
-    // Additional steps such as sending the form to a server or processing the data
+  const handleContinue = () => {
+    handleSubmit((values) => {
+      // form submission logic here
+    });
+    return false;
   };
 
   return (
     <Container style={{ marginTop: '0' }}>
-      <FormProvider {...methods}>
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <ControlledTextField
-              control={methods.control}
-              name="firstName"
-              label="Firstname"
-            />
-          </Grid>
-          <Grid item xs={12} >
-            <ControlledTextField
-              control={methods.control}
-              name="lastName"
-              label="Lastname"
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <ControlledTextField
-              control={methods.control} 
-              name="email"
-              label="Email"
-            />
-          </Grid>
-          <ControlledTypography 
-            variant={'inherit'} 
-            text={'Let us know what system you are interested in'}
-            style={{
-              marginTop: '25px',
-              marginLeft: '15px'
-            }}
-                    
-            />
-          <Grid item xs={12}>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  {...methods.register('pos')}
-                  color="primary"
-                />
-              }
-              label="POS"
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  {...methods.register('tms')}
-                  color="primary"
-                />
-              }
-              label="TMS"
-            />
-          </Grid>
-          <Grid item xs={12} >
-            <ControlledTextField
-              control={methods.control}
-              name="message"
-              label="Message"
-              multiline
-              rows={4}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <NormalButton
-              variant="outlined"
-              color="primary"
-              onClick={methods.handleSubmit(onSubmit)}
-              style={{
-                float: 'right',
-                marginTop: '10px',
-                marginBottom: '10px',
-              }}
-            >
-              Submit
-            </NormalButton>
-          </Grid>
+      <ControlledGrid>
+        <Grid item xs={12}>
+          <ControlledTextField
+            control={control}
+            name="firstName"
+            label="Firstname"
+            shouldUnregister={true}
+          />
         </Grid>
-      </FormProvider>
+        <Grid item xs={12} >
+          <ControlledTextField
+            control={control}
+            name="lastName"
+            label="Lastname"
+            shouldUnregister={true}
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <ControlledTextField
+            control={control} 
+            name="email"
+            label="Email"
+            shouldUnregister={true}
+          />
+        </Grid>
+        <ControlledTypography 
+          variant={'inherit'} 
+          text={'Let us know what system you are interested in'}
+          style={{
+            marginTop: '25px',
+            marginLeft: '15px'
+          }}
+        />
+        <Grid item xs={12}>
+          <FormControlLabel
+            control={
+              <ControlledCheckbox
+                control={control}
+                color="primary"
+                name={'POS'} 
+              />
+            }
+            label="POS"
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <FormControlLabel
+            control={
+              <ControlledCheckbox
+                control={control}
+                color="primary" 
+                name={'TMS'}     
+              />
+            }
+            label="TMS"
+          />
+        </Grid>
+        <Grid item xs={12} >
+          <ControlledTextField
+            control={control}
+            name="message"
+            label="Message"
+            shouldUnregister={true}
+            multiline
+            rows={4}
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <NormalButton
+            variant="outlined"
+            color="primary"
+            onClick={handleContinue}
+            style={{
+              float: 'right',
+              marginTop: '10px',
+              marginBottom: '10px',
+            }}
+          >
+            Submit
+          </NormalButton>
+        </Grid>
+      </ControlledGrid>
     </Container>
   );
 };
 
-export default ContactForm;
+const ContactUsForm = () => {
+  const form = useForm({
+    mode: 'all',
+    resolver: zodResolver(schema),
+  });
+
+  return (
+    <FormProvider {...form}>
+      <ContactForm />
+    </FormProvider>
+  );
+};
+
+export const ContactUs = () => {
+  return <ContactUsForm />;
+};
+
+export default ContactUsForm;

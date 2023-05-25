@@ -1,7 +1,6 @@
 import React from 'react';
 import ContactUs from '@/components/Content/contactUs/ContactUsContent';
 import HomeFooterSection from '@/components/Content/Home/FooterSection';
-import ContactForm from '@/components/Content/contactUs/ContactForm';
 
 const ContactUSHome = () => {
   return (
@@ -29,26 +28,7 @@ const ContactUSHome = () => {
           </defs>
         </svg>
       </div>
-      <ContactUs
-        children={
-          <>
-            <div className="containeer mx-auto mt-5">
-              <div className="w-full md:w-3/5 m-3 p-4 pt-16">
-                <h2 className="flex-none w-full md:w-[553px] h-[50px]  tracking-tight text-gray-900 text-3xl font-bold">
-                  Let’s talk. We’re here to help.
-                </h2>
-                <p className="w-full md:w-[767px] h-15 md:h-[426px] text-black-300 text-xl d:text-center p-4">
-                  If you have any questions or comments feel free to contact us
-                  by filling out this form. You can also follow us on our
-                  facebook page Digital resolve for new updates. We look forward
-                  to hearing from you!
-                </p>
-              </div>
-            </div>
-            <ContactForm />
-          </>
-        }
-      />
+      <ContactUs />
       <div className="absolute inset-x-0 top-[calc(100%-13rem)] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[calc(100%-30rem)]">
         <svg
           className="relative left-[calc(50%+3rem)] h-[21.1875rem] max-w-none -translate-x-1/2 sm:left-[calc(50%+36rem)] sm:h-[42.375rem]"
