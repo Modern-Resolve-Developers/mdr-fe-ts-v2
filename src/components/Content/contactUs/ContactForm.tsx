@@ -60,33 +60,26 @@ const ContactForm = () => {
           variant={'inherit'} 
           text={'Let us know what system you are interested in'}
           style={{
+            float: 'left',
             marginTop: '25px',
             marginLeft: '15px'
           }}
         />
         <Grid item xs={12}>
-          <FormControlLabel
-            control={
-              <ControlledCheckbox
-                control={control}
-                color="primary"
-                name={'POS'} 
-              />
-            }
-            label="POS"
-          />
+        <ControlledCheckbox
+          control={control}
+          color="primary"
+          name={'POS'} 
+          label={'POS'} 
+        />
         </Grid>
         <Grid item xs={12}>
-          <FormControlLabel
-            control={
-              <ControlledCheckbox
-                control={control}
-                color="primary" 
-                name={'TMS'}     
-              />
-            }
-            label="TMS"
-          />
+        <ControlledCheckbox
+          control={control}
+          color="primary" 
+          name={'TMS'}     
+          label="TMS"
+        />
         </Grid>
         <Grid item xs={12} >
           <ControlledTextField
