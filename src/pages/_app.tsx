@@ -8,10 +8,10 @@ import "@/pages/screen.css";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import type { AppProps } from "next/app";
 import { NextPage } from "next";
-import React, { ReactElement, ReactNode } from "react";
+import React, { ReactElement, ReactNode, useEffect, useState } from "react";
 import AdminRegistrationContext from "../utils/context/base/AdminRegistrationContext";
 import ToastContext from "../utils/context/base/ToastContext";
-import { ControlledToast } from "@/components";
+import { ControlledBackdrop, ControlledToast } from "@/components";
 import "./index.css";
 import SessionContext from "@/utils/context/base/SessionContext";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -25,6 +25,10 @@ import { MeetProvider } from "@/utils/context/base/MeetContext";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { DynamicDashboardProvider } from "@/utils/context/base/DynamicDashboardContext";
 import { ActiveStepsProvider } from "@/utils/context/base/ActiveStepsContext";
+import { GlobalsProvider } from "@/utils/context/base/GlobalContext";
+import { useAccessToken, useUserType } from "@/utils/context/hooks/hooks";
+import DashboardLayout from "@/components/DashboardLayout";
+import { sidebarExpand, sidebarList } from "@/utils/sys-routing/sys-routing";
 export type NextPageWithLayout<P = any, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode;
 };
@@ -44,46 +48,98 @@ const queryClient = new QueryClient({});
 export default function App({ Component, pageProps }: AppPropsWithLayout) {
   useRefreshTokenHandler();
   const getLayout = Component.getLayout ?? ((page) => page);
+  const [loading, setLoading] = useState(false);
+  const [userType, setUserType] = useUserType();
+  const [storedValue, setStoredValue] = useState<string | undefined>(undefined);
+  const [storedType, setStoredType] = useState<number | undefined>(undefined);
+  const [accessToken, setAccessToken] = useAccessToken();
+
+  useEffect(() => {
+    setLoading(!loading);
+    let savedAuthenticationStorage;
+    let savedUserType;
+    const savedUserTypeStorage = localStorage.getItem("UT");
+    const savedAuthStorage = localStorage.getItem("AT");
+    if (
+      typeof savedAuthStorage == "string" &&
+      typeof savedUserTypeStorage == "string"
+    ) {
+      savedAuthenticationStorage = JSON.parse(savedAuthStorage);
+      savedUserType = JSON.parse(savedUserTypeStorage);
+    }
+
+    if (!accessToken || accessToken == undefined) {
+      setLoading(false);
+      setStoredValue(savedAuthenticationStorage);
+      setStoredType(savedUserType);
+    } else {
+      setLoading(false);
+      setStoredValue(accessToken);
+      setStoredType(savedUserType);
+    }
+  }, [accessToken, userType]);
+
   return (
     <>
-      <ThemeProvider theme={darkTheme}>
-        <CssBaseline />
-        <QueryClientProvider client={queryClient}>
-          <GoogleOAuthProvider clientId="643485254029-mmi46n2kojuce223b8cpfqkck1s4gv0c.apps.googleusercontent.com">
-            <ActiveStepsProvider>
-              <DynamicDashboardProvider>
-                <AuthProvider>
-                  <MeetProvider>
-                    <TableSearchContext>
-                      <AdminRegistrationContext>
-                        <SessionContext>
-                          <ToastContext>
-                            <ControlledToast
-                              position="top-right"
-                              autoClose={5000}
-                              hideProgressBar={false}
-                              newestOnTop={false}
-                              closeOnClick
-                              rtl={false}
-                              pauseOnFocusLoss
-                              draggable
-                              pauseOnHover
-                              theme="dark"
-                            />
-                            <CookiesProvider>
-                              {getLayout(<Component {...pageProps} />)}
-                            </CookiesProvider>
-                          </ToastContext>
-                        </SessionContext>
-                      </AdminRegistrationContext>
-                    </TableSearchContext>
-                  </MeetProvider>
-                </AuthProvider>
-              </DynamicDashboardProvider>
-            </ActiveStepsProvider>
-          </GoogleOAuthProvider>
-        </QueryClientProvider>
-      </ThemeProvider>
+      <GlobalsProvider
+        globals={{ storedValue: storedValue, storedType: storedType }}
+      >
+        <ThemeProvider theme={darkTheme}>
+          <CssBaseline />
+          <QueryClientProvider client={queryClient}>
+            <GoogleOAuthProvider clientId="643485254029-mmi46n2kojuce223b8cpfqkck1s4gv0c.apps.googleusercontent.com">
+              <ActiveStepsProvider>
+                <DynamicDashboardProvider>
+                  <AuthProvider>
+                    <MeetProvider>
+                      <TableSearchContext>
+                        <AdminRegistrationContext>
+                          <SessionContext>
+                            <ToastContext>
+                              <ControlledToast
+                                position="top-right"
+                                autoClose={5000}
+                                hideProgressBar={false}
+                                newestOnTop={false}
+                                closeOnClick
+                                rtl={false}
+                                pauseOnFocusLoss
+                                draggable
+                                pauseOnHover
+                                theme="dark"
+                              />
+                              <CookiesProvider>
+                                {loading && !storedValue ? (
+                                  <ControlledBackdrop open={loading} />
+                                ) : storedValue ? (
+                                  <>
+                                    <DashboardLayout
+                                      sidebarConfig={
+                                        storedType == 1 ? sidebarList : []
+                                      }
+                                      subsidebarConfig={
+                                        storedType == 1 ? sidebarExpand : []
+                                      }
+                                    >
+                                      {getLayout(<Component {...pageProps} />)}
+                                    </DashboardLayout>
+                                  </>
+                                ) : (
+                                  <>{getLayout(<Component {...pageProps} />)}</>
+                                )}
+                              </CookiesProvider>
+                            </ToastContext>
+                          </SessionContext>
+                        </AdminRegistrationContext>
+                      </TableSearchContext>
+                    </MeetProvider>
+                  </AuthProvider>
+                </DynamicDashboardProvider>
+              </ActiveStepsProvider>
+            </GoogleOAuthProvider>
+          </QueryClientProvider>
+        </ThemeProvider>
+      </GlobalsProvider>
     </>
   );
 }

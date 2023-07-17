@@ -1,4 +1,5 @@
 import {
+  ControlledBackdrop,
   ControlledGrid,
   ControlledTypography,
   UncontrolledCard,
@@ -9,23 +10,26 @@ import { useAuthContext } from "@/utils/context/base/AuthContext";
 import { SessionContextMigrate } from "@/utils/context/base/SessionContext";
 import { sidebarExpand, sidebarList } from "@/utils/sys-routing/sys-routing";
 import { Container, Grid } from "@mui/material";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { DashboardSettings } from "@/components/settings/settingsForms/DashboardSettingsForm";
 
 const SettingsManagement: React.FC = () => {
   const { checkAuthentication } = useAuthContext();
+  const [loading, setLoading] = useState(true);
   const { accessSavedAuth, accessUserId } = useContext(
     SessionContextMigrate
   ) as SessionStorageContextSetup;
   useEffect(() => {
     checkAuthentication("admin");
+    setTimeout(() => {
+      setLoading(false);
+    }, 3000);
   }, [accessSavedAuth, accessUserId]);
   return (
     <>
-      <DashboardLayout
-        sidebarConfig={sidebarList}
-        subsidebarConfig={sidebarExpand}
-      >
+      {loading ? (
+        <ControlledBackdrop open={loading} />
+      ) : (
         <Container>
           <UncontrolledCard>
             <ControlledTypography
@@ -41,7 +45,7 @@ const SettingsManagement: React.FC = () => {
             </ControlledGrid>
           </UncontrolledCard>
         </Container>
-      </DashboardLayout>
+      )}
     </>
   );
 };
