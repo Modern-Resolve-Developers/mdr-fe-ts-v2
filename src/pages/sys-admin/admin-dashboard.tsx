@@ -44,6 +44,7 @@ const TestAdminDashboard: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [report, setReport] = useState([]);
   const { checkAuthentication } = useAuthContext();
+  const [loading, setLoading] = useState(true);
   const [options, setOptions] = useState<any>({
     chart: {
       type: "spline",
@@ -136,29 +137,16 @@ const TestAdminDashboard: React.FC = () => {
 
   useEffect(() => {
     checkAuthentication("admin");
+    setTimeout(() => {
+      setLoading(false);
+    }, 3000);
   }, [accessSavedAuth, accessUserId]);
-  // useEffect(() => {
-  //   const result = DashboardSettingsProps.map((item) => item.dynamicDashboardEnabled)
 
-  // }, [dynamicDashboardEnabled])
   return (
     <>
-      <DashboardLayout
-        sidebarConfig={
-          idetifiedUser == "Administrator"
-            ? sidebarList
-            : idetifiedUser == "Developers"
-            ? []
-            : []
-        }
-        subsidebarConfig={
-          idetifiedUser == "Administrator"
-            ? sidebarExpand
-            : idetifiedUser == "Developers"
-            ? []
-            : []
-        }
-      >
+      {loading ? (
+        <ControlledBackdrop open={loading} />
+      ) : (
         <Container>
           <ControlledGrid>
             <Grid item xs={3}>
@@ -271,8 +259,7 @@ const TestAdminDashboard: React.FC = () => {
             <HighchartsReact highcharts={Highcharts} options={options} />
           </UncontrolledCard>
         </Container>
-      </DashboardLayout>
-      <ControlledBackdrop open={open} />
+      )}
     </>
   );
 };

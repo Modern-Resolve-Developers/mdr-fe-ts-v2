@@ -46,7 +46,13 @@ import { SessionContextMigrate } from "@/utils/context/base/SessionContext";
 import { SessionStorageContextSetup } from "@/utils/context";
 import { useAuthContext } from "@/utils/context/base/AuthContext";
 
-import { useAccessToken, useRefreshToken } from "@/utils/context/hooks/hooks";
+import {
+  useAccessToken,
+  useReferences,
+  useRefreshToken,
+  useUserId,
+  useUserType,
+} from "@/utils/context/hooks/hooks";
 
 import { useCookies } from "react-cookie";
 import { LockClosedIcon } from "@heroicons/react/20/solid";
@@ -79,6 +85,10 @@ const Login: React.FC = () => {
   const [cookies, setCookies] = useCookies(["auth"]);
   const [accessToken, setAccessToken] = useAccessToken();
   const [refreshToken, setRefreshToken] = useRefreshToken();
+  const [references, setReferences] = useReferences();
+  const [uid, setUid] = useUserId();
+  const [userType, setUserType] = useUserType();
+
   const { setAccessSavedAuth, setAccessUserId, accessSavedAuth, accessUserId } =
     useContext(SessionContextMigrate) as SessionStorageContextSetup;
   const { handleOnToast } = useContext(
@@ -88,10 +98,7 @@ const Login: React.FC = () => {
   const setAccountLogin = useSetAtom(accountLoginAtom);
   const router = useRouter();
   const [user, setUser] = useState<any>({});
-  const [profile, setProfile] = useState([]);
   const [open, setOpen] = useState(false);
-  const [userId, setUserId] = useState(0);
-  const [loginObject, setLoginObject] = useState<any>({});
   /* api callbacks */
   const authSignin = useApiCallBack(async (api, args: LoginProps) => {
     const result = await api.authentication.userAuthLogin(args);
@@ -281,6 +288,9 @@ const Login: React.FC = () => {
                       };
                       useJwtAuthLogin.mutate(jwtprops, {
                         onSuccess: (authLoginResponse: any) => {
+                          setReferences(response.data?.bundle[0]);
+                          setUid(response.data?.bundle[0]?.id);
+                          setUserType(response.data?.bundle[0]?.userType);
                           setAccessToken(authLoginResponse?.data?.token);
                           setRefreshToken(
                             authLoginResponse?.data?.refreshToken
@@ -312,7 +322,6 @@ const Login: React.FC = () => {
                               if (data?.message == "fetched") {
                                 useIdentifyUserType.mutate(structure.userId, {
                                   onSuccess: (identified: any) => {
-                                    console.log(identified);
                                     if (
                                       identified?.data == "Administrator" ||
                                       identified?.data == "Developers"

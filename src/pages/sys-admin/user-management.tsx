@@ -1,7 +1,11 @@
 import DashboardLayout from "@/components/DashboardLayout";
 import { useState, useEffect, useContext, useCallback } from "react";
 
-import { ControlledTypography, UncontrolledCard } from "@/components";
+import {
+  ControlledBackdrop,
+  ControlledTypography,
+  UncontrolledCard,
+} from "@/components";
 
 import { useRouter } from "next/router";
 import { Container } from "@mui/material";
@@ -22,6 +26,7 @@ import { useDynamicDashboardContext } from "@/utils/context/base/DynamicDashboar
 const UserManagement: React.FC = () => {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [savedAuth, setSavedAuth] = useState({});
   const { handleOnToast } = useContext(
     ToastContextContinue
@@ -41,26 +46,16 @@ const UserManagement: React.FC = () => {
   }, []);
   useEffect(() => {
     checkAuthentication("admin");
+    setTimeout(() => {
+      setLoading(false);
+    }, 3000);
   }, [accessSavedAuth, accessUserId]);
 
   return (
     <>
-      <DashboardLayout
-        sidebarConfig={
-          idetifiedUser == "Administrator"
-            ? sidebarList
-            : idetifiedUser == "Developers"
-            ? []
-            : []
-        }
-        subsidebarConfig={
-          idetifiedUser == "Administrator"
-            ? sidebarExpand
-            : idetifiedUser == "Developers"
-            ? []
-            : []
-        }
-      >
+      {loading ? (
+        <ControlledBackdrop open={loading} />
+      ) : (
         <Container>
           <UncontrolledCard>
             <ControlledTypography
@@ -71,7 +66,7 @@ const UserManagement: React.FC = () => {
             <FormAdditionalDetails />
           </UncontrolledCard>
         </Container>
-      </DashboardLayout>
+      )}
     </>
   );
 };

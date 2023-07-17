@@ -1,5 +1,9 @@
 import DashboardLayout from "@/components/DashboardLayout";
-import { ControlledTypography, UncontrolledCard } from "@/components";
+import {
+  ControlledBackdrop,
+  ControlledTypography,
+  UncontrolledCard,
+} from "@/components";
 import { Container, ListItemIcon } from "@mui/material";
 import { TaskFormAdditionalDetails } from "@/components/TaskManagement";
 import {
@@ -13,6 +17,7 @@ import { SessionStorageContextSetup } from "@/utils/context";
 import { useAuthContext } from "@/utils/context/base/AuthContext";
 const Task: React.FC = () => {
   const [idetifiedUser, setIdentifiedUser] = useState<any>("");
+  const [loading, setLoading] = useState(true);
   const { accessSavedAuth, accessUserId } = useContext(
     SessionContextMigrate
   ) as SessionStorageContextSetup;
@@ -25,25 +30,15 @@ const Task: React.FC = () => {
   }, []);
   useEffect(() => {
     checkAuthentication("admin");
+    setTimeout(() => {
+      setLoading(false);
+    }, 3000);
   }, [accessSavedAuth, accessUserId]);
   return (
     <>
-      <DashboardLayout
-        sidebarConfig={
-          idetifiedUser == "Administrator"
-            ? sidebarList
-            : idetifiedUser == "Developers"
-            ? []
-            : []
-        }
-        subsidebarConfig={
-          idetifiedUser == "Administrator"
-            ? sidebarExpand
-            : idetifiedUser == "Developers"
-            ? []
-            : []
-        }
-      >
+      {loading ? (
+        <ControlledBackdrop open={loading} />
+      ) : (
         <Container>
           <UncontrolledCard>
             <ControlledTypography
@@ -54,7 +49,7 @@ const Task: React.FC = () => {
             <TaskFormAdditionalDetails />
           </UncontrolledCard>
         </Container>
-      </DashboardLayout>
+      )}
     </>
   );
 };
