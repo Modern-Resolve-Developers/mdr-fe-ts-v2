@@ -15,6 +15,7 @@ import HomeFooterSection from "@/components/Content/Home/FooterSection";
 import HomeFeatureSectionSecondLayer from "@/components/Content/Home/FeatureSectionSecondLayer";
 import { useRefreshTokenHandler } from "@/utils/hooks/useRefreshTokenHandler";
 import { useQuery } from "react-query";
+import { ControlledBackdrop } from "@/components";
 
 const Home: React.FC = () => {
   useRefreshTokenHandler();
@@ -23,7 +24,7 @@ const Home: React.FC = () => {
       await api.users.UAMCheckAccounts(randomNumber)
   );
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { setIsHidden } = useContext(ARContext) as ContextSetup;
 
   const features = [
@@ -63,34 +64,13 @@ const Home: React.FC = () => {
     }
   }, [data, isLoading, error]);
   useEffect(() => {
-    let preloadStorage;
-    const savedPreload = localStorage.getItem("preload");
-    if (typeof savedPreload == "string") {
-      preloadStorage = JSON.parse(savedPreload);
-    }
-    if (preloadStorage == undefined) {
-      setLoading(true);
-      localStorage.setItem("preload", JSON.stringify(true));
-    }
-    const fadeOutTimer = setTimeout(() => {
+    setTimeout(() => {
       setLoading(false);
-    }, 5000);
-
-    return () => clearTimeout(fadeOutTimer);
+    }, 3000);
   }, []);
   return (
     <>
-      {loading && (
-        <div
-          className={`fullscreen-container ${loading ? "fade-in" : "fade-out"}`}
-        >
-          <img
-            src={"giphy.gif"}
-            alt="animation-loading-screen-dgr"
-            className={`fullscreen-gif`}
-          />
-        </div>
-      )}
+      {loading && <ControlledBackdrop open={loading} />}
       <HomeHeroSection />
       <HomeFeatureSection
         children={
