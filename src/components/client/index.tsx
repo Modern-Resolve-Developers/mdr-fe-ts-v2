@@ -1,4 +1,13 @@
-import { Container, Box, Typography, Grid } from "@mui/material";
+import {
+  Container,
+  Box,
+  Typography,
+  Grid,
+  FormGroup,
+  FormControlLabel,
+  Checkbox,
+  Divider,
+} from "@mui/material";
 import HomeFooterSection from "../Content/Home/FooterSection";
 import { NormalButton } from "../Button/NormalButton";
 import { CSSProperties, useEffect } from "react";
@@ -12,6 +21,7 @@ import { ControlledTextField } from "../TextField/TextField";
 import { useForm, useFormContext, FormProvider } from "react-hook-form";
 import { useAtom } from "jotai";
 import { ControlledCheckbox } from "../Checkbox/Checkbox";
+import GoogleButton from "react-google-button";
 
 import { zxcvbn, zxcvbnOptions } from "@zxcvbn-ts/core";
 import * as zxcvbnCommonPackage from "@zxcvbn-ts/language-common";
@@ -86,33 +96,41 @@ const SignUpForm = () => {
   const result = zxcvbn(values.password == undefined ? "" : values.password);
   return (
     <>
-      <ControlledTextField
-        control={control}
-        required
-        shouldUnregister
-        name="firstName"
-        label="Firstname"
-      />
-      <ControlledTextField
-        control={control}
-        required={!hasNoMiddleName}
-        shouldUnregister
-        name="middleName"
-        label="Middlename"
-        disabled={hasNoMiddleName}
-      />
-      <ControlledCheckbox
-        control={control}
-        name="hasNoMiddleName"
-        label="I do not have a middlename"
-      />
-      <ControlledTextField
-        control={control}
-        required
-        shouldUnregister
-        name="lastName"
-        label="Lastname"
-      />
+      <ControlledGrid>
+        <Grid item xs={4}>
+          <ControlledTextField
+            control={control}
+            required
+            shouldUnregister
+            name="firstName"
+            label="Firstname"
+          />
+        </Grid>
+        <Grid item xs={4}>
+          <ControlledTextField
+            control={control}
+            required={!hasNoMiddleName}
+            shouldUnregister
+            name="middleName"
+            label="Middlename"
+            disabled={hasNoMiddleName}
+          />
+          <ControlledCheckbox
+            control={control}
+            name="hasNoMiddleName"
+            label="I do not have a middlename"
+          />
+        </Grid>
+        <Grid item xs={4}>
+          <ControlledTextField
+            control={control}
+            required
+            shouldUnregister
+            name="lastName"
+            label="Lastname"
+          />
+        </Grid>
+      </ControlledGrid>
       <ControlledTextField
         control={control}
         required
@@ -137,6 +155,26 @@ const SignUpForm = () => {
         label="Confirm Password"
         type="password"
       />
+      <FormGroup>
+        <FormControlLabel
+          control={<Checkbox />}
+          label={
+            <Typography variant="caption">
+              <span style={{ color: "#808080" }}>
+                By creating an account, you agree to our
+              </span>{" "}
+              <span style={{ fontWeight: "bold", color: "#973B74" }}>
+                terms
+              </span>{" "}
+              and{" "}
+              <span style={{ fontWeight: "bold", color: "#973B74" }}>
+                privacy policy
+              </span>
+              .
+            </Typography>
+          }
+        />
+      </FormGroup>
     </>
   );
 };
@@ -155,76 +193,113 @@ export const SignUpAdditionalForm = () => {
   const router = useRouter();
   const styled: CSSProperties = {
     position: "absolute",
-    width: "45px",
+    width: "150px",
     height: "19px",
     left: "51px",
     top: "27px",
-    color: "black",
+    color: "white",
   };
   return (
     <>
       <NormalButton
         style={styled}
         onClick={() => router.push("/")}
-        children="Home"
+        children={<Typography variant="overline">Back to home</Typography>}
         variant="text"
       />
-      <Container maxWidth="lg" sx={{ mt: 10, height: "100vh" }}>
-        <ControlledGrid>
-          <Grid item xs={6}>
-            <UncontrolledCard
-              style={{
-                borderRadius: "21px",
-              }}
-            >
-              <div
+      <Container sx={{ padding: "50px" }}>
+        <UncontrolledCard
+          style={{
+            borderRadius: "30px 30px 30px 30px",
+            marginTop: "50px",
+          }}
+        >
+          <Grid container spacing={2}>
+            <Grid item xs={4}>
+              <img
+                src="cl-signup.png"
                 style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
+                  width: "100%",
+                  height: "auto",
+                  marginTop: "250px",
                 }}
-              >
-                <img
-                  src={"hdlogodgr.png"}
-                  width={200}
-                  height={200}
-                  alt="dgr logo"
-                  style={{ marginBottom: "30px" }}
-                />
-              </div>
-              <Typography variant="overline">Create an account</Typography>
-              <hr />
+              />
+            </Grid>
+            <Grid item xs={8}>
               <FormProvider {...form}>
-                <Container maxWidth="xs" sx={{ mt: 3 }}>
-                  <SignUpForm />
-                  <button
-                    disabled={!isValid}
-                    className="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                <div
+                  style={{
+                    float: "right",
+                    marginBottom: "10px",
+                    padding: "10px",
+                  }}
+                >
+                  <Typography variant="caption">
+                    <span style={{ color: "#808080" }}>
+                      Already have account?
+                    </span>{" "}
+                  </Typography>
+                  <Typography
+                    onClick={() => router.push("/login")}
+                    variant="caption"
+                  >
+                    <span
+                      style={{
+                        fontWeight: "bold",
+                        color: "#973B74",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Log in
+                    </span>
+                  </Typography>
+                </div>
+                <Container maxWidth="md" sx={{ padding: "50px" }}>
+                  <div
                     style={{
-                      marginTop: "10px",
-                      background: "#B92372",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      marginTop: "50px",
                     }}
                   >
-                    SIGN UP
-                  </button>
+                    <Typography variant="h5" gutterBottom fontWeight={"bold"}>
+                      Get started by signing up
+                    </Typography>
+                  </div>
+
+                  <SignUpForm />
+                  <div className="flex justify-center items-center">
+                    <button
+                      disabled={!isValid}
+                      className="rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                      style={{
+                        cursor: "pointer",
+                        backgroundColor: "#973B74",
+                        width: "150px",
+                      }}
+                    >
+                      Sign Up
+                    </button>
+                  </div>
+                  <Divider sx={{ marginTop: "10px" }}>or</Divider>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    <GoogleButton
+                      style={{ width: "250px", marginTop: "20px" }}
+                    />
+                  </div>
                 </Container>
               </FormProvider>
-            </UncontrolledCard>
+            </Grid>
           </Grid>
-
-          <Grid item xs={6}>
-            <img
-              src="clientregpic.png"
-              alt="Client registration animated man"
-              style={{
-                width: "100%",
-                height: "auto",
-              }}
-            />
-          </Grid>
-        </ControlledGrid>
+        </UncontrolledCard>
       </Container>
-      <HomeFooterSection />
     </>
   );
 };
