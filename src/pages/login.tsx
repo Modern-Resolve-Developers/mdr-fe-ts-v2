@@ -94,7 +94,6 @@ const Login: React.FC = () => {
   const { handleOnToast } = useContext(
     ToastContextContinue
   ) as ToastContextSetup;
-  const { CheckAuthentication } = useContext(ARContext) as ContextSetup;
   const setAccountLogin = useSetAtom(accountLoginAtom);
   const router = useRouter();
   const [user, setUser] = useState<any>({});

@@ -39,10 +39,6 @@ if (typeof Highcharts === "object") {
 }
 
 const TestAdminDashboard: React.FC = () => {
-  const router = useRouter();
-  const [savedAuth, setSavedAuth] = useState({});
-  const [open, setOpen] = useState(false);
-  const [report, setReport] = useState([]);
   const { checkAuthentication } = useAuthContext();
   const [loading, setLoading] = useState(true);
   const [options, setOptions] = useState<any>({
@@ -73,9 +69,6 @@ const TestAdminDashboard: React.FC = () => {
     },
   });
   const FetchUsersReport = useApiCallBack((api) => api.mdr.fetchUsersReport());
-  const { handleOnToast } = useContext(
-    ToastContextContinue
-  ) as ToastContextSetup;
   const { accessSavedAuth, accessUserId } = useContext(
     SessionContextMigrate
   ) as SessionStorageContextSetup;
