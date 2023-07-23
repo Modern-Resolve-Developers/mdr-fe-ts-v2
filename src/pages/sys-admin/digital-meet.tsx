@@ -12,6 +12,7 @@ import {
 } from "../../utils/sys-routing/sys-routing";
 import { Container, Grid } from "@mui/material";
 import { StartupPage } from "@/components/Jitsi/StartupPage";
+import { ControlledPopoverButton } from "@/components/Button/PopoverButton";
 import { ControlledTabs } from "@/components/Tabs/Tabs";
 import { useContext, useEffect, useState } from "react";
 import { useMeetContext } from "@/utils/context/base/MeetContext";
@@ -35,6 +36,7 @@ import { useApiCallBack } from "@/utils/hooks/useApi";
 import { useMutation } from "react-query";
 
 import { meetAtom } from "@/utils/hooks/useAccountAdditionValues";
+
 
 const baseJoinFormSchema = z.object({
   name: requiredString("Your name is required"),
@@ -106,6 +108,20 @@ const DigitalMeet: React.FC = () => {
   const [roomId, setRoomId] = useState(0);
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(true);
+  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+  const [meetId, setMeetId] = useState<number>(0);
+  const handleShowPopOver = (
+    event: React.MouseEvent<HTMLButtonElement>,
+    id: any
+  ) => {
+    setMeetId(id);
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClosePopOver = () => {
+    setAnchorEl(null);
+  };
+  const popoverOpen = Boolean(anchorEl);
+  const id = open ? "simple-popover" : undefined;
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValueChange(newValue);
   };
@@ -180,29 +196,49 @@ const DigitalMeet: React.FC = () => {
       width: 160,
       renderCell: (params: any) => {
         return (
-          <div style={{ padding: "2vh" }}>
-            <NormalButton
-              variant="text"
-              onClick={() =>
-                joinJitsi(
-                  params.row.roomStatus,
-                  params.row.roomUrl,
-                  params.row.isPrivate,
-                  params.row.id
-                )
-              }
-              size="small"
-              children="JOIN"
-              color="success"
-              disabled={params.row.roomStatus != "1"}
-            />
-            <NormalButton
-              onClick={() => handleDeleteRoom(params.row.id)}
-              variant="text"
-              children="DELETE"
-              color="error"
-            />
-          </div>
+          <ControlledPopoverButton
+            open={popoverOpen}
+            anchorEl={anchorEl}
+            handleShowPopOver={(e) => handleShowPopOver(e, params.row.id)}
+            handleClosePopOver={handleClosePopOver}
+            id={id}
+            anchorOrigin={{
+              vertical: "bottom",
+              horizontal: "left",
+            }}
+          >
+            <div style={{ 
+              padding: "5.48px 23.34px",
+              display: "flex",
+              flexDirection: 'column'
+            }}>
+              <NormalButton
+                variant="text"
+                onClick={() =>
+                  joinJitsi(
+                    params.row.roomStatus,
+                    params.row.roomUrl,
+                    params.row.isPrivate,
+                    params.row.id
+                  )
+                }
+                size="small"
+                children="JOIN"
+                disabled={params.row.roomStatus != "1"}
+                style={{
+                  color: "#505050"
+                }}
+              />
+              <NormalButton
+                onClick={() => handleDeleteRoom(params.row.id)}
+                variant="text"
+                children="DELETE"
+                style={{
+                  color: "#505050"
+                }}
+              />
+            </div>
+          </ControlledPopoverButton>
         );
       },
     },
@@ -274,6 +310,7 @@ const DigitalMeet: React.FC = () => {
     });
   }, [idetifiedUser]);
   useEffect(() => {
+    setLoading(!loading);
     checkAuthentication("admin");
   }, [accessSavedAuth, accessUserId]);
   const handleContinue = () => {
