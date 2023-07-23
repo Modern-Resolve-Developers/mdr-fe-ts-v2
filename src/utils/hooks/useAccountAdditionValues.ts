@@ -14,6 +14,7 @@ import { VerificationAccountCreation } from "@/components/ForgotPassword/forms/V
 import { NewCredentialsAccountCreation } from "@/components/ForgotPassword/forms/NewCredentialsForms";
 import { JoinMeetingFormAccount } from "@/pages/sys-admin/digital-meet";
 import { ClientAccountCreation } from "@/components/client";
+import { UserProfileType } from "../schema/UserProfileSchema";
 
 type AccountCreationFormData = {
   accountCreation: AccountCreation;
@@ -72,6 +73,8 @@ export const credentialAccountDetailsAtom = atom<
 >(undefined);
 
 export const accountCreationAtom = atom<AccountCreation | undefined>(undefined);
+
+export const userProfileAtom = atom<UserProfileType | undefined>(undefined)
 
 export const accountLoginAtom = atom<loginAccount | undefined>(undefined);
 export const ClientCreationAtom = atom<ClientAccountCreation | undefined>(

@@ -1,6 +1,6 @@
 import { useEffect, useContext, useState } from "react";
 import { ARContext } from "../utils/context/base/AdminRegistrationContext";
-import { ContextSetup } from "@/utils/context";
+import { ContextSetup, SessionStorageContextSetup } from "@/utils/context";
 import { useRouter } from "next/router";
 import {
   ArrowPathIcon,
@@ -16,6 +16,8 @@ import HomeFeatureSectionSecondLayer from "@/components/Content/Home/FeatureSect
 import { useRefreshTokenHandler } from "@/utils/hooks/useRefreshTokenHandler";
 import { useQuery } from "react-query";
 import { ControlledBackdrop } from "@/components";
+import { useAuthContext } from "@/utils/context/base/AuthContext";
+import { SessionContextMigrate } from "@/utils/context/base/SessionContext";
 
 const Home: React.FC = () => {
   useRefreshTokenHandler();
@@ -26,7 +28,10 @@ const Home: React.FC = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const { setIsHidden } = useContext(ARContext) as ContextSetup;
-
+  const { accessSavedAuth, accessUserId } = useContext(
+    SessionContextMigrate
+  ) as SessionStorageContextSetup;
+  const { checkAuthentication } = useAuthContext();
   const features = [
     {
       name: "Push to deploy",
@@ -68,6 +73,9 @@ const Home: React.FC = () => {
       setLoading(false);
     }, 3000);
   }, []);
+  useEffect(() => {
+    checkAuthentication("home");
+  }, [accessSavedAuth, accessUserId]);
   return (
     <>
       {loading && <ControlledBackdrop open={loading} />}
