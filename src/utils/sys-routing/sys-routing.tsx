@@ -8,6 +8,7 @@ import ProductionQuantityLimitsIcon from '@mui/icons-material/ProductionQuantity
 import FolderSharedIcon from '@mui/icons-material/FolderShared';
 import CategoryIcon from '@mui/icons-material/Category';
 import AddBoxIcon from '@mui/icons-material/AddBox';
+import SettingsIcon from '@mui/icons-material/Settings';
 type sidebarProps = {
     objectID: number
     name: string
@@ -33,6 +34,22 @@ type sidebarExpandProps = {
     disable?: boolean
     dropDown?: boolean
 }
+
+type SettingsListOptions = {
+    objectID: number
+    text: string
+    uri: string
+    icon: React.ReactNode
+}
+
+export const sidebarSettingsArea: SettingsListOptions[] = [
+    {
+        objectID: 1,
+        text: 'Settings',
+        uri: '/sys-admin/settings',
+        icon: <SettingsIcon className='text-white' />
+    }
+]
 
 export const sidebarList: sidebarProps[] = [
     {

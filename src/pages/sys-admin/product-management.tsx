@@ -823,6 +823,7 @@ const ProductManagement: React.FC = () => {
   const [productManageAtom, setProductManageAtom] = useAtom(
     productManagementAtom
   );
+  const [preload, setPreLoad] = useState(true);
   const PMCreation = useApiCallBack(
     async (api, args: CreateProducts | any) =>
       await api.mdr.ProductManagementCreation(args)
@@ -860,6 +861,9 @@ const ProductManagement: React.FC = () => {
 
   useEffect(() => {
     checkAuthentication("admin");
+    setTimeout(() => {
+      setPreLoad(false);
+    }, 3000);
   }, [accessSavedAuth, accessUserId]);
 
   const getAllProducts = () => {
@@ -977,22 +981,9 @@ const ProductManagement: React.FC = () => {
   }, []);
   return (
     <>
-      <DashboardLayout
-        sidebarConfig={
-          idetifiedUser == "Administrator"
-            ? sidebarList
-            : idetifiedUser == "Developers"
-            ? []
-            : []
-        }
-        subsidebarConfig={
-          idetifiedUser == "Administrator"
-            ? sidebarExpand
-            : idetifiedUser == "Developers"
-            ? []
-            : []
-        }
-      >
+      {preload ? (
+        <ControlledBackdrop open={preload} />
+      ) : (
         <Container>
           <UncontrolledCard>
             <ControlledTypography
@@ -1088,7 +1079,7 @@ const ProductManagement: React.FC = () => {
             </FormProvider>
           </UncontrolledCard>
         </Container>
-      </DashboardLayout>
+      )}
     </>
   );
 };

@@ -79,6 +79,13 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({
                     ) {
                       router.push("/sys-admin/admin-dashboard");
                     }
+                  } else if (currentScreen == "home") {
+                    if (
+                      identified?.data == "Administrator" ||
+                      identified?.data == "Developers"
+                    ) {
+                      router.push("/sys-admin/admin-dashboard");
+                    } else {return;}
                   }
                 })
                 .catch((error) => {

@@ -179,7 +179,7 @@ const ControlledAdministratorNavbar: React.FC<AdminNavbarProps> = (props) => {
                   "aria-labelledby": "basic-button",
                 }}
               >
-                <MenuItem>Profile</MenuItem>
+                <MenuItem onClick={() => router.push('/sys-admin/profile/user-profile')}>Profile</MenuItem>
                 <Divider>Others</Divider>
                 <MenuItem onClick={signoutModal} data-testid={"btnsignouttest"}>
                   Log out

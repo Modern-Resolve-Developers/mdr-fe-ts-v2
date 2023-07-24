@@ -46,7 +46,13 @@ import { SessionContextMigrate } from "@/utils/context/base/SessionContext";
 import { SessionStorageContextSetup } from "@/utils/context";
 import { useAuthContext } from "@/utils/context/base/AuthContext";
 
-import { useAccessToken, useRefreshToken } from "@/utils/context/hooks/hooks";
+import {
+  useAccessToken,
+  useReferences,
+  useRefreshToken,
+  useUserId,
+  useUserType,
+} from "@/utils/context/hooks/hooks";
 
 import { useCookies } from "react-cookie";
 import { LockClosedIcon } from "@heroicons/react/20/solid";
@@ -79,24 +85,25 @@ const Login: React.FC = () => {
   const [cookies, setCookies] = useCookies(["auth"]);
   const [accessToken, setAccessToken] = useAccessToken();
   const [refreshToken, setRefreshToken] = useRefreshToken();
+  const [references, setReferences] = useReferences();
+  const [uid, setUid] = useUserId();
+  const [userType, setUserType] = useUserType();
+
   const { setAccessSavedAuth, setAccessUserId, accessSavedAuth, accessUserId } =
     useContext(SessionContextMigrate) as SessionStorageContextSetup;
   const { handleOnToast } = useContext(
     ToastContextContinue
   ) as ToastContextSetup;
-  const { CheckAuthentication } = useContext(ARContext) as ContextSetup;
   const setAccountLogin = useSetAtom(accountLoginAtom);
   const router = useRouter();
   const [user, setUser] = useState<any>({});
-  const [profile, setProfile] = useState([]);
   const [open, setOpen] = useState(false);
-  const [userId, setUserId] = useState(0);
-  const [loginObject, setLoginObject] = useState<any>({});
   /* api callbacks */
   const authSignin = useApiCallBack(async (api, args: LoginProps) => {
     const result = await api.authentication.userAuthLogin(args);
     return result;
   });
+
   const createtoken = useApiCallBack(async (api, args: CreateTokenArgs) => {
     const result = await api.authentication.createToken(args);
     return result;
@@ -117,6 +124,9 @@ const Login: React.FC = () => {
   const IdentifyUsertype = useApiCallBack((api, uuid: any) =>
     api.mdr.IdentifyUserTypeFunc(uuid)
   );
+  const googleLoginTms = useApiCallBack((api, email: string) =>
+    api.authentication.authenticationGoogleLogin(email)
+  );
   const fetchCreatedAuthHistory = useApiCallBack(
     async (api, userId: number | any) =>
       await api.authentication.fetchCreatedAuthHistory(userId)
@@ -127,8 +137,51 @@ const Login: React.FC = () => {
       return result;
     }
   );
+  useEffect(() => {
+    if (Object.keys(user).length > 0) {
+      axios
+        .get(
+          `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${user?.access_token}`,
+          {
+            headers: {
+              Authorization: `Bearer ${user.access_token}`,
+              Accept: "application/json",
+            },
+          }
+        )
+        .then((res: any) => {
+          const { data }: any = res;
+        });
+    }
+  }, [user]);
   const loginWithGoogle = useGoogleLogin({
-    onSuccess: (codeResponse: any) => setUser(codeResponse),
+    onSuccess: (codeResponse: any) => {
+      setOpen(!open);
+      useGoogleTms.mutate(codeResponse?.email, {
+        onSuccess: (response: any) => {
+          const { data }: any = response;
+          if (data == "not_exist") {
+            handleOnToast(
+              "Account not Found : No Account Associated with this email.",
+              "top-right",
+              false,
+              true,
+              true,
+              true,
+              undefined,
+              "dark",
+              "error"
+            );
+            setOpen(false);
+          } else {
+            /**
+             * Blockers : account creation form for client
+             * api response for client login
+             */
+          }
+        },
+      });
+    },
     onError: (error: any) => console.log("Try failed", error),
   });
 
@@ -183,6 +236,9 @@ const Login: React.FC = () => {
   const useAuthSignIn = () => {
     return useMutation((args: LoginProps) => authSignin.execute(args));
   };
+  const useGoogleTms = useMutation((email: string) =>
+    googleLoginTms.execute(email)
+  );
   const useCreateToken = useMutation((data: { userId: any; token: string }) =>
     createtoken.execute(data)
   );
@@ -281,6 +337,9 @@ const Login: React.FC = () => {
                       };
                       useJwtAuthLogin.mutate(jwtprops, {
                         onSuccess: (authLoginResponse: any) => {
+                          setReferences(response.data?.bundle[0]);
+                          setUid(response.data?.bundle[0]?.id);
+                          setUserType(response.data?.bundle[0]?.userType);
                           setAccessToken(authLoginResponse?.data?.token);
                           setRefreshToken(
                             authLoginResponse?.data?.refreshToken
@@ -312,7 +371,6 @@ const Login: React.FC = () => {
                               if (data?.message == "fetched") {
                                 useIdentifyUserType.mutate(structure.userId, {
                                   onSuccess: (identified: any) => {
-                                    console.log(identified);
                                     if (
                                       identified?.data == "Administrator" ||
                                       identified?.data == "Developers"
@@ -361,12 +419,12 @@ const Login: React.FC = () => {
             </Typography>
             <p className="mt-2 text-center text-sm text-gray-600">
               Or{" "}
-              <a
-                href="#"
+              <Link
+                href="/customer-registration"
                 className="font-medium text-indigo-600 hover:text-indigo-500"
               >
                 start creating your account
-              </a>
+              </Link>
             </p>
           </div>
           <div className="mt-8 space-y-6">
@@ -449,9 +507,8 @@ const Login: React.FC = () => {
                 Sign in
               </button>
               <GoogleButton
-                // onClick={() => loginWithGoogle()}
+                onClick={() => loginWithGoogle()}
                 style={{ width: "100%", marginTop: "20px" }}
-                disabled={true}
               />
             </div>
           </div>

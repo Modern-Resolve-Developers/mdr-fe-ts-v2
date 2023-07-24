@@ -139,7 +139,11 @@ export default function DashboardLayout({children, sidebarConfig, subsidebarConf
               setOpen(false)
               clearAccessSavedAuth('token')
               clearAccessUserId('uid')
+              let rm = localStorage.getItem('rm');
               localStorage.clear()
+              if(rm != null) {
+                localStorage.setItem('rm', rm);
+              }
               router.push('/login')
             }
           })
