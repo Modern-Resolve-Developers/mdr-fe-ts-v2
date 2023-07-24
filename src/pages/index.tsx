@@ -74,7 +74,11 @@ const Home: React.FC = () => {
     }, 3000);
   }, []);
   useEffect(() => {
-    checkAuthentication("home");
+      if(!accessSavedAuth || !accessUserId) {
+        return;
+      } else {
+        checkAuthentication("home");
+      }
   }, [accessSavedAuth, accessUserId]);
   return (
     <>
