@@ -1,6 +1,5 @@
 import React from 'react'
 import UncontrolledCard from '@/components/Cards/Card'
-import AboutUsCardContent from './AboutUsCardContent'
 
 
 const AboutUsSecondLayer = () => {
