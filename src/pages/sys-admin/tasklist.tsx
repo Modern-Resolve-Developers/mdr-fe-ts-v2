@@ -60,7 +60,7 @@ const TaskManagementList: React.FC = () => {
   const [pg, setpg] = useState(0);
   const [rpg, setrpg] = useState(5);
   const [backdrop, setBackdrop] = useState(false);
-
+  const [preload, setPreLoad] = useState(true);
   const [taskInfoAtom, setTaskInfoAtom] = useAtom(taskInformationAtom);
   const [task_uuid, setTaskUUID] = useState(0);
   const [idetifiedUser, setIdentifiedUser] = useState<any>("");
@@ -83,6 +83,9 @@ const TaskManagementList: React.FC = () => {
   }, []);
   useEffect(() => {
     checkAuthentication("admin");
+    setTimeout(() => {
+      setPreLoad(false);
+    }, 3000);
   }, [accessSavedAuth, accessUserId]);
   const globalSearch = (): TableSearchProps[] => {
     const filteredRepositories = tableSearchList.filter((value: any) => {
@@ -154,22 +157,9 @@ const TaskManagementList: React.FC = () => {
     : tableSearchList;
   return (
     <>
-      <DashboardLayout
-        sidebarConfig={
-          idetifiedUser == "Administrator"
-            ? sidebarList
-            : idetifiedUser == "Developers"
-            ? []
-            : []
-        }
-        subsidebarConfig={
-          idetifiedUser == "Administrator"
-            ? sidebarExpand
-            : idetifiedUser == "Developers"
-            ? []
-            : []
-        }
-      >
+      {preload ? (
+        <ControlledBackdrop open={preload} />
+      ) : (
         <Container>
           <UncontrolledCard>
             <ControlledTypography
@@ -219,7 +209,7 @@ const TaskManagementList: React.FC = () => {
           />
           <ControlledBackdrop open={backdrop} />
         </Container>
-      </DashboardLayout>
+      )}
     </>
   );
 };

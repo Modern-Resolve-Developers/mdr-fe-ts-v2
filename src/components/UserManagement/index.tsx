@@ -273,7 +273,7 @@ export const FormAdditionalDetails = () => {
               }
             />{" "}
             &nbsp;
-            {params.row.verified == "1" ? (
+            {params.row.verified.includes(1) ? (
               <></>
             ) : (
               <>
@@ -292,7 +292,7 @@ export const FormAdditionalDetails = () => {
               </>
             )}{" "}
             &nbsp;
-            {params.row.isstatus == "1" ? (
+            {params.row.isstatus.includes(1) ? (
               <>
                 <ControlledButton
                   text="Unlock"
@@ -309,7 +309,7 @@ export const FormAdditionalDetails = () => {
               </>
             ) : (
               <>
-                {params.row.userType != 1 && (
+                {!params.row.userType.includes(1) && (
                   <ControlledButton
                     text="Lock"
                     variant="outlined"
@@ -326,7 +326,7 @@ export const FormAdditionalDetails = () => {
               </>
             )}
             &nbsp;
-            {params.row.userType != 1 && (
+            {!params.row.userType.includes(1) && params.row.isstatus.includes(1) && (
               <ControlledButton
                 text="DELETE"
                 variant="outlined"

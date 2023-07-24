@@ -4,6 +4,7 @@ import {
   UncontrolledCard,
   ControlledGrid,
   ControlledChip,
+  ControlledBackdrop,
 } from "@/components";
 import { ControlledTabs } from "@/components/Tabs/Tabs";
 import { Container, Typography } from "@mui/material";
@@ -92,6 +93,7 @@ const CategoryManageAll: React.FC = () => {
   const [categoryManageAtom, setCategoryManageAtom] = useAtom(
     categoryManagementAtom
   );
+  const [preload, setPreLoad] = useState(true);
   const [valueChange, setValueChange] = useState(0);
   const [loading, setLoading] = useState(false);
   const [category, setCategory] = useState([]);
@@ -192,6 +194,9 @@ const CategoryManageAll: React.FC = () => {
   }, []);
   useEffect(() => {
     checkAuthentication("admin");
+    setTimeout(() => {
+      setPreLoad(false);
+    }, 3000);
   }, [accessSavedAuth, accessUserId]);
   const {
     formState: { isValid },
@@ -259,22 +264,9 @@ const CategoryManageAll: React.FC = () => {
   };
   return (
     <>
-      <DashboardLayout
-        sidebarConfig={
-          idetifiedUser == "Administrator"
-            ? sidebarList
-            : idetifiedUser == "Developers"
-            ? []
-            : []
-        }
-        subsidebarConfig={
-          idetifiedUser == "Administrator"
-            ? sidebarExpand
-            : idetifiedUser == "Developers"
-            ? []
-            : []
-        }
-      >
+      {preload ? (
+        <ControlledBackdrop open={preload} />
+      ) : (
         <Container>
           <UncontrolledCard>
             <ControlledTypography
@@ -324,7 +316,7 @@ const CategoryManageAll: React.FC = () => {
             </ControlledTabs>
           </UncontrolledCard>
         </Container>
-      </DashboardLayout>
+      )}
     </>
   );
 };
