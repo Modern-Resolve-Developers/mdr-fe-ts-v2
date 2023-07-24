@@ -15,6 +15,7 @@ import { NewCredentialsAccountCreation } from "@/components/ForgotPassword/forms
 import { JoinMeetingFormAccount } from "@/pages/sys-admin/digital-meet";
 import { ClientAccountCreation } from "@/components/client";
 import { UserProfileType } from "../schema/UserProfileSchema";
+import { ContactType } from "../schema/ContactSchema";
 
 type AccountCreationFormData = {
   accountCreation: AccountCreation;
@@ -71,6 +72,8 @@ export const editFormUserAccountAtom = atom<EditFormUserAccount | undefined>(
 export const credentialAccountDetailsAtom = atom<
   CredentialsAccountCreation | undefined
 >(undefined);
+
+export const ContactAtom = atom<ContactType | undefined>(undefined)
 
 export const accountCreationAtom = atom<AccountCreation | undefined>(undefined);
 

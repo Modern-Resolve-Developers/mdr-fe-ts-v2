@@ -85,7 +85,7 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({
                       identified?.data == "Developers"
                     ) {
                       router.push("/sys-admin/admin-dashboard");
-                    }
+                    } else {return;}
                   }
                 })
                 .catch((error) => {
