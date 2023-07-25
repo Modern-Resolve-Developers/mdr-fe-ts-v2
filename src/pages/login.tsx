@@ -48,6 +48,7 @@ import { useAuthContext } from "@/utils/context/base/AuthContext";
 
 import {
   useAccessToken,
+  useGoogleAccountInfo,
   useReferences,
   useRefreshToken,
   useUserId,
@@ -88,6 +89,7 @@ const Login: React.FC = () => {
   const [references, setReferences] = useReferences();
   const [uid, setUid] = useUserId();
   const [userType, setUserType] = useUserType();
+  const [googleAccountInfo, setGoogleAccountInfo] = useGoogleAccountInfo()
 
   const { setAccessSavedAuth, setAccessUserId, accessSavedAuth, accessUserId } =
     useContext(SessionContextMigrate) as SessionStorageContextSetup;
@@ -131,56 +133,54 @@ const Login: React.FC = () => {
     async (api, userId: number | any) =>
       await api.authentication.fetchCreatedAuthHistory(userId)
   );
-  const FetchAuthentication = useApiCallBack(
-    async (api, args: AuthenticationProps) => {
-      const result = await api.authentication.userAvailabilityCheck(args);
-      return result;
-    }
+  const googleCheckAccounts = useApiCallBack(
+    async (api, email: string) => await api.users.GoogleCheckAccounts(email)
   );
-  useEffect(() => {
-    if (Object.keys(user).length > 0) {
+  const loginWithGoogle = useGoogleLogin({
+    onSuccess: (codeResponse: any) => {
+      setOpen(!open)
       axios
         .get(
-          `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${user?.access_token}`,
+          `${process.env.NEXT_PUBLIC_GOOGLE_AUTH}/v1/userinfo?access_token=${codeResponse.access_token}`,
           {
             headers: {
-              Authorization: `Bearer ${user.access_token}`,
+              Authorization: `Bearer ${codeResponse.access_token}`,
               Accept: "application/json",
             },
           }
         )
         .then((res: any) => {
           const { data }: any = res;
+          console.log(data)
+          googleCheckAccounts.execute(data.email)
+          .then(res => {
+            if(res.data == 501) {
+              handleOnToast(
+                "There is no customer account associated with this email.",
+                "top-right",
+                false,
+                true,
+                true,
+                true,
+                undefined,
+                "dark",
+                "error"
+              );
+              setOpen(false)
+            } else {
+              setOpen(false)
+              router.push({
+                pathname: '/customer-registration',
+                query: {
+                  email : data.email,
+                  firstname: data.given_name,
+                  lastname: data.family_name
+                }
+              })
+              setGoogleAccountInfo(data)
+            }
+          })
         });
-    }
-  }, [user]);
-  const loginWithGoogle = useGoogleLogin({
-    onSuccess: (codeResponse: any) => {
-      setOpen(!open);
-      useGoogleTms.mutate(codeResponse?.email, {
-        onSuccess: (response: any) => {
-          const { data }: any = response;
-          if (data == "not_exist") {
-            handleOnToast(
-              "Account not Found : No Account Associated with this email.",
-              "top-right",
-              false,
-              true,
-              true,
-              true,
-              undefined,
-              "dark",
-              "error"
-            );
-            setOpen(false);
-          } else {
-            /**
-             * Blockers : account creation form for client
-             * api response for client login
-             */
-          }
-        },
-      });
     },
     onError: (error: any) => console.log("Try failed", error),
   });

@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import HomeFooterSection from "../Content/Home/FooterSection";
 import { NormalButton } from "../Button/NormalButton";
-import { CSSProperties, useEffect } from "react";
+import { CSSProperties, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import UncontrolledCard from "../Cards/Card";
 import ControlledGrid from "../Grid/Grid";
@@ -35,13 +35,26 @@ import {
   accountClientCreationAtom,
   ClientCreationAtom,
 } from "@/utils/hooks/useAccountAdditionValues";
+import { UAMAddRequestArgs } from "@/pages/api/users/types";
+import ControlledBackdrop from "../Backdrop/Backdrop";
+import { ControlledMobileNumberField } from "../TextField/MobileNumberField";
+import { useToastContext } from "@/utils/context/base/ToastContext";
 const clientRegistrationBaseSchema = z.object({
   firstName: requiredString("Your firstname is required."),
   lastName: requiredString("Your lastname is required"),
   email: requiredString("Your email is required.").email(),
-  password: requiredString("Your password is required."),
-  conpassword: requiredString("Please confirm your password."),
+  phoneNumber: requiredString("Your phone number is required."),
+  password: requiredString("Your password is required.").min(6),
+  conpassword: requiredString("Please confirm your password.").min(6),
 });
+
+/**
+ * @author JM
+ * There are multiple missing processes here. I marked down all the locations we can use to integrate the missing process.
+ * > Process 1 - JWT Account Creation upon submission on sign up
+ * > Process 2 - Send verification code API through email. 
+ * > Process 3 - Navigate to verification code entry page
+ */
 
 const schema = z
   .discriminatedUnion("hasNoMiddleName", [
@@ -56,6 +69,7 @@ const schema = z
     z
       .object({
         hasNoMiddleName: z.literal(true),
+        middleName: z.string().optional()
       })
       .merge(clientRegistrationBaseSchema),
   ])
@@ -74,16 +88,18 @@ const options = {
 };
 zxcvbnOptions.setOptions(options);
 const SignUpForm = () => {
-  const { control, watch, resetField, trigger, getValues } =
+  const router = useRouter()
+  const { control, watch, resetField, trigger, getValues, setValue } =
     useFormContext<ClientAccountCreation>();
   const values = getValues();
   const hasNoMiddleName = watch("hasNoMiddleName");
   const passwordWatcher = watch("password");
   const hasNoMiddleNamePrevValue = usePreviousValue(hasNoMiddleName);
+  const { query }: any = router;
   useEffect(() => {
     resetField("middleName");
     if (hasNoMiddleNamePrevValue) {
-      trigger("hasNoMiddleName");
+      trigger("middleName");
     }
   }, [
     hasNoMiddleName,
@@ -92,7 +108,15 @@ const SignUpForm = () => {
     trigger,
     passwordWatcher,
   ]);
-
+  useEffect(() => {
+    if(!query){
+      return;
+    } else {
+      setValue('email', query.email)
+      setValue('firstName', query.firstname)
+      setValue('lastName', query.lastname)
+    }
+  }, [])
   const result = zxcvbn(values.password == undefined ? "" : values.password);
   return (
     <>
@@ -131,13 +155,26 @@ const SignUpForm = () => {
           />
         </Grid>
       </ControlledGrid>
-      <ControlledTextField
-        control={control}
-        required
-        shouldUnregister
-        name="email"
-        label="Email"
-      />
+      <ControlledGrid>
+        <Grid item xs={6}>
+          <ControlledTextField
+            control={control}
+            required
+            shouldUnregister
+            name="email"
+            label="Email"
+          />
+        </Grid>
+        <Grid item xs={6}>
+          <ControlledMobileNumberField
+            control={control}
+            name='phoneNumber'
+            label='Mobile number'
+            required
+            shouldUnregister
+          />
+        </Grid>
+      </ControlledGrid>
       <ControlledTextField
         control={control}
         required
@@ -181,14 +218,25 @@ const SignUpForm = () => {
 
 export const SignUpAdditionalForm = () => {
   const [clientDetailsAtom, setClientDetailsAtom] = useAtom(ClientCreationAtom);
+  const [loading, setLoading] = useState(false)
+  const customerAccountCreation = useApiCallBack(
+    async (api, args: UAMAddRequestArgs) => await api.users.CustomerAccountCreation(args)
+  );
+  const useCustomerCreation = () => {
+    return useMutation((data: UAMAddRequestArgs) => 
+      customerAccountCreation.execute(data)
+    );
+  }
+  const { mutate } = useCustomerCreation()
   const form = useForm<ClientAccountCreation>({
     resolver: zodResolver(schema),
     mode: "all",
     defaultValues: clientDetailsAtom ?? { hasNoMiddleName: false },
   });
+  const { handleOnToast } = useToastContext()
   const {
     formState: { isValid },
-    handleSubmit,
+    getValues
   } = form;
   const router = useRouter();
   const styled: CSSProperties = {
@@ -199,6 +247,55 @@ export const SignUpAdditionalForm = () => {
     top: "27px",
     color: "white",
   };
+  const handleContinue = () => {
+    const values = getValues()
+    setLoading(!loading)
+    const obj = {
+      email: values.email,
+      phoneNumber: values.phoneNumber,
+      password: values.password,
+      firstname: values.firstName,
+      middlename: values.middleName,
+      lastname: values.lastName,
+      userType: "3"
+    }
+    mutate(obj, {
+      onSuccess: (response) => {
+        if(response.data == 501){
+          handleOnToast(
+            "This email already exist, please try another email.",
+            "top-right",
+            false,
+            true,
+            true,
+            true,
+            undefined,
+            "dark",
+            "error"
+          );
+          setLoading(false)
+        } else {
+          setClientDetailsAtom(values)
+          /* Process 1 JWT Account Creation upon submission on sign up */
+          /* Process 2 After we received the JWT Response Send email to customer email */
+          /* Process 3 After we received the JWT Response and Sending email API navigate to verification code entry page */
+          handleOnToast(
+            "Successfully Created! Welcome customer.",
+            "top-right",
+            false,
+            true,
+            true,
+            true,
+            undefined,
+            "dark",
+            "success"
+          );
+          setLoading(false)
+          
+        }
+      }
+    })
+  }
   return (
     <>
       <NormalButton
@@ -278,11 +375,12 @@ export const SignUpAdditionalForm = () => {
                         backgroundColor: "#973B74",
                         width: "150px",
                       }}
+                      onClick={handleContinue}
                     >
                       Sign Up
                     </button>
                   </div>
-                  <Divider sx={{ marginTop: "10px" }}>or</Divider>
+                  {/* <Divider sx={{ marginTop: "10px" }}>or</Divider>
                   <div
                     style={{
                       display: "flex",
@@ -293,12 +391,13 @@ export const SignUpAdditionalForm = () => {
                     <GoogleButton
                       style={{ width: "250px", marginTop: "20px" }}
                     />
-                  </div>
+                  </div> */}
                 </Container>
               </FormProvider>
             </Grid>
           </Grid>
         </UncontrolledCard>
+        <ControlledBackdrop open={loading} />
       </Container>
     </>
   );

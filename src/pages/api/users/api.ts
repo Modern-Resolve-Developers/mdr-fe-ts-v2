@@ -33,4 +33,10 @@ export class UsersApi {
     public AccountDeletion(uid: number){
         return this.axios.delete(`/api/users/temp-delete-uam-user/${uid}`)
     }
+    public GoogleCheckAccounts(email: string) {
+        return this.axios.get(`/api/users/google-check-verify/${email}`)
+    }
+    public CustomerAccountCreation(props : UAMAddRequestArgs) {
+        return this.axios.post('/api/users/customer-account-creation', props)
+    }
 }
