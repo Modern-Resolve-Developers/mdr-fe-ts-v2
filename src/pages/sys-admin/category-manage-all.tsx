@@ -34,6 +34,9 @@ import { SessionStorageContextSetup } from "@/utils/context";
 import { useQuery } from "react-query";
 import { useDynamicDashboardContext } from "@/utils/context/base/DynamicDashboardContext";
 import { useAuthContext } from "@/utils/context/base/AuthContext";
+import { GetServerSideProps } from "next";
+import { PageProps } from "@/utils/types";
+import { getSecretsIdentifiedAccessLevel } from "@/utils/secrets/secrets_identified_user";
 const categoryManagementBaseSchema = z.object({
   label: requiredString("Label is required."),
   type: requiredString("kindly select type."),
@@ -89,7 +92,7 @@ const CategoryForm = () => {
   );
 };
 
-const CategoryManageAll: React.FC = () => {
+const CategoryManageAll: React.FC<PageProps> = ({data}) => {
   const [categoryManageAtom, setCategoryManageAtom] = useAtom(
     categoryManagementAtom
   );
@@ -122,6 +125,7 @@ const CategoryManageAll: React.FC = () => {
   });
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
   const [categoryId, setCategoryId] = useState<number>(0);
+  const [categoryData, setCategoryData] = useState([])
   const handleShowPopOver = (
     event: React.MouseEvent<HTMLButtonElement>,
     id: any
@@ -188,31 +192,37 @@ const CategoryManageAll: React.FC = () => {
   const { getPropsDynamic } = useDynamicDashboardContext();
 
   useEffect(() => {
-    getPropsDynamic(localStorage.getItem("uid")).then((repo: any) => {
-      setIdentifiedUser(repo?.data);
-    });
+    if(typeof window !== 'undefined' && window.localStorage) {
+      getPropsDynamic(localStorage.getItem("uid") ?? 0).then((repo: any) => {
+        setIdentifiedUser(repo?.data);
+      });
+    }
   }, []);
   useEffect(() => {
-    checkAuthentication("admin");
     setTimeout(() => {
-      setPreLoad(false);
+      if(data?.preloadedAccessLevels == 1) {
+        setPreLoad(false)
+        checkAuthentication("admin");
+      } else {
+        router.push('/sys-admin/auth/dashboardauth')
+      }
     }, 3000);
-  }, [accessSavedAuth, accessUserId]);
+  }, []);
   const {
     formState: { isValid },
     handleSubmit,
     reset,
     setValue,
   } = form;
-
-  const { data } = useQuery(
-    "category-list",
-    async () => {
-      const result = await GetAllProductCategory.execute();
-      return result.data;
-    },
-    { initialData: undefined }
-  );
+  useEffect(() => {
+    GetAllProductCategory.execute().then(response => {
+      setCategoryData(response.data)
+    }).catch(error => {
+      if(error.response?.status === 401) {
+        router.push('/sys-admin/auth/dashboardauth')
+      }
+    })
+  }, [])
   const handleContinue = () => {
     handleSubmit((values) => {
       setLoading(!loading);
@@ -307,7 +317,7 @@ const CategoryManageAll: React.FC = () => {
                 <>
                   <ProjectTable
                     columns={columns}
-                    data={data}
+                    data={categoryData}
                     sx={{ marginTop: "10px" }}
                     rowIsCreativeDesign={false}
                   />
@@ -320,5 +330,15 @@ const CategoryManageAll: React.FC = () => {
     </>
   );
 };
+
+export const getServerSideProps: GetServerSideProps<PageProps> = async () => {
+  try {
+    const preloadedAccessLevels = await getSecretsIdentifiedAccessLevel(1)
+    return { props : { data: { preloadedAccessLevels }}}
+  } catch (error) {
+    console.log(`Error on get Notification response: ${JSON.stringify(error)} . `)
+    return { props : {error}}
+  }
+}
 
 export default CategoryManageAll;

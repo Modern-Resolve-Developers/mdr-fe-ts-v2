@@ -90,7 +90,7 @@ const ControlledAdministratorSidebar: React.FC<AdminSidebarProps> = (props) => {
             </DrawerHeader>
             <Divider className="bg-sideBarTabHover" />
             <List style={{ marginTop: "5px" }}>
-              {idetifiedUser == "Administrator" &&
+              {idetifiedUser == 1 &&
                 sidebarConfig?.map((text: any, outerIndex: any) => (
                   <Box key={outerIndex} className="flex flex-col items-center">
                     <ListItem
