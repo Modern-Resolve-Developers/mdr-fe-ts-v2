@@ -39,7 +39,11 @@ import { SessionContextMigrate } from "@/utils/context/base/SessionContext";
 import { SessionStorageContextSetup } from "@/utils/context";
 import { useAuthContext } from "@/utils/context/base/AuthContext";
 import { useDynamicDashboardContext } from "@/utils/context/base/DynamicDashboardContext";
-const TaskManagementList: React.FC = () => {
+import { GetServerSideProps } from "next";
+import { PageProps } from "@/utils/types";
+import { getSecretsIdentifiedAccessLevel } from "@/utils/secrets/secrets_identified_user";
+import { useRouter } from "next/router";
+const TaskManagementList: React.FC<PageProps> = ({data}) => {
   const { handleOnToast } = useContext(
     ToastContextContinue
   ) as ToastContextSetup;
@@ -64,13 +68,15 @@ const TaskManagementList: React.FC = () => {
   const [taskInfoAtom, setTaskInfoAtom] = useAtom(taskInformationAtom);
   const [task_uuid, setTaskUUID] = useState(0);
   const [idetifiedUser, setIdentifiedUser] = useState<any>("");
-
+  const router = useRouter()
   const { getPropsDynamic } = useDynamicDashboardContext();
 
   useEffect(() => {
-    getPropsDynamic(localStorage.getItem("uid")).then((repo: any) => {
-      setIdentifiedUser(repo?.data);
-    });
+    if(typeof window !== 'undefined' && window.localStorage) {
+      getPropsDynamic(localStorage.getItem("uid") ?? 0).then((repo: any) => {
+        setIdentifiedUser(repo?.data);
+      });
+    }
   }, []);
   const fetchAllTaskDynamically = () => {
     fetchAllTask.execute().then((res: any) => {
@@ -84,9 +90,14 @@ const TaskManagementList: React.FC = () => {
   useEffect(() => {
     checkAuthentication("admin");
     setTimeout(() => {
-      setPreLoad(false);
+      if(data?.preloadedAccessLevels == 1){
+        setPreLoad(false)
+        checkAuthentication("admin");
+       } else {
+        router.push('/sys-admin/auth/dashboardauth')
+       }
     }, 3000);
-  }, [accessSavedAuth, accessUserId]);
+  }, []);
   const globalSearch = (): TableSearchProps[] => {
     const filteredRepositories = tableSearchList.filter((value: any) => {
       return (
@@ -213,5 +224,15 @@ const TaskManagementList: React.FC = () => {
     </>
   );
 };
+
+export const getServerSideProps: GetServerSideProps<PageProps> = async () => {
+  try {
+    const preloadedAccessLevels = await getSecretsIdentifiedAccessLevel(1)
+    return { props : { data: { preloadedAccessLevels }}}
+  } catch (error) {
+    console.log(`Error on get Notification response: ${JSON.stringify(error)} . `)
+    return { props : {error}}
+  }
+}
 
 export default TaskManagementList;

@@ -17,9 +17,12 @@ import { useDynamicDashboardContext } from "@/utils/context/base/DynamicDashboar
 import { joinMeetAtom } from "@/utils/hooks/useAccountAdditionValues";
 import { useApiCallBack } from "@/utils/hooks/useApi";
 import { useMutation } from "react-query";
+import { GetServerSideProps } from "next";
+import { PageProps } from "@/utils/types";
+import { getSecretsIdentifiedAccessLevel } from "@/utils/secrets/secrets_identified_user";
 
 declare var JitsiMeetExternalAPI: any;
-const MeetPage: React.FC = () => {
+const MeetPage: React.FC<PageProps> = ({data}) => {
   const [joinAtom, setJoinAtom] = useAtom(joinMeetAtom);
   const [meetDetails, setMeetDetails] = useAtom(meetAtom);
   const [loading, setLoading] = useState(true);
@@ -39,14 +42,20 @@ const MeetPage: React.FC = () => {
   const { getPropsDynamic } = useDynamicDashboardContext();
 
   useEffect(() => {
-    getPropsDynamic(localStorage.getItem("uid")).then((repo: any) => {
-      setIdentifiedUser(repo?.data);
-    });
+    if(typeof window !== 'undefined' && window.localStorage){
+      getPropsDynamic(localStorage.getItem("uid") ?? 0).then((repo: any) => {
+        setIdentifiedUser(repo?.data);
+      });
+    }
   }, []);
   useEffect(() => {
-    checkAuthentication("admin");
     setTimeout(() => {
-      setLoading(false);
+      if(data?.preloadedAccessLevels == 1) {
+        setLoading(false)
+        checkAuthentication("admin");
+      } else {
+        router.push('/sys-admin/auth/dashboardauth')
+      }
     }, 3000);
   }, [accessSavedAuth, accessUserId]);
   useEffect(() => {
@@ -112,5 +121,15 @@ const MeetPage: React.FC = () => {
     </>
   );
 };
+
+export const getServerSideProps: GetServerSideProps<PageProps> = async () => {
+  try {
+    const preloadedAccessLevels = await getSecretsIdentifiedAccessLevel(1)
+    return { props : { data: { preloadedAccessLevels }}}
+  } catch (error) {
+    console.log(`Error on get Notification response: ${JSON.stringify(error)} . `)
+    return { props : {error}}
+  }
+}
 
 export default MeetPage;

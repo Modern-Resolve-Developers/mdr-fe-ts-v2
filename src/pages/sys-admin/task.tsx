@@ -15,25 +15,36 @@ import { useContext, useEffect, useState } from "react";
 import { SessionContextMigrate } from "@/utils/context/base/SessionContext";
 import { SessionStorageContextSetup } from "@/utils/context";
 import { useAuthContext } from "@/utils/context/base/AuthContext";
-const Task: React.FC = () => {
+import { GetServerSideProps } from "next";
+import { PageProps } from "@/utils/types";
+import { getSecretsIdentifiedAccessLevel } from "@/utils/secrets/secrets_identified_user";
+import { useRouter } from "next/router";
+const Task: React.FC<PageProps> = ({data}) => {
   const [idetifiedUser, setIdentifiedUser] = useState<any>("");
   const [loading, setLoading] = useState(true);
+  const router = useRouter()
   const { accessSavedAuth, accessUserId } = useContext(
     SessionContextMigrate
   ) as SessionStorageContextSetup;
   const { getPropsDynamic } = useDynamicDashboardContext();
   const { checkAuthentication } = useAuthContext();
   useEffect(() => {
-    getPropsDynamic(localStorage.getItem("uid")).then((repo: any) => {
-      setIdentifiedUser(repo?.data);
-    });
+    if(typeof window !== 'undefined' && window.localStorage) {
+      getPropsDynamic(localStorage.getItem("uid") ?? 0).then((repo: any) => {
+        setIdentifiedUser(repo?.data);
+      });
+    }
   }, []);
   useEffect(() => {
-    checkAuthentication("admin");
     setTimeout(() => {
-      setLoading(false);
+      if(data?.preloadedAccessLevels == 1){
+        setLoading(false)
+        checkAuthentication("admin");
+      } else {
+        router.push('/sys-admin/auth/dashboardauth')
+      }
     }, 3000);
-  }, [accessSavedAuth, accessUserId]);
+  }, []);
   return (
     <>
       {loading ? (
@@ -53,5 +64,15 @@ const Task: React.FC = () => {
     </>
   );
 };
+
+export const getServerSideProps: GetServerSideProps<PageProps> = async () => {
+  try {
+    const preloadedAccessLevels = await getSecretsIdentifiedAccessLevel(1)
+    return { props : { data: { preloadedAccessLevels }}}
+  } catch (error) {
+    console.log(`Error on get Notification response: ${JSON.stringify(error)} . `)
+    return { props : {error}}
+  }
+}
 
 export default Task;

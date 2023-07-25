@@ -9,7 +9,8 @@ export const config = {
         return {
             TENANT_URL: process.env.NEXT_PUBLIC_BASEURL,
             AUTH_TOKEN: process.env.NEXT_PUBLIC_SUPPRESS_TOKEN,
-            PROD_URL: process.env.NEXT_PUBLIC_TENANT_URL
+            PROD_URL: process.env.NEXT_PUBLIC_TENANT_URL,
+            SELF_URI: process.env.NEXT_PUBLIC_SELF_URI
         }
     }
 }
