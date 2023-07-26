@@ -13,3 +13,6 @@ export const useReferences = () => useSessionStorage<any>("REF", undefined);
 
 export const useUserId = () =>
   useSessionStorage<string | undefined>("UID", undefined);
+
+export const useRouting = () => 
+  useSessionStorage<string | undefined>("DR", undefined)

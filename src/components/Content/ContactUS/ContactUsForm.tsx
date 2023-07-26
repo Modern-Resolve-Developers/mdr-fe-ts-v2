@@ -37,6 +37,7 @@ export const ContactUsForm: React.FC = () => {
                   name='firstname'
                   label='Firstname'
                   shouldUnregister
+                  required
                 />
               </Grid>
               <Grid item xs={6}>

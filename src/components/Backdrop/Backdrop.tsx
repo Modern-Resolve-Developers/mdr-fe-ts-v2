@@ -1,7 +1,7 @@
 import { Backdrop, CircularProgress } from '@mui/material'
 
 type Props = {
-    open?: any
+    open: any
 }
 
 const ControlledBackdrop: React.FC<Props> = ({
