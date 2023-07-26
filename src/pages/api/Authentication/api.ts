@@ -33,4 +33,7 @@ export class AuthenticationApi {
     public authenticationGoogleLogin(email: string | undefined) {
         return this.axios.post(`/api/customer/customer-google-login/${email}`)
     }
+    public authenticatedRouter(requestId: string | undefined){
+        return this.axios.get(`/api/users/get-router/${requestId}`)
+    }
 }

@@ -36,6 +36,9 @@ import { useApiCallBack } from "@/utils/hooks/useApi";
 import { useMutation } from "react-query";
 
 import { meetAtom } from "@/utils/hooks/useAccountAdditionValues";
+import { GetServerSideProps } from "next";
+import { PageProps } from "@/utils/types";
+import { getSecretsIdentifiedAccessLevel } from "@/utils/secrets/secrets_identified_user";
 
 
 const baseJoinFormSchema = z.object({
@@ -90,7 +93,7 @@ const JoinForm = (props: JoinFormProps) => {
   );
 };
 
-const DigitalMeet: React.FC = () => {
+const DigitalMeet: React.FC<PageProps> = ({data}) => {
   const [joinAtom, setJoinAtom] = useAtom(joinMeetAtom);
   const [meetDetails, setMeetDetails] = useAtom(meetAtom);
   const form = useForm<JoinMeetingFormAccount>({
@@ -305,14 +308,22 @@ const DigitalMeet: React.FC = () => {
   const { getPropsDynamic } = useDynamicDashboardContext();
 
   useEffect(() => {
-    getPropsDynamic(localStorage.getItem("uid")).then((repo: any) => {
-      setIdentifiedUser(repo?.data);
-    });
-  }, [idetifiedUser]);
+    if(typeof window !== 'undefined' && window.localStorage) {
+      getPropsDynamic(localStorage.getItem("uid") ?? 0).then((repo: any) => {
+        setIdentifiedUser(repo?.data);
+      });
+    }
+  }, []);
   useEffect(() => {
-    setLoading(!loading);
-    checkAuthentication("admin");
-  }, [accessSavedAuth, accessUserId]);
+    setTimeout(() => {
+      if(data?.preloadedAccessLevels == 1) {
+        setLoading(false)
+        checkAuthentication("admin");
+      } else {
+        router.push('/sys-admin/auth/dashboardauth')
+      }
+    }, 3000)
+  }, []);
   const handleContinue = () => {
     handleSubmit((values) => {
       const obj = {
@@ -402,5 +413,15 @@ const DigitalMeet: React.FC = () => {
     </>
   );
 };
+
+export const getServerSideProps: GetServerSideProps<PageProps> = async () => {
+  try {
+    const preloadedAccessLevels = await getSecretsIdentifiedAccessLevel(1)
+    return { props : { data: { preloadedAccessLevels }}}
+  } catch (error) {
+    console.log(`Error on get Notification response: ${JSON.stringify(error)} . `)
+    return { props : {error}}
+  }
+}
 
 export default DigitalMeet;

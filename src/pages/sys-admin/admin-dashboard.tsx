@@ -32,13 +32,19 @@ import { SessionStorageContextSetup } from "@/utils/context";
 import { useAuthContext } from "@/utils/context/base/AuthContext";
 import { useQuery } from "react-query";
 import { useDynamicDashboardContext } from "@/utils/context/base/DynamicDashboardContext";
-import { DashboardSettingsProps } from "@/components/settings";
+import { PageProps } from "@/utils/types";
+import { GetServerSideProps } from "next";
+import { getSecretsIdentifiedAccessLevel } from "@/utils/secrets/secrets_identified_user";
+import { useRouting } from "@/utils/context/hooks/hooks";
+import { useGlobalsContext } from "@/utils/context/base/GlobalContext";
 if (typeof Highcharts === "object") {
   exportingInit(Highcharts);
   offlineExporting(Highcharts);
 }
 
-const TestAdminDashboard: React.FC = () => {
+
+
+const TestAdminDashboard: React.FC<PageProps> = ({data}) => {
   const { checkAuthentication } = useAuthContext();
   const [loading, setLoading] = useState(true);
   const [options, setOptions] = useState<any>({
@@ -72,68 +78,73 @@ const TestAdminDashboard: React.FC = () => {
   const { accessSavedAuth, accessUserId } = useContext(
     SessionContextMigrate
   ) as SessionStorageContextSetup;
-  const { data, error } = useQuery({
-    queryKey: "FetchUsersReport",
-    queryFn: () => FetchUsersReport.execute().then((response) => response.data),
-  });
+  const router = useRouter()
   const [idetifiedUser, setIdentifiedUser] = useState<any>("");
-
+  const [dr, setDr] = useRouting()
   const { getPropsDynamic } = useDynamicDashboardContext();
-  const [dynamicDashboardEnabled, setDynamicDashboardEnabled] = useState(false);
   useEffect(() => {
-    getPropsDynamic(localStorage.getItem("uid")).then((repo: any) => {
-      setIdentifiedUser(repo?.data);
-    });
+    if(typeof window !== 'undefined' && window.localStorage){
+      getPropsDynamic(localStorage.getItem("uid") ?? 0).then((repo: any) => {
+        setIdentifiedUser(repo?.data);
+      });
+    }
   }, []);
   const calculateReport = () => {
-    for (var x = 0; x < data?.length; x++) {
-      var ifExist = 0;
-      if (options.series.length > 0) {
-        for (var check = 0; check < options.series.length; check++) {
-          if (data[x]?.email == options.series[check]?.name) {
-            ifExist = 1;
-            check = options.series.length;
-            options.series = [];
-            var structure1 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-            for (
-              var structureCount1 = 0;
-              structureCount1 < data?.length;
-              structureCount1++
-            ) {
-              if (data[structureCount1]?.email == data[x]?.email) {
-                structure1[data[structureCount1]?.id] =
-                  data[structureCount1]?.id;
+    FetchUsersReport.execute()
+    .then((response) => {
+      for (var x = 0; x < response.data?.length; x++) {
+        var ifExist = 0;
+        if (options.series.length > 0) {
+          for (var check = 0; check < options.series.length; check++) {
+            if (response.data[x]?.email == options.series[check]?.name) {
+              ifExist = 1;
+              check = options.series.length;
+              options.series = [];
+              var structure1 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+              for (
+                var structureCount1 = 0;
+                structureCount1 < response.data?.length;
+                structureCount1++
+              ) {
+                if (response.data[structureCount1]?.email == response.data[x]?.email) {
+                  structure1[response.data[structureCount1]?.id] =
+                    response.data[structureCount1]?.id;
+                }
               }
+              setOptions({ series: [{ data: structure1 }] });
             }
-            setOptions({ series: [{ data: structure1 }] });
-          }
-          if (ifExist == 0) {
-            var structure = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-            for (
-              var structureCount = 0;
-              structureCount < data?.length;
-              structureCount++
-            ) {
-              if (data[structureCount]?.email == data[x]?.email) {
-                structure[structureCount] = data[structureCount]?.id;
+            if (ifExist == 0) {
+              var structure = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+              for (
+                var structureCount = 0;
+                structureCount < response.data?.length;
+                structureCount++
+              ) {
+                if (response.data[structureCount]?.email == response.data[x]?.email) {
+                  structure[structureCount] = response.data[structureCount]?.id;
+                }
               }
+              setOptions({ series: [{ data: structure }] });
             }
-            setOptions({ series: [{ data: structure }] });
           }
         }
       }
-    }
+    })
   };
   useEffect(() => {
     calculateReport();
-  }, [data]);
+  }, []);
 
   useEffect(() => {
-    checkAuthentication("admin");
     setTimeout(() => {
-      setLoading(false);
+      if(data?.preloadedAccessLevels == 1){
+        setLoading(false)
+        checkAuthentication("admin")
+      } else {
+        router.push('/sys-admin/auth/dashboardauth')
+      }
     }, 3000);
-  }, [accessSavedAuth, accessUserId]);
+  }, []);
 
   return (
     <>
@@ -256,5 +267,15 @@ const TestAdminDashboard: React.FC = () => {
     </>
   );
 };
+
+export const getServerSideProps: GetServerSideProps<PageProps> = async () => {
+  try {
+    const preloadedAccessLevels = await getSecretsIdentifiedAccessLevel(1)
+    return { props : { data: { preloadedAccessLevels }}}
+  } catch (error) {
+    console.log(`Error on get Notification response: ${JSON.stringify(error)} . `)
+    return { props : {error}}
+  }
+}
 
 export default TestAdminDashboard;

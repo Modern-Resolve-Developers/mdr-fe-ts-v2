@@ -51,6 +51,7 @@ import {
   useGoogleAccountInfo,
   useReferences,
   useRefreshToken,
+  useRouting,
   useUserId,
   useUserType,
 } from "@/utils/context/hooks/hooks";
@@ -58,6 +59,9 @@ import {
 import { useCookies } from "react-cookie";
 import { LockClosedIcon } from "@heroicons/react/20/solid";
 import { useMutation, useQuery } from "react-query";
+import { GetServerSideProps } from "next";
+import { getSecretsIdentifiedAccessLevel } from "@/utils/secrets/secrets_identified_user";
+import { PageProps } from "@/utils/types";
 
 const baseSchema = z.object({
   email: requiredString("Your email is required.").email(),
@@ -69,7 +73,8 @@ type JWTAuthLoginTypes = {
   jwtusername: string | any;
   jwtpassword: string | any;
 };
-const Login: React.FC = () => {
+
+const Login: React.FC<PageProps> = ({data}) => {
   const {
     getValues,
     control,
@@ -90,6 +95,7 @@ const Login: React.FC = () => {
   const [uid, setUid] = useUserId();
   const [userType, setUserType] = useUserType();
   const [googleAccountInfo, setGoogleAccountInfo] = useGoogleAccountInfo()
+  const [dr, setDr] = useRouting();
 
   const { setAccessSavedAuth, setAccessUserId, accessSavedAuth, accessUserId } =
     useContext(SessionContextMigrate) as SessionStorageContextSetup;
@@ -100,6 +106,7 @@ const Login: React.FC = () => {
   const router = useRouter();
   const [user, setUser] = useState<any>({});
   const [open, setOpen] = useState(false);
+  const [preload, setPreLoad] = useState(true)
   /* api callbacks */
   const authSignin = useApiCallBack(async (api, args: LoginProps) => {
     const result = await api.authentication.userAuthLogin(args);
@@ -136,6 +143,8 @@ const Login: React.FC = () => {
   const googleCheckAccounts = useApiCallBack(
     async (api, email: string) => await api.users.GoogleCheckAccounts(email)
   );
+  const getAuthenticatedRouter = useApiCallBack(
+    async (api, requestId: string | undefined) => await api.authentication.authenticatedRouter(requestId))
   const loginWithGoogle = useGoogleLogin({
     onSuccess: (codeResponse: any) => {
       setOpen(!open)
@@ -188,8 +197,14 @@ const Login: React.FC = () => {
   const { checkAuthentication } = useAuthContext();
 
   useEffect(() => {
-    checkAuthentication("login");
-  }, [accessSavedAuth, accessUserId]);
+    setTimeout(() => {
+      if(data?.preloadedAccessLevels == 1) {
+        setPreLoad(false)
+        router.push('/sys-admin/auth/dashboardauth')
+      }
+      setPreLoad(false)
+    }, 1000)
+  }, []);
   const [checkedVal, setCheckedVal] = useState(false);
   const checkRememberMe = () => {
     let parseStorage;
@@ -337,9 +352,12 @@ const Login: React.FC = () => {
                       };
                       useJwtAuthLogin.mutate(jwtprops, {
                         onSuccess: (authLoginResponse: any) => {
+                          setDr(response.data?.routeInfo)
                           setReferences(response.data?.bundle[0]);
-                          setUid(response.data?.bundle[0]?.id);
-                          setUserType(response.data?.bundle[0]?.userType);
+                          const uuid: string | undefined = JSON.stringify(response.data?.bundle[0]?.id)
+                          setUid(uuid);
+                          const access_level: string | undefined = JSON.stringify(response.data?.bundle[0]?.userType)
+                          setUserType(access_level);
                           setAccessToken(authLoginResponse?.data?.token);
                           setRefreshToken(
                             authLoginResponse?.data?.refreshToken
@@ -369,16 +387,16 @@ const Login: React.FC = () => {
                                 "success"
                               );
                               if (data?.message == "fetched") {
-                                useIdentifyUserType.mutate(structure.userId, {
-                                  onSuccess: (identified: any) => {
-                                    if (
-                                      identified?.data == "Administrator" ||
-                                      identified?.data == "Developers"
-                                    ) {
-                                      router.push("/sys-admin/admin-dashboard");
+                                console.log(response.data?.routeInfo)
+                                getAuthenticatedRouter.execute(response.data?.routeInfo)
+                                .then((auth: any) => {
+                                    if(auth.data?.access_level == 1) {
+                                      router.push({
+                                        pathname: auth.data?.exactPath,
+                                        query: { key: response.data?.bundle[0]?.id }
+                                      })
                                     }
-                                  },
-                                });
+                                })
                               }
                             });
                         },
@@ -405,118 +423,129 @@ const Login: React.FC = () => {
 
   return (
     <>
-      <div className="flex min-h-full items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div className="w-full max-w-md space-y-8">
-          <div>
-            <img
-              className="mx-auto h-12 w-auto"
-              src="/drlogo.png"
-              alt="Your Company"
-              style={{ width: "25%", height: "auto" }}
-            />
-            <Typography className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-              Sign in to your account
-            </Typography>
-            <p className="mt-2 text-center text-sm text-gray-600">
-              Or{" "}
-              <Link
-                href="/customer-registration"
-                className="font-medium text-indigo-600 hover:text-indigo-500"
-              >
-                start creating your account
-              </Link>
-            </p>
-          </div>
-          <div className="mt-8 space-y-6">
-            <input type="hidden" name="remember" defaultValue="true" />
-            <div className="-space-y-px rounded-md shadow-sm">
-              <div>
-                <label htmlFor="email-address" className="sr-only">
-                  Email address
-                </label>
-                <ControlledTextField
-                  control={control}
-                  name="email"
-                  required
-                  label="Email"
-                />
-              </div>
-              <div>
-                <label htmlFor="password" className="sr-only">
-                  Password
-                </label>
-                <ControlledTextField
-                  control={control}
-                  name="password"
-                  required
-                  type="password"
-                  label="Password"
-                  onKeyPress={enterKeyTrigger}
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                  onChange={handleCheckBox}
-                  checked={checkedVal}
-                />
-                <label
-                  htmlFor="remember-me"
-                  className="ml-2 block text-sm text-gray-900"
-                >
-                  Remember me
-                </label>
-              </div>
-
-              <div className="text-sm">
-                {/* <a
-                  
-                  className="font-medium text-indigo-600 hover:text-indigo-500"
-                >
-                  Forgot your password?
-                </a> */}
-                <Link
-                  href={{
-                    pathname: "/forgot-password",
-                  }}
-                  className="font-medium text-indigo-600 hover:text-indigo-500"
-                >
-                  Forgot your password?
-                </Link>
-              </div>
-            </div>
-
+      {preload ? <ControlledBackdrop open={preload} />
+      :<div className="flex min-h-full items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md space-y-8">
+        <div>
+          <img
+            className="mx-auto h-12 w-auto"
+            src="/drlogo.png"
+            alt="Your Company"
+            style={{ width: "25%", height: "auto" }}
+          />
+          <Typography className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
+            Sign in to your account
+          </Typography>
+          <p className="mt-2 text-center text-sm text-gray-600">
+            Or{" "}
+            <Link
+              href="/customer-registration"
+              className="font-medium text-indigo-600 hover:text-indigo-500"
+            >
+              start creating your account
+            </Link>
+          </p>
+        </div>
+        <div className="mt-8 space-y-6">
+          <input type="hidden" name="remember" defaultValue="true" />
+          <div className="-space-y-px rounded-md shadow-sm">
             <div>
-              <button
-                disabled={!isValid}
-                onClick={handleSignin}
-                className="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-              >
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-                  <LockClosedIcon
-                    className="h-5 w-5 text-indigo-500 group-hover:text-indigo-400"
-                    aria-hidden="true"
-                  />
-                </span>
-                Sign in
-              </button>
-              <GoogleButton
-                onClick={() => loginWithGoogle()}
-                style={{ width: "100%", marginTop: "20px" }}
+              <label htmlFor="email-address" className="sr-only">
+                Email address
+              </label>
+              <ControlledTextField
+                control={control}
+                name="email"
+                required
+                label="Email"
+              />
+            </div>
+            <div>
+              <label htmlFor="password" className="sr-only">
+                Password
+              </label>
+              <ControlledTextField
+                control={control}
+                name="password"
+                required
+                type="password"
+                label="Password"
+                onKeyPress={enterKeyTrigger}
               />
             </div>
           </div>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <input
+                id="remember-me"
+                name="remember-me"
+                type="checkbox"
+                className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                onChange={handleCheckBox}
+                checked={checkedVal}
+              />
+              <label
+                htmlFor="remember-me"
+                className="ml-2 block text-sm text-gray-900"
+              >
+                Remember me
+              </label>
+            </div>
+
+            <div className="text-sm">
+              {/* <a
+                
+                className="font-medium text-indigo-600 hover:text-indigo-500"
+              >
+                Forgot your password?
+              </a> */}
+              <Link
+                href={{
+                  pathname: "/forgot-password",
+                }}
+                className="font-medium text-indigo-600 hover:text-indigo-500"
+              >
+                Forgot your password?
+              </Link>
+            </div>
+          </div>
+
+          <div>
+            <button
+              disabled={!isValid}
+              onClick={handleSignin}
+              className="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            >
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                <LockClosedIcon
+                  className="h-5 w-5 text-indigo-500 group-hover:text-indigo-400"
+                  aria-hidden="true"
+                />
+              </span>
+              Sign in
+            </button>
+            <GoogleButton
+              onClick={() => loginWithGoogle()}
+              style={{ width: "100%", marginTop: "20px" }}
+            />
+          </div>
         </div>
       </div>
+    </div>}
       <ControlledBackdrop open={open} />
     </>
   );
 };
+
+export const getServerSideProps: GetServerSideProps<PageProps> = async () => {
+  try {
+    const preloadedAccessLevels = await getSecretsIdentifiedAccessLevel(1)
+    return { props : { data: { preloadedAccessLevels }}}
+  } catch (error) {
+    console.log(`Error on get Notification response: ${JSON.stringify(error)} . `)
+    return { props : {error}}
+  }
+}
 
 export default Login;

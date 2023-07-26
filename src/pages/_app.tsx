@@ -73,6 +73,7 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
       setStoredValue(savedAuthenticationStorage);
       setStoredType(savedUserType);
     } else {
+      console.log(savedUserType)
       setLoading(false);
       setStoredValue(accessToken);
       setStoredType(savedUserType);

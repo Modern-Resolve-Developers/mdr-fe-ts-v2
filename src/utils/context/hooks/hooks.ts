@@ -16,3 +16,5 @@ export const useUserId = () =>
 
 export const useGoogleAccountInfo = () => 
   useSessionStorage<string | undefined>("GGL", undefined)
+export const useRouting = () => 
+  useSessionStorage<string | undefined>("DR", undefined)
