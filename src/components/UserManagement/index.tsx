@@ -124,13 +124,14 @@ export const FormAdditionalDetails = () => {
   const [usersdata, setUsersData] = useState({
     id: 0,
   });
+  const [loading, setLoading] = useState<boolean>(true);
   const [editModal, setEditModal] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
   const [deleteUID, setDeleteUID] = useState({ id: 0 });
   const { handleOnToast } = useContext(
     ToastContextContinue
   ) as ToastContextSetup;
-  const { users, callBackSyncGetAllUsers } = useContext(
+  const { users, callBackSyncGetAllUsers, tableLoading, setTableLoading } = useContext(
     ARContext
   ) as ContextSetup;
   const [modalDetails, setModalDetails] = useState({
@@ -309,7 +310,7 @@ export const FormAdditionalDetails = () => {
               </>
             ) : (
               <>
-                {!params.row.userType.includes(1) && (
+                {params.row.userType != 1 && (
                   <ControlledButton
                     text="Lock"
                     variant="outlined"
@@ -326,7 +327,7 @@ export const FormAdditionalDetails = () => {
               </>
             )}
             &nbsp;
-            {!params.row.userType.includes(1) && params.row.isstatus.includes(1) && (
+            {params.row.userType != 1 && params.row.isstatus.includes(1) && (
               <ControlledButton
                 text="DELETE"
                 variant="outlined"
@@ -603,6 +604,7 @@ export const FormAdditionalDetails = () => {
   };
   useEffect(() => {
     callBackSyncGetAllUsers();
+    
   }, []);
 
   useEffect(() => {
@@ -659,6 +661,7 @@ export const FormAdditionalDetails = () => {
                 data={users}
                 handleClick={handleClickProjectTable}
                 columns={columns}
+                loading={tableLoading}
               />
             </>
           )}
