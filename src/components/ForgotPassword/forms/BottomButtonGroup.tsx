@@ -16,7 +16,7 @@ export type BottomButtonGroupProps = {
 };
 
 export const BottomButtonGroup: React.FC<BottomButtonGroupProps> = ({
-  continueButtonLabel = "Confirm Email",
+  continueButtonLabel = "Continue",
   onContinue,
   onBack,
   hideBack,
@@ -70,7 +70,8 @@ export const BottomButtonGroup: React.FC<BottomButtonGroupProps> = ({
           {continueButtonLabel}
         </Button>
       </Grid>
-      <Grid item xs={8} display="flex" justifyContent="center">
+      {
+        <Grid item xs={8} display="flex" justifyContent="center">
           <Button className="back-button"
             sx={{ mx: "auto", mt: 2, width: [, 300] }}
             fullWidth
@@ -80,18 +81,7 @@ export const BottomButtonGroup: React.FC<BottomButtonGroupProps> = ({
             {backtoLogin}
           </Button>
         </Grid>
-      {!hideBack && (
-        <Grid item xs={8} display="flex" justifyContent="center">
-          <Button
-            sx={{ mx: "auto", mt: 2, width: [, 300] }}
-            fullWidth
-            variant="text"
-            onClick={handleBack}
-          >
-            Back
-          </Button>
-        </Grid>
-      )}
+      }
     </>
   );
 };

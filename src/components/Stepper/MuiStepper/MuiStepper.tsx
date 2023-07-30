@@ -11,15 +11,14 @@ import {
   
  
   
-  const OnboardingStepIcon: React.FC<StepIconProps & { paletteColors: any }> = ({ active, completed, paletteColors }) => {
+  const OnboardingStepIcon: React.FC<StepIconProps> = ({ active, completed }) => {
     return (
       <Box
         sx={{
           borderRadius: '100%',
           borderColor: (theme) => {
             if (completed || active) {
-              paletteColors = '#FAA719'
-              return paletteColors;
+              return '#FAA719';
             }
             return theme.palette.grey[400];
           },

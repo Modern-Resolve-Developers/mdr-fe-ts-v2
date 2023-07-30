@@ -152,7 +152,7 @@ export const EmailDetailsForm = () => {
     <FormProvider {...form}>
       <EmailForm />
       <ControlledBackdrop open={backdrop} />
-      <BottomButtonGroup
+      <BottomButtonGroup continueButtonLabel="Confirm Email"
         disabledContinue={!isValid}
         onContinue={handleContinue}
         hideBack
