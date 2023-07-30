@@ -34,11 +34,12 @@ export const ForgotPasswordAdditionalDetails = () => {
 
   return (
     <>
-      <Container sx={{ mt: 5 }}>
-        <UncontrolledCard>
-          <Typography variant="subtitle1">
-            Digital Resolve | Forgot Password
+      <Container className="forgot-pw-container" sx={{ pt: 30 }}>
+        <UncontrolledCard className="mdr-forgot-pwCard">
+          <Typography className="forgot-pw-title" variant="subtitle1">
+          Forgot Password
           </Typography>
+          <img className="mdr-logo" src="mdr-updated-logo.png" alt="mdrLogo"/>
           <OnboardingStepper
             steps={[
               "Email Information",

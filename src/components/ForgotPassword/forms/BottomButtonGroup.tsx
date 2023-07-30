@@ -12,10 +12,11 @@ export type BottomButtonGroupProps = {
   disableBtn?: boolean;
   onresend?: () => void
   countdown?: number
+  backtoLogin?: string;
 };
 
 export const BottomButtonGroup: React.FC<BottomButtonGroupProps> = ({
-  continueButtonLabel = "Continue",
+  continueButtonLabel = "Confirm Email",
   onContinue,
   onBack,
   hideBack,
@@ -23,7 +24,8 @@ export const BottomButtonGroup: React.FC<BottomButtonGroupProps> = ({
   resendBtn,
   disableBtn,
   onresend,
-  countdown
+  countdown,
+  backtoLogin = "< Back to Log in"
 }) => {
   // const { nextfp, previous } = usefpActiveStep();
   const { next, previous } = useActiveStepContext()
@@ -58,10 +60,9 @@ export const BottomButtonGroup: React.FC<BottomButtonGroupProps> = ({
       </Grid>
      }
       <Grid item xs={8} display="flex" justifyContent="center">
-        <Button
+        <Button className="forgot-button"
           sx={{ mx: "auto", mt: 2, width: [, 300] }}
-          color="primary"
-          variant="outlined"
+          variant="contained"
           fullWidth
           disabled={disabledContinue}
           onClick={handleContinue}
@@ -69,6 +70,16 @@ export const BottomButtonGroup: React.FC<BottomButtonGroupProps> = ({
           {continueButtonLabel}
         </Button>
       </Grid>
+      <Grid item xs={8} display="flex" justifyContent="center">
+          <Button className="back-button"
+            sx={{ mx: "auto", mt: 2, width: [, 300] }}
+            fullWidth
+            variant="text"
+            onClick={handleBack}
+          >
+            {backtoLogin}
+          </Button>
+        </Grid>
       {!hideBack && (
         <Grid item xs={8} display="flex" justifyContent="center">
           <Button
@@ -77,7 +88,7 @@ export const BottomButtonGroup: React.FC<BottomButtonGroupProps> = ({
             variant="text"
             onClick={handleBack}
           >
-            Back
+            Back 
           </Button>
         </Grid>
       )}

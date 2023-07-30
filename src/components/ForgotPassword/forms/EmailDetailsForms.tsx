@@ -9,7 +9,7 @@ import { useForm, FormProvider, useFormContext } from "react-hook-form";
 import { atom, useAtom } from "jotai";
 import { emailAtom } from "@/utils/hooks/useAccountAdditionValues";
 import ControlledGrid from "@/components/Grid/Grid";
-import { Grid } from "@mui/material";
+import { Grid, Typography } from "@mui/material";
 import { useMutation } from "react-query";
 import { useApiCallBack } from "@/utils/hooks/useApi";
 import ControlledBackdrop from "@/components/Backdrop/Backdrop";
@@ -30,6 +30,12 @@ const EmailForm = () => {
 
   return (
     <>
+      <Typography className="forgot-text">
+      Forgot your password?
+      </Typography>
+      <Typography className="forgot-text-subtitle">
+          Please enter the email address associated with your account.
+      </Typography>
       <ControlledGrid>
         <Grid item xs={4}></Grid>
         <Grid item xs={4}>
@@ -37,7 +43,7 @@ const EmailForm = () => {
             control={control}
             required
             name="email"
-            label="Email"
+            label="Email Address"
             shouldUnregister
           />
         </Grid>
