@@ -88,7 +88,7 @@ export const BottomButtonGroup: React.FC<BottomButtonGroupProps> = ({
             variant="text"
             onClick={handleBack}
           >
-            Back 
+            Back
           </Button>
         </Grid>
       )}
