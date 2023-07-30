@@ -70,7 +70,7 @@ export const BottomButtonGroup: React.FC<BottomButtonGroupProps> = ({
           {continueButtonLabel}
         </Button>
       </Grid>
-      {
+      {!hideBack && (
         <Grid item xs={8} display="flex" justifyContent="center">
           <Button className="back-button"
             sx={{ mx: "auto", mt: 2, width: [, 300] }}
@@ -81,7 +81,7 @@ export const BottomButtonGroup: React.FC<BottomButtonGroupProps> = ({
             {backtoLogin}
           </Button>
         </Grid>
-      }
+      )}
     </>
   );
 };
