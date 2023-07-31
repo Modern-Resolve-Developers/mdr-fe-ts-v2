@@ -30,6 +30,9 @@ import { useQuery, useMutation } from "react-query";
 
 import { zxcvbn, zxcvbnOptions } from "@zxcvbn-ts/core";
 import * as zxcvbnCommonPackage from "@zxcvbn-ts/language-common";
+import { GetServerSideProps } from "next";
+import { PageProps } from "@/utils/types";
+import { workWithAccountSetup } from "@/utils/secrets/secrets_migrate_route";
 
 const baseSchema = z.object({
   firstName: requiredString("Your firstname is required."),
@@ -64,12 +67,8 @@ const schema = z
 
 export type AccountCreation = z.infer<typeof schema>;
 
-const CreateAccount: React.FC = () => {
-  useRefreshTokenHandler();
-  const UAMCheckEmail = useApiCallBack(
-    async (api, randomNum: Number) =>
-      await api.users.UAMCheckAccounts(randomNum)
-  );
+const CreateAccount: React.FC<PageProps> = ({data}) => {
+  const [loading, setLoading] = useState(false)
   const UAMCreationOfAccount = useApiCallBack(
     async (api, args: UAMCreationAdminArgs) =>
       await api.users.UAMCreateAdmin(args)
@@ -123,14 +122,12 @@ const CreateAccount: React.FC = () => {
   const hasNoMiddleName = watch("hasNoMiddleName");
   const hasNoMiddleNamePrevValue = usePreviousValue(hasNoMiddleName);
   const passwordWatcher = watch("password");
-  const { data, isLoading, error } = useQuery("checkUser", () =>
-    UAMCheckEmail.execute(1).then((response) => response.data)
-  );
   useEffect(() => {
-    if (data != "not_exist") {
-      router.push("/");
+    if(!data?.preloadedAccountSetup){
+      router.push('/')
+      setTimeout(() => setLoading(false), 2000)
     }
-  }, [data, isLoading, error]);
+  }, [data]);
 
   useEffect(() => {
     resetField("middleName");
@@ -141,8 +138,7 @@ const CreateAccount: React.FC = () => {
     hasNoMiddleName,
     hasNoMiddleNamePrevValue,
     resetField,
-    trigger,
-    passwordWatcher,
+    trigger
   ]);
   const result = zxcvbn(getValues().password);
   const useJwtAuthAccountCreation = useMutation(
@@ -207,7 +203,7 @@ const CreateAccount: React.FC = () => {
                   },
                   {
                     onSuccess: (response) => {
-                      const { data } = response;
+                      const { data }: any = response;
                       if (data?.status == "Success") {
                         setOpen(false);
                         reset({});
@@ -251,6 +247,8 @@ const CreateAccount: React.FC = () => {
 
   return (
     <>
+      {loading ? <ControlledBackdrop open={loading} /> 
+      :
       <Container style={{ marginTop: "100px" }}>
         <UncontrolledCard>
           <Typography variant="h5" mb="2">
@@ -341,9 +339,25 @@ const CreateAccount: React.FC = () => {
           </FormProvider>
         </UncontrolledCard>
         <ControlledBackdrop open={open} />
-      </Container>
+      </Container>}
     </>
   );
 };
+
+export const getServerSideProps: GetServerSideProps<PageProps> = async () => {
+  try {
+    const preloadedAccountSetup = await workWithAccountSetup()
+    return {
+      props:{
+        data: {
+          preloadedAccountSetup
+        }
+      }
+    }
+  } catch (error) {
+    console.log(`Error on get migration response: ${JSON.stringify(error)}`)
+    return { props : {error}}
+  }
+}
 
 export default CreateAccount;

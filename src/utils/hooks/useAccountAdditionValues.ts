@@ -16,6 +16,7 @@ import { JoinMeetingFormAccount } from "@/pages/sys-admin/digital-meet";
 import { ClientAccountCreation } from "@/components/client";
 import { UserProfileType } from "../schema/UserProfileSchema";
 import { ContactType } from "../schema/ContactSchema";
+import { VerifyType } from "../schema/VerifySchema";
 
 type AccountCreationFormData = {
   accountCreation: AccountCreation;
@@ -68,6 +69,8 @@ export const personalAccountDetailsAtom = atom<
 export const editFormUserAccountAtom = atom<EditFormUserAccount | undefined>(
   undefined
 );
+
+export const verifyAtom = atom<VerifyType | undefined>(undefined)
 
 export const credentialAccountDetailsAtom = atom<
   CredentialsAccountCreation | undefined

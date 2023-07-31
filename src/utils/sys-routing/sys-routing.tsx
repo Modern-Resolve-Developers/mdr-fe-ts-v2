@@ -51,6 +51,19 @@ export const sidebarSettingsArea: SettingsListOptions[] = [
     }
 ]
 
+export const clientSidebarList: sidebarProps[] = [
+    {
+        objectID: 1,
+        name: 'Client',
+        title: 'Dashboard',
+        dropDown: false,
+        uri: '/client/client-dashboard',
+        icon: (
+            <AssessmentIcon className='text-white' />
+        )
+    }
+]
+
 export const sidebarList: sidebarProps[] = [
     {
         objectID: 1,
@@ -250,3 +263,16 @@ export const sidebarExpand: sidebarExpandProps[] = [
         ]
     }
 ]
+
+export type RouteEntity = {
+    id: number
+    access_level: number
+    ToWhomRoute: string
+    exactPath: string
+}
+
+export const toBeMigrated: RouteEntity[] = []
+
+export type MigrationReceiver = {
+    JsonRoutes: string
+}

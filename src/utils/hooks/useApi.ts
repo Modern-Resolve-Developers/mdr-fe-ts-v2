@@ -8,6 +8,8 @@ import { UsersApi } from "@/pages/api/users/api";
 import { AuthenticationApi } from "@/pages/api/Authentication/api";
 
 import { getItem } from "../session-storage";
+import { SecureApi } from "@/pages/api/secure-api";
+import { ServerLessApi } from "@/pages/api/Serverless/api";
 
 
 const HTTP_OPTIONS: HttpOptions = {
@@ -20,9 +22,17 @@ const HTTP_OPTIONS: HttpOptions = {
         if(req.headers && accessToken) req.headers.Authorization = `Bearer ${accessToken}`
     }
 }
+const SELF_HTTP_OPTIONS: HttpOptions = {
+    headers: {
+        "Content-Type": "application/json"
+    },
+    onRequest: (req: any) => {
+        const accessToken = getItem<string | undefined>('AT')
+        if(req.headers && accessToken) req.headers.Authorization = `Bearer ${accessToken}`
+    }
+}
 
-
-
+export const SelfHttpClient = new Http({ ...SELF_HTTP_OPTIONS, baseURL: config.value.SELF_URI })
 export const httpClient = new Http({ ...HTTP_OPTIONS, baseURL : config.value.TENANT_URL })
 export const httpSsrClient = new Http({
     ...HTTP_OPTIONS,
@@ -34,15 +44,29 @@ useAsyncCallback(async (args?: A) => {
         try {
             return await asyncFn(createApi(httpClient.client), args as A);
         } catch (e: any) {
-            throw e
+            handleError(e)
         }
-    })
+})
+
+export const useSecureHiddenNetworkApi = <R, A extends unknown>(asyncFn: (api: SecureApi, args: A) => Promise<R>) => useAsyncCallback(async (args?: A) => {
+    try {
+        return await asyncFn(secureCreateApi(SelfHttpClient.client), args as A)
+    } catch (error) {
+        handleError(error)
+    }
+}) 
 
 function createApi(client: AxiosInstance){
     return new Api(
         new AuthenticationApi(client),
         new MdrApi(client),
         new UsersApi(client)
+    )
+}
+
+function secureCreateApi(client: AxiosInstance){
+    return new SecureApi(
+        new ServerLessApi(client)
     )
 }
 

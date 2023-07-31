@@ -20,9 +20,10 @@ import { useMutation } from "react-query";
 import { GetServerSideProps } from "next";
 import { PageProps } from "@/utils/types";
 import { getSecretsIdentifiedAccessLevel } from "@/utils/secrets/secrets_identified_user";
+import { useToastContext } from "@/utils/context/base/ToastContext";
 
 declare var JitsiMeetExternalAPI: any;
-const MeetPage: React.FC<PageProps> = ({data}) => {
+const MeetPage: React.FC = () => {
   const [joinAtom, setJoinAtom] = useAtom(joinMeetAtom);
   const [meetDetails, setMeetDetails] = useAtom(meetAtom);
   const [loading, setLoading] = useState(true);
@@ -33,12 +34,10 @@ const MeetPage: React.FC<PageProps> = ({data}) => {
   const router = useRouter();
   const { name } = useMeetContext();
   const { match } = router.query;
-  const { checkAuthentication } = useAuthContext();
-  const { accessSavedAuth, accessUserId } = useContext(
-    SessionContextMigrate
-  ) as SessionStorageContextSetup;
+  const { signoutProcess, disableRefreshTokenCalled, tokenExpired, TrackTokenMovement, expirationTime, AlertTracker, FormatExpiry, refreshTokenBeingCalled, isMouseMoved, isKeyPressed,
+    accessToken } = useAuthContext();
   const [idetifiedUser, setIdentifiedUser] = useState<any>("");
-
+  const { handleOnToast } = useToastContext()
   const { getPropsDynamic } = useDynamicDashboardContext();
 
   useEffect(() => {
@@ -49,15 +48,45 @@ const MeetPage: React.FC<PageProps> = ({data}) => {
     }
   }, []);
   useEffect(() => {
-    setTimeout(() => {
-      if(data?.preloadedAccessLevels == 1) {
+    
+    if(!accessToken || accessToken == undefined) {
+      router.push('/login')
+      setTimeout(() => {
         setLoading(false)
-        checkAuthentication("admin");
-      } else {
-        router.push('/sys-admin/auth/dashboardauth')
+      }, 2000)
+    } else {
+      setLoading(false)
+      const isExpired = TrackTokenMovement()
+      if(isExpired) {
+        signoutProcess()
+        handleOnToast(
+          "Token expired. Please re-login.",
+          "top-right",
+          false,
+          true,
+          true,
+          true,
+          undefined,
+          "dark",
+          "error"
+        );
       }
-    }, 3000);
-  }, [accessSavedAuth, accessUserId]);
+    }
+  }, [tokenExpired]);
+  useEffect(() => {
+    if(!disableRefreshTokenCalled) {
+      if(isMouseMoved) {
+        refreshTokenBeingCalled()
+      }
+    }
+  }, [isMouseMoved, disableRefreshTokenCalled])
+  useEffect(() => {
+    if(!disableRefreshTokenCalled) {
+      if(isKeyPressed){
+        refreshTokenBeingCalled()
+      }
+    }
+  }, [isKeyPressed, disableRefreshTokenCalled])
   useEffect(() => {
     if (!jitsiApiRef.current && containerRef.current) {
       jitsiApiRef.current = new JitsiMeetExternalAPI("meet.jit.si", {
@@ -116,20 +145,18 @@ const MeetPage: React.FC<PageProps> = ({data}) => {
       {loading ? (
         <ControlledBackdrop open={loading} />
       ) : (
+        <>
+         {
+            expirationTime != null && expirationTime <= 30 * 1000 &&
+            AlertTracker(
+              `You are idle. Token expires in: ${FormatExpiry(expirationTime)}`, "error"
+            )
+          }
         <div ref={containerRef}></div>
+        </>
       )}
     </>
   );
 };
-
-export const getServerSideProps: GetServerSideProps<PageProps> = async () => {
-  try {
-    const preloadedAccessLevels = await getSecretsIdentifiedAccessLevel(1)
-    return { props : { data: { preloadedAccessLevels }}}
-  } catch (error) {
-    console.log(`Error on get Notification response: ${JSON.stringify(error)} . `)
-    return { props : {error}}
-  }
-}
 
 export default MeetPage;

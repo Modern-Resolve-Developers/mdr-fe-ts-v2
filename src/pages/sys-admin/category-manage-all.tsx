@@ -31,12 +31,14 @@ import { ControlledPopoverButton } from "@/components/Button/PopoverButton";
 import { NormalButton } from "@/components/Button/NormalButton";
 import { SessionContextMigrate } from "@/utils/context/base/SessionContext";
 import { SessionStorageContextSetup } from "@/utils/context";
-import { useQuery } from "react-query";
+import { useMutation, useQuery } from "react-query";
 import { useDynamicDashboardContext } from "@/utils/context/base/DynamicDashboardContext";
 import { useAuthContext } from "@/utils/context/base/AuthContext";
 import { GetServerSideProps } from "next";
 import { PageProps } from "@/utils/types";
 import { getSecretsIdentifiedAccessLevel } from "@/utils/secrets/secrets_identified_user";
+import { useUserId } from "@/utils/context/hooks/hooks";
+import { AxiosResponse } from "axios";
 const categoryManagementBaseSchema = z.object({
   label: requiredString("Label is required."),
   type: requiredString("kindly select type."),
@@ -92,7 +94,7 @@ const CategoryForm = () => {
   );
 };
 
-const CategoryManageAll: React.FC<PageProps> = ({data}) => {
+const CategoryManageAll: React.FC = () => {
   const [categoryManageAtom, setCategoryManageAtom] = useAtom(
     categoryManagementAtom
   );
@@ -103,10 +105,8 @@ const CategoryManageAll: React.FC<PageProps> = ({data}) => {
   const handleChangeTabs = (event: React.SyntheticEvent, newValue: number) => {
     setValueChange(newValue);
   };
-  const { checkAuthentication } = useAuthContext();
-  const { accessSavedAuth, accessUserId } = useContext(
-    SessionContextMigrate
-  ) as SessionStorageContextSetup;
+  const { signoutProcess, tokenExpired, disableRefreshTokenCalled, TrackTokenMovement, expirationTime, AlertTracker, FormatExpiry, refreshTokenBeingCalled, isMouseMoved, isKeyPressed,
+    accessToken } = useAuthContext();
   const router = useRouter();
   const CreationProductCategory = useApiCallBack(
     async (api, args: { label: string; value: string; type: string }) =>
@@ -190,7 +190,7 @@ const CategoryManageAll: React.FC<PageProps> = ({data}) => {
   const [idetifiedUser, setIdentifiedUser] = useState<any>("");
 
   const { getPropsDynamic } = useDynamicDashboardContext();
-
+  const [uid, setUid] = useUserId()
   useEffect(() => {
     if(typeof window !== 'undefined' && window.localStorage) {
       getPropsDynamic(localStorage.getItem("uid") ?? 0).then((repo: any) => {
@@ -199,15 +199,42 @@ const CategoryManageAll: React.FC<PageProps> = ({data}) => {
     }
   }, []);
   useEffect(() => {
-    setTimeout(() => {
-      if(data?.preloadedAccessLevels == 1) {
-        setPreLoad(false)
-        checkAuthentication("admin");
-      } else {
-        router.push('/sys-admin/auth/dashboardauth')
+    if(!accessToken || accessToken == undefined) {
+      router.push('/login')
+      setTimeout(() => setPreLoad(false), 2000)
+    } else {
+      setPreLoad(false)
+      const isExpired = TrackTokenMovement()
+      if(isExpired) {
+        signoutProcess()
+        handleOnToast(
+          "Token expired. Please re-login.",
+          "top-right",
+          false,
+          true,
+          true,
+          true,
+          undefined,
+          "dark",
+          "error"
+        );
       }
-    }, 3000);
-  }, []);
+    }
+  }, [tokenExpired]);
+  useEffect(() => {
+    if(!disableRefreshTokenCalled){
+      if(isMouseMoved) {
+        refreshTokenBeingCalled()
+      }
+    }
+  }, [isMouseMoved, disableRefreshTokenCalled])
+  useEffect(() => {
+    if(!disableRefreshTokenCalled){
+      if(isKeyPressed){
+        refreshTokenBeingCalled()
+      }
+    }
+  }, [isKeyPressed, disableRefreshTokenCalled])
   const {
     formState: { isValid },
     handleSubmit,
@@ -215,7 +242,7 @@ const CategoryManageAll: React.FC<PageProps> = ({data}) => {
     setValue,
   } = form;
   useEffect(() => {
-    GetAllProductCategory.execute().then(response => {
+    GetAllProductCategory.execute().then((response: any) => {
       setCategoryData(response.data)
     }).catch(error => {
       if(error.response?.status === 401) {
@@ -278,6 +305,12 @@ const CategoryManageAll: React.FC<PageProps> = ({data}) => {
         <ControlledBackdrop open={preload} />
       ) : (
         <Container>
+          {
+            expirationTime != null && expirationTime <= 30 * 1000 &&
+            AlertTracker(
+              `You are idle. Token expires in: ${FormatExpiry(expirationTime)}`, "error"
+            )
+          }
           <UncontrolledCard>
             <ControlledTypography
               variant="h6"
@@ -330,15 +363,5 @@ const CategoryManageAll: React.FC<PageProps> = ({data}) => {
     </>
   );
 };
-
-export const getServerSideProps: GetServerSideProps<PageProps> = async () => {
-  try {
-    const preloadedAccessLevels = await getSecretsIdentifiedAccessLevel(1)
-    return { props : { data: { preloadedAccessLevels }}}
-  } catch (error) {
-    console.log(`Error on get Notification response: ${JSON.stringify(error)} . `)
-    return { props : {error}}
-  }
-}
 
 export default CategoryManageAll;

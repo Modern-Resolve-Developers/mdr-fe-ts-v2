@@ -37,6 +37,9 @@ export class UsersApi {
         return this.axios.get(`/api/users/google-check-verify/${email}`)
     }
     public CustomerAccountCreation(props : UAMAddRequestArgs) {
-        return this.axios.post('/api/users/customer-account-creation', props)
+        return this.axios.post(`/api/users/customer-account-creation/${props.key}`, props)
+    }
+    public findEmailOnCustomerRegistration(email: string) {
+        return this.axios.get(`/api/users/customer-check-email/${email}`)
     }
 }

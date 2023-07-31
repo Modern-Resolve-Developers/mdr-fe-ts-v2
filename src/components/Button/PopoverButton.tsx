@@ -1,6 +1,6 @@
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { 
-    IconButton, Button, Popover
+    IconButton, Button, Popover, SxProps, Theme
 } from '@mui/material'
 import { cloneElement } from 'react';
 
@@ -12,6 +12,7 @@ type PopoverProps = {
     handleClosePopOver: () => void
     id: any
     anchorOrigin: any
+    sx?: SxProps<Theme>
 }
 
 export const ControlledPopoverButton: React.FC<PopoverProps> = (props) => {
@@ -22,12 +23,13 @@ export const ControlledPopoverButton: React.FC<PopoverProps> = (props) => {
         handleShowPopOver,
         handleClosePopOver,
         id,
-        anchorOrigin
+        anchorOrigin,
+        sx
     } = props;
 
     return (
         <>
-            <IconButton aria-describedby={id} onClick={handleShowPopOver}>
+            <IconButton sx={sx} aria-describedby={id} onClick={handleShowPopOver}>
                 <MoreVertIcon />
             </IconButton>
             <Popover

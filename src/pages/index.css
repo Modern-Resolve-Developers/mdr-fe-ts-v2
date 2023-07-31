@@ -49,6 +49,12 @@ body {
   );
   height: 100vh;
 }
+.verify-account-container {
+  background: var(--orig-bg, linear-gradient(180deg, #FFDF8F 0%, #8B255B 100%));
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
 .cl-account-creation {
   background: var(
     --bg,

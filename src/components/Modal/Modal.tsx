@@ -16,6 +16,7 @@ type ModalProps = {
     buttonTextDecline?: string
     color?: any
     maxWidth?: any
+    enableDecline?: boolean
 }
 
 const ControlledModal: React.FC<ModalProps> = ({
@@ -28,7 +29,8 @@ const ControlledModal: React.FC<ModalProps> = ({
     buttonTextAccept,
     buttonTextDecline,
     color,
-    maxWidth
+    maxWidth,
+    enableDecline = true
 }) => {
     return(
         <>
@@ -49,9 +51,11 @@ const ControlledModal: React.FC<ModalProps> = ({
                 </DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                <Button sx={{
-                    display: buttonTextAccept == 'NO-BTN' ? 'none' : ''
-                }} variant='outlined' onClick={handleDecline}>{buttonTextDecline}</Button>
+                {
+                    !enableDecline && <Button sx={{
+                        display: buttonTextAccept == 'NO-BTN' ? 'none' : ''
+                    }} variant='outlined' onClick={handleDecline}>{buttonTextDecline}</Button>
+                }
                 <Button sx={{
                     display: buttonTextAccept == 'NO-BTN' ? 'none' : ''
                 }} variant='outlined' color={color} onClick={handleSubmit} autoFocus>

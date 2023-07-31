@@ -74,7 +74,7 @@ const ControlledAdministratorSidebar: React.FC<AdminSidebarProps> = (props) => {
               <Box className="flex gap-2 items-center">
                 {/* image logo here */}
                 <img
-                  src="/natwest.png"
+                  src="/drlogo.png"
                   style={{
                     width: "100%",
                   }}
@@ -199,7 +199,7 @@ const ControlledAdministratorSidebar: React.FC<AdminSidebarProps> = (props) => {
             </List>
             <Divider className="bg-sideBarTabHover" />
             <List>
-              {idetifiedUser == "Administrator" && sidebarSettingsArea.map((item, index) => (
+              {idetifiedUser == 1 && sidebarSettingsArea.map((item, index) => (
                 <Box className="flex flex-col items-center">
                   <ListItem
                     key={item.text}
@@ -252,7 +252,7 @@ const ControlledAdministratorSidebar: React.FC<AdminSidebarProps> = (props) => {
                 open ? "block font-serif text-white text-center" : "hidden"
               }
             >
-              All rights Reserved WTW
+              All rights Reserved DGR
             </h3>
           </Box>
           {/* SIDEBAR FOOTER ENDS */}

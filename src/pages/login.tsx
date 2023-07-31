@@ -3,21 +3,18 @@ import {
   ControlledButton,
   ControlledBackdrop,
 } from "@/components";
-import { Card, CardContent, Container, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
 import { useState, useEffect, useContext } from "react";
 import { ControlledTextField } from "@/components/TextField/TextField";
 import { FieldValues, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { requiredString } from "@/utils/formSchema";
-import { usePreviousValue } from "@/utils/hooks/usePreviousValue";
-import { buildHttp } from "./api/http";
-import { PrimaryButton, OutlinedButton } from "@/components/Button";
 
 import GoogleButton from "react-google-button";
 
 import { useGoogleLogin } from "@react-oauth/google";
-import axios from "axios";
+import axios, { AxiosError, AxiosResponse } from "axios";
 import { useRouter } from "next/router";
 import Link from "next/link";
 
@@ -27,15 +24,7 @@ import { accountLoginAtom } from "@/utils/hooks/useAccountAdditionValues";
 import { ToastContextContinue } from "@/utils/context/base/ToastContext";
 import { ToastContextSetup } from "@/utils/context";
 
-import { ControlledStorage } from "@/utils/storage";
-
-import { ContextSetup } from "@/utils/context";
-import {
-  ARContext,
-  AuthenticationProps,
-} from "@/utils/context/base/AdminRegistrationContext";
-
-import { useApiCallBack } from "@/utils/hooks/useApi";
+import { useApiCallBack, useSecureHiddenNetworkApi } from "@/utils/hooks/useApi";
 import {
   LoginProps,
   CreateTokenArgs,
@@ -44,8 +33,6 @@ import {
 
 import { SessionContextMigrate } from "@/utils/context/base/SessionContext";
 import { SessionStorageContextSetup } from "@/utils/context";
-import { useAuthContext } from "@/utils/context/base/AuthContext";
-
 import {
   useAccessToken,
   useGoogleAccountInfo,
@@ -59,9 +46,9 @@ import {
 import { useCookies } from "react-cookie";
 import { LockClosedIcon } from "@heroicons/react/20/solid";
 import { useMutation, useQuery } from "react-query";
-import { GetServerSideProps } from "next";
-import { getSecretsIdentifiedAccessLevel } from "@/utils/secrets/secrets_identified_user";
-import { PageProps } from "@/utils/types";
+import { decrypt, encrypt } from "@/utils/secrets/hashed";
+import { useAuthContext } from "@/utils/context/base/AuthContext";
+import { useLoaders } from "@/utils/context/base/LoadingContext";
 
 const baseSchema = z.object({
   email: requiredString("Your email is required.").email(),
@@ -74,7 +61,7 @@ type JWTAuthLoginTypes = {
   jwtpassword: string | any;
 };
 
-const Login: React.FC<PageProps> = ({data}) => {
+const Login: React.FC = () => {
   const {
     getValues,
     control,
@@ -88,15 +75,11 @@ const Login: React.FC<PageProps> = ({data}) => {
       password: "",
     },
   });
-  const [cookies, setCookies] = useCookies(["auth"]);
-  const [accessToken, setAccessToken] = useAccessToken();
-  const [refreshToken, setRefreshToken] = useRefreshToken();
-  const [references, setReferences] = useReferences();
   const [uid, setUid] = useUserId();
   const [userType, setUserType] = useUserType();
   const [googleAccountInfo, setGoogleAccountInfo] = useGoogleAccountInfo()
   const [dr, setDr] = useRouting();
-
+  const { loading, setLoading, preload, setPreLoad } = useLoaders()
   const { setAccessSavedAuth, setAccessUserId, accessSavedAuth, accessUserId } =
     useContext(SessionContextMigrate) as SessionStorageContextSetup;
   const { handleOnToast } = useContext(
@@ -105,8 +88,6 @@ const Login: React.FC<PageProps> = ({data}) => {
   const setAccountLogin = useSetAtom(accountLoginAtom);
   const router = useRouter();
   const [user, setUser] = useState<any>({});
-  const [open, setOpen] = useState(false);
-  const [preload, setPreLoad] = useState(true)
   /* api callbacks */
   const authSignin = useApiCallBack(async (api, args: LoginProps) => {
     const result = await api.authentication.userAuthLogin(args);
@@ -130,24 +111,15 @@ const Login: React.FC<PageProps> = ({data}) => {
         args.jwtpassword
       )
   );
-  const IdentifyUsertype = useApiCallBack((api, uuid: any) =>
-    api.mdr.IdentifyUserTypeFunc(uuid)
-  );
-  const googleLoginTms = useApiCallBack((api, email: string) =>
-    api.authentication.authenticationGoogleLogin(email)
-  );
-  const fetchCreatedAuthHistory = useApiCallBack(
-    async (api, userId: number | any) =>
-      await api.authentication.fetchCreatedAuthHistory(userId)
-  );
+  const foundSecuredRouter = useSecureHiddenNetworkApi(
+    async (api, id: string | undefined) => await api.secure.sla_begin_work_find_secured_route(id)
+  )
   const googleCheckAccounts = useApiCallBack(
     async (api, email: string) => await api.users.GoogleCheckAccounts(email)
   );
-  const getAuthenticatedRouter = useApiCallBack(
-    async (api, requestId: string | undefined) => await api.authentication.authenticatedRouter(requestId))
   const loginWithGoogle = useGoogleLogin({
     onSuccess: (codeResponse: any) => {
-      setOpen(!open)
+      setLoading(!loading)
       axios
         .get(
           `${process.env.NEXT_PUBLIC_GOOGLE_AUTH}/v1/userinfo?access_token=${codeResponse.access_token}`,
@@ -160,10 +132,9 @@ const Login: React.FC<PageProps> = ({data}) => {
         )
         .then((res: any) => {
           const { data }: any = res;
-          console.log(data)
           googleCheckAccounts.execute(data.email)
-          .then(res => {
-            if(res.data == 501) {
+          .then((res: AxiosResponse | undefined) => {
+            if(res?.data == 501) {
               handleOnToast(
                 "There is no customer account associated with this email.",
                 "top-right",
@@ -175,9 +146,9 @@ const Login: React.FC<PageProps> = ({data}) => {
                 "dark",
                 "error"
               );
-              setOpen(false)
-            } else {
-              setOpen(false)
+              setLoading(false)
+            } else if(res?.data == 201) {
+              setLoading(false)
               router.push({
                 pathname: '/customer-registration',
                 query: {
@@ -187,23 +158,34 @@ const Login: React.FC<PageProps> = ({data}) => {
                 }
               })
               setGoogleAccountInfo(data)
+            } else {
+              const foundKey = decrypt(res?.data)
+              login(data.email, foundKey)
             }
           })
         });
     },
     onError: (error: any) => console.log("Try failed", error),
   });
-
-  const { checkAuthentication } = useAuthContext();
-
+  const useFoundSecuredRouter = useMutation((id: string | undefined) => 
+    foundSecuredRouter.execute(id)
+  );
   useEffect(() => {
-    setTimeout(() => {
-      if(data?.preloadedAccessLevels == 1) {
-        setPreLoad(false)
-        router.push('/sys-admin/auth/dashboardauth')
-      }
+    if(uid != undefined) {
+      useFoundSecuredRouter.mutate(uid ?? "0", {
+        onSuccess: (response: AxiosResponse | undefined) => {
+          if(response?.data != 404){
+            router.replace(response?.data)
+            setTimeout(() => setPreLoad(false), 2000)
+          }
+        },
+        onError: (error: AxiosError | unknown) => {
+          setPreLoad(false)
+        }
+      })
+    } else {
       setPreLoad(false)
-    }, 1000)
+    }
   }, []);
   const [checkedVal, setCheckedVal] = useState(false);
   const checkRememberMe = () => {
@@ -251,22 +233,7 @@ const Login: React.FC<PageProps> = ({data}) => {
   const useAuthSignIn = () => {
     return useMutation((args: LoginProps) => authSignin.execute(args));
   };
-  const useGoogleTms = useMutation((email: string) =>
-    googleLoginTms.execute(email)
-  );
-  const useCreateToken = useMutation((data: { userId: any; token: string }) =>
-    createtoken.execute(data)
-  );
-  const useCreateAuthHistory = useMutation((data: CreateAuthHistoryArgs) =>
-    createAuthHistory.execute(data)
-  );
-  const useJwtAuthLogin = useMutation((data: JWTAuthLoginTypes) =>
-    jwtAuthLogin.execute(data)
-  );
-  const useIdentifyUserType = useMutation((uuid: any) =>
-    IdentifyUsertype.execute(uuid)
-  );
-  const { mutate } = useAuthSignIn();
+  const { login } = useAuthContext();
 
   const handleSignin = async () => {
     const value = getValues();
@@ -275,141 +242,8 @@ const Login: React.FC<PageProps> = ({data}) => {
       password: value.password,
     };
     setAccountLogin(obj);
-    setOpen(!open);
-    mutate(obj, {
-      onSuccess: (response: any) => {
-        if (response.data == "NOT_FOUND") {
-          setOpen(false);
-          handleOnToast(
-            "User not found",
-            "top-right",
-            false,
-            true,
-            true,
-            true,
-            undefined,
-            "dark",
-            "error"
-          );
-        } else if (response.data == "INVALID_PASSWORD") {
-          setOpen(false);
-          handleOnToast(
-            "Invalid Password, Please try again.",
-            "top-right",
-            false,
-            true,
-            true,
-            true,
-            undefined,
-            "dark",
-            "error"
-          );
-        } else if (response.data == "ACCOUNT_LOCK") {
-          setOpen(false);
-          handleOnToast(
-            "Your account is currently lock. Please contact administrator.",
-            "top-right",
-            false,
-            true,
-            true,
-            true,
-            undefined,
-            "dark",
-            "error"
-          );
-        } else {
-          const objTokenCreation = {
-            userId: response.data?.bundle[0]?.id,
-            token: "auto-generated-token-backend-side",
-          };
-          useCreateToken.mutate(objTokenCreation, {
-            onSuccess: (res: any) => {
-              if (
-                res.data?.message == "token-creation-success" ||
-                res.data?.message == "token-exist-success"
-              ) {
-                const savedObj = {
-                  firstname: response.data?.bundle[0]?.firstname,
-                  lastname: response.data?.bundle[0]?.lastname,
-                  email: response.data?.bundle[0]?.email,
-                  userId: response.data?.bundle[0]?.Id,
-                  token: res.data?.tokenResult[0]?.token,
-                };
-                const structure = {
-                  userId: response.data?.bundle[0]?.id,
-                  savedAuth: "auto-generated-backend-area",
-                  preserve_data: JSON.stringify(savedObj),
-                };
-                useCreateAuthHistory.mutate(structure, {
-                  onSuccess: (repository: any) => {
-                    if (
-                      repository?.data == "success-save-auth-history" ||
-                      repository?.data == "save-auth-exist"
-                    ) {
-                      const jwtprops = {
-                        jwtusername: obj.email,
-                        jwtpassword: obj.password,
-                      };
-                      useJwtAuthLogin.mutate(jwtprops, {
-                        onSuccess: (authLoginResponse: any) => {
-                          setDr(response.data?.routeInfo)
-                          setReferences(response.data?.bundle[0]);
-                          const uuid: string | undefined = JSON.stringify(response.data?.bundle[0]?.id)
-                          setUid(uuid);
-                          const access_level: string | undefined = JSON.stringify(response.data?.bundle[0]?.userType)
-                          setUserType(access_level);
-                          setAccessToken(authLoginResponse?.data?.token);
-                          setRefreshToken(
-                            authLoginResponse?.data?.refreshToken
-                          );
-                          const expiry = new Date();
-                          expiry.setDate(expiry.getDate() + 3);
-                          setCookies("auth", authLoginResponse?.data?.token, {
-                            path: "/",
-                            expires: expiry,
-                          });
-                          fetchCreatedAuthHistory
-                            .execute(structure.userId)
-                            .then((savedAuthResponse: any) => {
-                              const { data }: any = savedAuthResponse;
-                              setAccessSavedAuth(data?.token[0]?.savedAuth);
-                              setAccessUserId(structure.userId);
-                              setOpen(false);
-                              handleOnToast(
-                                "Successfully Logged in.",
-                                "top-right",
-                                false,
-                                true,
-                                true,
-                                true,
-                                undefined,
-                                "dark",
-                                "success"
-                              );
-                              if (data?.message == "fetched") {
-                                console.log(response.data?.routeInfo)
-                                getAuthenticatedRouter.execute(response.data?.routeInfo)
-                                .then((auth: any) => {
-                                    if(auth.data?.access_level == 1) {
-                                      router.push({
-                                        pathname: auth.data?.exactPath,
-                                        query: { key: response.data?.bundle[0]?.id }
-                                      })
-                                    }
-                                })
-                              }
-                            });
-                        },
-                      });
-                    }
-                  },
-                });
-              }
-            },
-          });
-        }
-      },
-    });
+    setLoading(!loading);
+    login(obj.email, obj.password)
   };
 
   const enterKeyTrigger = (event: any) => {
@@ -533,19 +367,10 @@ const Login: React.FC<PageProps> = ({data}) => {
         </div>
       </div>
     </div>}
-      <ControlledBackdrop open={open} />
+      <ControlledBackdrop open={loading} />
     </>
   );
 };
 
-export const getServerSideProps: GetServerSideProps<PageProps> = async () => {
-  try {
-    const preloadedAccessLevels = await getSecretsIdentifiedAccessLevel(1)
-    return { props : { data: { preloadedAccessLevels }}}
-  } catch (error) {
-    console.log(`Error on get Notification response: ${JSON.stringify(error)} . `)
-    return { props : {error}}
-  }
-}
 
 export default Login;

@@ -25,7 +25,7 @@ import GoogleButton from "react-google-button";
 
 import { zxcvbn, zxcvbnOptions } from "@zxcvbn-ts/core";
 import * as zxcvbnCommonPackage from "@zxcvbn-ts/language-common";
-import { useApiCallBack } from "@/utils/hooks/useApi";
+import { useApiCallBack, useSecureHiddenNetworkApi } from "@/utils/hooks/useApi";
 import { useMutation } from "react-query";
 import { usePreviousValue } from "@/utils/hooks/usePreviousValue";
 import { PasswordStrengthMeter } from "../PasswordStrengthMeter/PasswordStrengthMeter";
@@ -39,6 +39,8 @@ import { UAMAddRequestArgs } from "@/pages/api/users/types";
 import ControlledBackdrop from "../Backdrop/Backdrop";
 import { ControlledMobileNumberField } from "../TextField/MobileNumberField";
 import { useToastContext } from "@/utils/context/base/ToastContext";
+import { AuthenticationJwtCreateAccount, VerificationProps } from "@/pages/api/Authentication/types";
+import { AxiosResponse } from "axios";
 const clientRegistrationBaseSchema = z.object({
   firstName: requiredString("Your firstname is required."),
   lastName: requiredString("Your lastname is required"),
@@ -219,15 +221,15 @@ const SignUpForm = () => {
 export const SignUpAdditionalForm = () => {
   const [clientDetailsAtom, setClientDetailsAtom] = useAtom(ClientCreationAtom);
   const [loading, setLoading] = useState(false)
-  const customerAccountCreation = useApiCallBack(
-    async (api, args: UAMAddRequestArgs) => await api.users.CustomerAccountCreation(args)
+  const SecureSendVerificationCode = useSecureHiddenNetworkApi(
+    async (api, args: VerificationProps) => await api.secure.sla_send_verification_code_securely(args)
   );
-  const useCustomerCreation = () => {
-    return useMutation((data: UAMAddRequestArgs) => 
-      customerAccountCreation.execute(data)
-    );
-  }
-  const { mutate } = useCustomerCreation()
+  const useSecureVerificationCodeSender = useMutation((data: VerificationProps) => 
+    SecureSendVerificationCode.execute(data)
+  );
+  const checkEmailOnCustomerRegistration = useApiCallBack(
+    async (api, email: string) => await api.users.findEmailOnCustomerRegistration(email)
+  )
   const form = useForm<ClientAccountCreation>({
     resolver: zodResolver(schema),
     mode: "all",
@@ -239,76 +241,84 @@ export const SignUpAdditionalForm = () => {
     getValues
   } = form;
   const router = useRouter();
-  const styled: CSSProperties = {
-    position: "absolute",
-    width: "150px",
-    height: "19px",
-    left: "51px",
-    top: "27px",
-    color: "white",
-  };
+  
   const handleContinue = () => {
     const values = getValues()
     setLoading(!loading)
     const obj = {
       email: values.email,
       phoneNumber: values.phoneNumber,
-      password: values.password,
-      firstname: values.firstName,
-      middlename: values.middleName,
-      lastname: values.lastName,
-      userType: "3"
+      code: 'auto-generated-server-side',
+      resendCount: 0,
+      isValid: 1,
+      type: 'email',
+      verificationCredentials: {
+        email: values.email
+      }
     }
-    mutate(obj, {
-      onSuccess: (response) => {
-        if(response.data == 501){
-          handleOnToast(
-            "This email already exist, please try another email.",
-            "top-right",
-            false,
-            true,
-            true,
-            true,
-            undefined,
-            "dark",
-            "error"
-          );
-          setLoading(false)
-        } else {
-          setClientDetailsAtom(values)
-          /* Process 1 JWT Account Creation upon submission on sign up */
-          /* Process 2 After we received the JWT Response Send email to customer email */
-          /* Process 3 After we received the JWT Response and Sending email API navigate to verification code entry page */
-          handleOnToast(
-            "Successfully Created! Welcome customer.",
-            "top-right",
-            false,
-            true,
-            true,
-            true,
-            undefined,
-            "dark",
-            "success"
-          );
-          setLoading(false)
-          
-        }
+    checkEmailOnCustomerRegistration.execute(values.email)
+    .then((res: AxiosResponse | undefined) => {
+      if(res?.data == 501) {
+        handleOnToast(
+          "The email provided is already exists.",
+          "top-right",
+          false,
+          true,
+          true,
+          true,
+          undefined,
+          "dark",
+          "error"
+        );
+        setLoading(false)
+      } else {
+        useSecureVerificationCodeSender.mutate(obj, {
+          onSuccess: (secured: any) => {
+            if(secured.data == 200) {
+              setClientDetailsAtom(values)
+              setLoading(false)
+              /* Navigate to verification code entry page. */
+              router.push('/verification/verify-account')
+            } else {
+              handleOnToast(
+                "You've reached the maximum sent email. Please use the last code sent to your email",
+                "top-right",
+                false,
+                true,
+                true,
+                true,
+                undefined,
+                "dark",
+                "error"
+              );
+              setLoading(false)
+            }
+          },
+          onError: (error) => {
+            handleOnToast(
+              "Something went wrong. Please try again",
+              "top-right",
+              false,
+              true,
+              true,
+              true,
+              undefined,
+              "dark",
+              "error"
+            );
+            setLoading(false)
+          }
+        })
       }
     })
   }
   return (
     <>
-      <NormalButton
-        style={styled}
-        onClick={() => router.push("/")}
-        children={<Typography variant="overline">Back to home</Typography>}
-        variant="text"
-      />
-      <Container sx={{ padding: "50px" }}>
+      <Container>
+        <div style={{ padding: '20px' }}>
         <UncontrolledCard
           style={{
             borderRadius: "30px 30px 30px 30px",
-            marginTop: "50px",
           }}
         >
           <Grid container spacing={2}>
@@ -397,6 +407,7 @@ export const SignUpAdditionalForm = () => {
             </Grid>
           </Grid>
         </UncontrolledCard>
+        </div>
         <ControlledBackdrop open={loading} />
       </Container>
     </>

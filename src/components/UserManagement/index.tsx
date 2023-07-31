@@ -370,7 +370,7 @@ export const FormAdditionalDetails = () => {
     return useMutation((data: UpdateUsersDetailsArgs) =>
       updateUsersDetailsExecutioner
         .execute(data)
-        .then((response) => response.data)
+        .then((response: any) => response.data)
     );
   };
   const { mutate } = useUpdateUsersDetails();

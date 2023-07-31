@@ -1,20 +1,15 @@
-import DashboardLayout from "@/components/DashboardLayout";
-import { useState, useEffect, useContext } from "react";
-import { buildHttp } from "../api/http";
 
+import { useState, useEffect, useContext } from "react";
 import {
   ControlledBackdrop,
   ControlledGrid,
   UncontrolledCard,
   ControlledTypography,
+  ControlledModal,
 } from "@/components";
-
-import { ToastContextContinue } from "@/utils/context/base/ToastContext";
-import { ToastContextSetup } from "@/utils/context";
-
 import { useRouter } from "next/router";
 
-import { Container, Grid, ListItemIcon } from "@mui/material";
+import { Container, Grid, Typography } from "@mui/material";
 
 import exportingInit from "highcharts/modules/exporting";
 import offlineExporting from "highcharts/modules/offline-exporting";
@@ -23,20 +18,17 @@ import HighchartsReact from "highcharts-react-official";
 
 import { useApiCallBack } from "@/utils/hooks/useApi";
 
-import {
-  sidebarList,
-  sidebarExpand,
-} from "../../utils/sys-routing/sys-routing";
 import { SessionContextMigrate } from "@/utils/context/base/SessionContext";
 import { SessionStorageContextSetup } from "@/utils/context";
 import { useAuthContext } from "@/utils/context/base/AuthContext";
-import { useQuery } from "react-query";
 import { useDynamicDashboardContext } from "@/utils/context/base/DynamicDashboardContext";
 import { PageProps } from "@/utils/types";
 import { GetServerSideProps } from "next";
 import { getSecretsIdentifiedAccessLevel } from "@/utils/secrets/secrets_identified_user";
-import { useRouting } from "@/utils/context/hooks/hooks";
-import { useGlobalsContext } from "@/utils/context/base/GlobalContext";
+import { useAccessToken, useRouting, useUserId } from "@/utils/context/hooks/hooks";
+import { getDataFromLocalStorage } from "@/utils/ssr/storageWithSsr";
+import { useToastContext } from "@/utils/context/base/ToastContext";
+
 if (typeof Highcharts === "object") {
   exportingInit(Highcharts);
   offlineExporting(Highcharts);
@@ -44,8 +36,9 @@ if (typeof Highcharts === "object") {
 
 
 
-const TestAdminDashboard: React.FC<PageProps> = ({data}) => {
-  const { checkAuthentication } = useAuthContext();
+const TestAdminDashboard: React.FC = () => {
+  const { signoutProcess, tokenExpired, TrackTokenMovement, expirationTime, AlertTracker, FormatExpiry, refreshTokenBeingCalled, isMouseMoved, isKeyPressed,
+  accessToken, disableRefreshTokenCalled } = useAuthContext();
   const [loading, setLoading] = useState(true);
   const [options, setOptions] = useState<any>({
     chart: {
@@ -75,12 +68,8 @@ const TestAdminDashboard: React.FC<PageProps> = ({data}) => {
     },
   });
   const FetchUsersReport = useApiCallBack((api) => api.mdr.fetchUsersReport());
-  const { accessSavedAuth, accessUserId } = useContext(
-    SessionContextMigrate
-  ) as SessionStorageContextSetup;
   const router = useRouter()
   const [idetifiedUser, setIdentifiedUser] = useState<any>("");
-  const [dr, setDr] = useRouting()
   const { getPropsDynamic } = useDynamicDashboardContext();
   useEffect(() => {
     if(typeof window !== 'undefined' && window.localStorage){
@@ -89,42 +78,47 @@ const TestAdminDashboard: React.FC<PageProps> = ({data}) => {
       });
     }
   }, []);
+  const { handleOnToast } = useToastContext()
   const calculateReport = () => {
     FetchUsersReport.execute()
-    .then((response) => {
-      for (var x = 0; x < response.data?.length; x++) {
-        var ifExist = 0;
-        if (options.series.length > 0) {
-          for (var check = 0; check < options.series.length; check++) {
-            if (response.data[x]?.email == options.series[check]?.name) {
-              ifExist = 1;
-              check = options.series.length;
-              options.series = [];
-              var structure1 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-              for (
-                var structureCount1 = 0;
-                structureCount1 < response.data?.length;
-                structureCount1++
-              ) {
-                if (response.data[structureCount1]?.email == response.data[x]?.email) {
-                  structure1[response.data[structureCount1]?.id] =
-                    response.data[structureCount1]?.id;
+    .then((response: any) => {
+      if(response?.data == undefined) {
+        return;
+      } else {
+        for (var x = 0; x < response.data?.length; x++) {
+          var ifExist = 0;
+          if (options.series.length > 0) {
+            for (var check = 0; check < options.series.length; check++) {
+              if (response.data[x]?.email == options.series[check]?.name) {
+                ifExist = 1;
+                check = options.series.length;
+                options.series = [];
+                var structure1 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+                for (
+                  var structureCount1 = 0;
+                  structureCount1 < response.data?.length;
+                  structureCount1++
+                ) {
+                  if (response.data[structureCount1]?.email == response.data[x]?.email) {
+                    structure1[response.data[structureCount1]?.id] =
+                      response.data[structureCount1]?.id;
+                  }
                 }
+                setOptions({ series: [{ data: structure1 }] });
               }
-              setOptions({ series: [{ data: structure1 }] });
-            }
-            if (ifExist == 0) {
-              var structure = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-              for (
-                var structureCount = 0;
-                structureCount < response.data?.length;
-                structureCount++
-              ) {
-                if (response.data[structureCount]?.email == response.data[x]?.email) {
-                  structure[structureCount] = response.data[structureCount]?.id;
+              if (ifExist == 0) {
+                var structure = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+                for (
+                  var structureCount = 0;
+                  structureCount < response.data?.length;
+                  structureCount++
+                ) {
+                  if (response.data[structureCount]?.email == response.data[x]?.email) {
+                    structure[structureCount] = response.data[structureCount]?.id;
+                  }
                 }
+                setOptions({ series: [{ data: structure }] });
               }
-              setOptions({ series: [{ data: structure }] });
             }
           }
         }
@@ -136,22 +130,56 @@ const TestAdminDashboard: React.FC<PageProps> = ({data}) => {
   }, []);
 
   useEffect(() => {
-    setTimeout(() => {
-      if(data?.preloadedAccessLevels == 1){
+    if(!accessToken || accessToken == undefined) {
+      router.push('/login')
+      setTimeout(() => {
         setLoading(false)
-        checkAuthentication("admin")
-      } else {
-        router.push('/sys-admin/auth/dashboardauth')
+      }, 2000)
+    } else {
+      setLoading(false)
+        const isExpired = TrackTokenMovement()
+        if(isExpired) {
+          signoutProcess()
+          handleOnToast(
+            "Token expired. Please re-login.",
+            "top-right",
+            false,
+            true,
+            true,
+            true,
+            undefined,
+            "dark",
+            "error"
+          );
+        }
+    }
+  }, [tokenExpired]);
+  useEffect(() => {
+    if(!disableRefreshTokenCalled) {
+      if(isMouseMoved) {
+        refreshTokenBeingCalled()
       }
-    }, 3000);
-  }, []);
-
+    }
+  }, [isMouseMoved, disableRefreshTokenCalled])
+  useEffect(() => {
+    if(!disableRefreshTokenCalled) {
+      if(isKeyPressed){
+        refreshTokenBeingCalled()
+      }
+    }
+  }, [isKeyPressed, disableRefreshTokenCalled])
   return (
     <>
       {loading ? (
         <ControlledBackdrop open={loading} />
       ) : (
         <Container>
+          {
+            expirationTime != null && expirationTime <= 30 * 1000 &&
+            AlertTracker(
+              `You are idle. Token expires in: ${FormatExpiry(expirationTime)}`, "error"
+            )
+          }
           <ControlledGrid>
             <Grid item xs={3}>
               <UncontrolledCard
@@ -267,15 +295,5 @@ const TestAdminDashboard: React.FC<PageProps> = ({data}) => {
     </>
   );
 };
-
-export const getServerSideProps: GetServerSideProps<PageProps> = async () => {
-  try {
-    const preloadedAccessLevels = await getSecretsIdentifiedAccessLevel(1)
-    return { props : { data: { preloadedAccessLevels }}}
-  } catch (error) {
-    console.log(`Error on get Notification response: ${JSON.stringify(error)} . `)
-    return { props : {error}}
-  }
-}
 
 export default TestAdminDashboard;

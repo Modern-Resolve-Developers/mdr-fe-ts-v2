@@ -1,6 +1,6 @@
 import { AxiosInstance } from "axios";
 import { AuthenticationProps } from '@/utils/context/base/AdminRegistrationContext'
-import { LoginProps, CreateTokenArgs, CreateAuthHistoryArgs, AuthenticationJwtCreateAccount, AuthenticationRefreshTokenArgs } from './types'
+import { LoginProps, CreateTokenArgs, CreateAuthHistoryArgs, AuthenticationJwtCreateAccount, AuthenticationRefreshTokenArgs, RequestRouterParams } from './types'
 export class AuthenticationApi {
     constructor(private readonly axios: AxiosInstance) {}
     public userAvailabilityCheck(props : AuthenticationProps){
@@ -33,7 +33,7 @@ export class AuthenticationApi {
     public authenticationGoogleLogin(email: string | undefined) {
         return this.axios.post(`/api/customer/customer-google-login/${email}`)
     }
-    public authenticatedRouter(requestId: string | undefined){
-        return this.axios.get(`/api/users/get-router/${requestId}`)
+    public authenticatedRouter(props: RequestRouterParams){
+        return this.axios.post('/api/users/get-router', props)
     }
 }
