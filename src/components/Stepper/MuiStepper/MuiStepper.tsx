@@ -18,7 +18,7 @@ import {
           borderRadius: '100%',
           borderColor: (theme) => {
             if (completed || active) {
-              return theme.palette.secondary.light;
+              return '#FAA719';
             }
             return theme.palette.grey[400];
           },
@@ -62,6 +62,7 @@ export const OnboardingStepper: React.FC<OnboardingStepperProps> = ({ activeStep
                   fontWeight={activeStep === i ? 'bold' : 'normal'}
                   fontSize="0.7rem"
                   variant="caption"
+                  color={activeStep === i ? '#FAA719' : '#808080'}
                 >
                   {label}
                 </Typography>
