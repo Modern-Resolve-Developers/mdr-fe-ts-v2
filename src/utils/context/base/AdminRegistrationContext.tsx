@@ -25,6 +25,7 @@ const AdminRegistrationContext: React.FC<ARContextProps> = ({
     const [refreshToken, setRefreshToken] = useRefreshToken()
     const fetchAllUsersExecutioner = useApiCallBack(async (api) => await api.users.fetchAllUsersFunc())
     const [isHidden, setIsHidden] = useState(false)
+    const [isLoading, setLoading] = useState(true)
     const [users, setUsers] = useState([])
     const FetchAuthentication = useApiCallBack(async (api, args: AuthenticationProps) => {
         const result = await api.authentication.userAvailabilityCheck(args)
@@ -32,7 +33,8 @@ const AdminRegistrationContext: React.FC<ARContextProps> = ({
     })
     const router = useRouter()
     const callBackSyncGetAllUsers = useCallback(() => {
-        fetchAllUsersExecutioner.execute()
+        setLoading(true)
+        fetchAllUsersExecutioner.execute()        
         .then((response: any) => {
             const { data } : any = response;
             setUsers(data)
@@ -67,6 +69,7 @@ const AdminRegistrationContext: React.FC<ARContextProps> = ({
         <ARContext.Provider
         value={{
             isHidden, setIsHidden,
+            isLoading, setLoading,
             CheckAuthentication,
             users, setUsers,
             callBackSyncGetAllUsers

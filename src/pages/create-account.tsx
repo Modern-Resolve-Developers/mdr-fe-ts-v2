@@ -173,6 +173,7 @@ const CreateAccount: React.FC = () => {
       lastname: data.lastName,
       email: data.email,
       password: data.password,
+      phoneNumber: '',
     };
     const props = {
       email: obj.email,

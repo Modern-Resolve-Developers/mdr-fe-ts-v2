@@ -139,6 +139,7 @@ export const CredentialsOwnershipDetailsForm = () => {
           email: values.email,
           password: values.password,
           userType: personalDetailsAtom?.userType,
+          phoneNumber: ''
         };
         mutate(uam_add_request_data.email, {
           onSuccess: (data) => {
