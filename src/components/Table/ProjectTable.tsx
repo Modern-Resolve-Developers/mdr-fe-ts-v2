@@ -5,7 +5,7 @@ import { ProjectTableProps } from ".";
 
 
 const ProjectTable: React.FC<ProjectTableProps> = ({
-    data, openEdit, sx, handleClick, columns, rowIsCreativeDesign = true
+    data, openEdit, sx, handleClick, columns, rowIsCreativeDesign = true, loading
 }: any) => {
     
 
@@ -19,6 +19,7 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
             autoHeight
             disableRowSelectionOnClick
             disableColumnMenu
+            loading={loading}
             />
         </>
     )

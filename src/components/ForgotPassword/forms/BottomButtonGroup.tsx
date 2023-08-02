@@ -12,6 +12,7 @@ export type BottomButtonGroupProps = {
   disableBtn?: boolean;
   onresend?: () => void
   countdown?: number
+  backtoLogin?: string;
 };
 
 export const BottomButtonGroup: React.FC<BottomButtonGroupProps> = ({
@@ -23,7 +24,8 @@ export const BottomButtonGroup: React.FC<BottomButtonGroupProps> = ({
   resendBtn,
   disableBtn,
   onresend,
-  countdown
+  countdown,
+  backtoLogin = "< Back to Log in"
 }) => {
   // const { nextfp, previous } = usefpActiveStep();
   const { next, previous } = useActiveStepContext()
@@ -58,10 +60,9 @@ export const BottomButtonGroup: React.FC<BottomButtonGroupProps> = ({
       </Grid>
      }
       <Grid item xs={8} display="flex" justifyContent="center">
-        <Button
+        <Button className="forgot-button"
           sx={{ mx: "auto", mt: 2, width: [, 300] }}
-          color="primary"
-          variant="outlined"
+          variant="contained"
           fullWidth
           disabled={disabledContinue}
           onClick={handleContinue}
@@ -71,13 +72,13 @@ export const BottomButtonGroup: React.FC<BottomButtonGroupProps> = ({
       </Grid>
       {!hideBack && (
         <Grid item xs={8} display="flex" justifyContent="center">
-          <Button
+          <Button className="back-button"
             sx={{ mx: "auto", mt: 2, width: [, 300] }}
             fullWidth
             variant="text"
             onClick={handleBack}
           >
-            Back
+            {backtoLogin}
           </Button>
         </Grid>
       )}

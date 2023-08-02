@@ -171,6 +171,7 @@ const CreateAccount: React.FC<PageProps> = ({data}) => {
       lastname: data.lastName,
       email: data.email,
       password: data.password,
+      phoneNumber: '',
     };
     const props = {
       email: obj.email,
