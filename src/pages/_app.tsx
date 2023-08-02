@@ -67,14 +67,12 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
       savedAuthenticationStorage = JSON.parse(savedAuthStorage);
       savedUserType = JSON.parse(savedUserTypeStorage);
     }
-    if (!accessToken || accessToken == undefined) {
-      setLoading(false);
-      setStoredValue(savedAuthenticationStorage);
-      setStoredType(0);
-    } else {
+    if (accessToken != undefined) {
       setLoading(false);
       setStoredValue(accessToken);
       setStoredType(parseInt(decrypt(savedUserType)));
+    } else {
+      setLoading(false);
     }
   }, [accessToken, userType]);
 
