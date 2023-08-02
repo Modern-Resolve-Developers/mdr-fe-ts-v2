@@ -1,5 +1,6 @@
 import ControlledAdministratorNavbar from "../Navbar/Navbar"
 import ControlledAdministratorSidebar from "../Sidebar/Sidebar"
+import ControlledClientSidebar from "../Sidebar/client/Sidebar";
 import { Box } from "@mui/material"
 import CssBaseline from "@mui/material/CssBaseline";
 import { styled, useTheme } from "@mui/material/styles";
@@ -21,6 +22,9 @@ import { useAccessToken, useRefreshToken } from "@/utils/context/hooks/hooks";
 
 import { SidebarTypes, SubSidebarTypes } from "../Sidebar";
 import { sidebarList } from "@/utils/sys-routing/sys-routing";
+import { useGlobalsContext } from "@/utils/context/base/GlobalContext";
+import ControlledClientNavbar from "../Navbar/client/Navbar";
+import { useAuthContext } from "@/utils/context/base/AuthContext";
 type DashboardLayoutProps = {
     children : React.ReactNode
     sidebarConfig: SidebarTypes[]
@@ -107,12 +111,11 @@ export default function DashboardLayout({children, sidebarConfig, subsidebarConf
     const [refreshToken, setRefreshToken, clearRefreshToken] = useRefreshToken()
     const signoutInProgress = useApiCallBack((api, uuid: any) => api.mdr.signoutUser(uuid))
     const [sidebarStateConfig , setSidebarStateConfig] = useState<any>(sidebarList)
+    const { globals } = useGlobalsContext()
     const {
       accessSavedAuth, accessUserId, clearAccessSavedAuth, clearAccessUserId
     } = useContext(SessionContextMigrate) as SessionStorageContextSetup
-    const {
-      handleOnToast
-    } = useContext(ToastContextContinue) as ToastContextSetup
+    const { signoutProcess, setDisableRefreshTokenCalled } = useAuthContext()
     useEffect(() => {
         window.addEventListener('resize', () => {
             return window.innerWidth < 1024 ? setOpen(false) : setOpen(!open)
@@ -130,23 +133,10 @@ export default function DashboardLayout({children, sidebarConfig, subsidebarConf
 
     const handleSignout = () => {
       if(accessSavedAuth != null && accessUserId != null) {
-        const uuid = accessUserId
         setOpen(!open)
-        signoutInProgress.execute(uuid)
-          .then((response : any) => {
-            const { data } : any = response;
-            if(data == 'success_destroy'){
-              setOpen(false)
-              clearAccessSavedAuth('token')
-              clearAccessUserId('uid')
-              let rm = localStorage.getItem('rm');
-              localStorage.clear()
-              if(rm != null) {
-                localStorage.setItem('rm', rm);
-              }
-              router.push('/login')
-            }
-          })
+        setDisableRefreshTokenCalled(true)
+        signoutProcess()
+        setTimeout(() => setOpen(false), 2000)
       }
     }
     const handleClick = (outerIndex: any, innerIndex: any) => {
@@ -160,23 +150,48 @@ export default function DashboardLayout({children, sidebarConfig, subsidebarConf
     return (
         <Box className='flex'>
             <CssBaseline />
-            <ControlledAdministratorNavbar
+            {
+              globals?.storedType == 1 ?  
+              <>
+              <ControlledAdministratorNavbar
                 open={open}
                 handleDrawerOpen={handleDrawerOpen}
                 AppBar={AppBar}
                 signoutModal={handleSignoutModal}
-            />
-            <ControlledAdministratorSidebar 
-            open={open}
-            handleDrawerClose={handleDrawerClose}
-            theme={theme}
-            handleClick={handleClick}
-            dropDown={dropDown}
-            Drawer={Drawer}
-            DrawerHeader={DrawerHeader}
-            sidebarConfig={sidebarConfig}
-            subsidebarConfig={subsidebarConfig}
-            />
+              />
+              <ControlledAdministratorSidebar 
+              open={open}
+              handleDrawerClose={handleDrawerClose}
+              theme={theme}
+              handleClick={handleClick}
+              dropDown={dropDown}
+              Drawer={Drawer}
+              DrawerHeader={DrawerHeader}
+              sidebarConfig={sidebarConfig}
+              subsidebarConfig={subsidebarConfig}
+              />
+              </>
+              : globals?.storedType == 3 &&
+              <>
+               <ControlledClientNavbar
+                open={open}
+                handleDrawerOpen={handleDrawerOpen}
+                AppBar={AppBar}
+                signoutModal={handleSignoutModal}
+              />
+              <ControlledClientSidebar 
+              open={open}
+              handleDrawerClose={handleDrawerClose}
+              theme={theme}
+              handleClick={handleClick}
+              dropDown={dropDown}
+              Drawer={Drawer}
+              DrawerHeader={DrawerHeader}
+              sidebarConfig={sidebarConfig}
+              subsidebarConfig={subsidebarConfig}
+              />
+              </>
+            }
             <Box component="main" sx={{ flexGrow: 1, p: 3 }} className='items-center'>
                 <DrawerHeader />
                 {children}

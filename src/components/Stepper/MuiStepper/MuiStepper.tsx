@@ -6,12 +6,16 @@ import {
     Step,
     StepLabel,
     Typography,
+    Theme,
+    SxProps,
   } from '@mui/material';
   import CheckIcon from '@mui/icons-material/Check';
   
- 
+  interface ExtendedStepIconProps extends StepIconProps {
+    handlePaletteColors?: SxProps<Theme> | undefined
+  }
   
-  const OnboardingStepIcon: React.FC<StepIconProps> = ({ active, completed }) => {
+  const OnboardingStepIcon: React.FC<ExtendedStepIconProps> = ({completed, active}) => {
     return (
       <Box
         sx={{
@@ -32,7 +36,7 @@ import {
           height: 20,
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
+          justifyContent: 'center'
         }}
       >
         {completed && <CheckIcon sx={{ color: 'secondary.light', width: '0.7em' }} />}

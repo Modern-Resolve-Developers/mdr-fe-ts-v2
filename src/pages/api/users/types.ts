@@ -12,6 +12,7 @@ export type UAMAddRequestArgs = {
     email: string | undefined
     password: string | undefined
     userType: string | undefined
+    key?: string | undefined
     phoneNumber: string | undefined
 }
 

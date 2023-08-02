@@ -747,7 +747,7 @@ const ProductManagementForm = () => {
     </>
   );
 };
-const ProductManagement: React.FC<PageProps> = ({data}) => {
+const ProductManagement: React.FC = () => {
   const PMGridColumns: any[] = [
     { field: "id", headerName: "ID", width: 70 },
     {
@@ -842,7 +842,8 @@ const ProductManagement: React.FC<PageProps> = ({data}) => {
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValueChange(newValue);
   };
-  const { checkAuthentication } = useAuthContext();
+  const { signoutProcess, disableRefreshTokenCalled, tokenExpired, TrackTokenMovement, expirationTime, AlertTracker, FormatExpiry, refreshTokenBeingCalled, isMouseMoved, isKeyPressed,
+    accessToken } = useAuthContext();
   const { handleOnToast } = useContext(
     ToastContextContinue
   ) as ToastContextSetup;
@@ -863,16 +864,44 @@ const ProductManagement: React.FC<PageProps> = ({data}) => {
   } = form;
 
   useEffect(() => {
-    setTimeout(() => {
-      if(data?.preloadedAccessLevels == 1) {
+    if(!accessToken || accessToken == undefined) {
+      router.push('/login')
+      setTimeout(() => {
         setPreLoad(false)
-        checkAuthentication("admin");
-      } else {
-        router.push('/sys-admin/auth/dashboardauth')
+      }, 2000)
+    } else {
+      setPreLoad(false)
+      const isExpired = TrackTokenMovement()
+      if(isExpired) {
+        signoutProcess()
+        handleOnToast(
+          "Token expired. Please re-login.",
+          "top-right",
+          false,
+          true,
+          true,
+          true,
+          undefined,
+          "dark",
+          "error"
+        );
       }
-    }, 3000);
-  }, []);
-
+    }
+  }, [tokenExpired]);
+  useEffect(() => {
+    if(!disableRefreshTokenCalled) {
+      if(isMouseMoved) {
+        refreshTokenBeingCalled()
+      }
+    }
+  }, [isMouseMoved, disableRefreshTokenCalled])
+  useEffect(() => {
+    if(!disableRefreshTokenCalled) {
+      if(isKeyPressed){
+        refreshTokenBeingCalled()
+      }
+    }
+  }, [isKeyPressed, disableRefreshTokenCalled])
   const getAllProducts = () => {
     PMList.execute().then((res: any) => {
       const { data }: any = res;
@@ -994,6 +1023,12 @@ const ProductManagement: React.FC<PageProps> = ({data}) => {
         <ControlledBackdrop open={preload} />
       ) : (
         <Container>
+          {
+            expirationTime != null && expirationTime <= 30 * 1000 &&
+            AlertTracker(
+              `You are idle. Token expires in: ${FormatExpiry(expirationTime)}`, "error"
+            )
+          }
           <UncontrolledCard>
             <ControlledTypography
               variant="h6"
@@ -1093,14 +1128,5 @@ const ProductManagement: React.FC<PageProps> = ({data}) => {
   );
 };
 
-export const getServerSideProps: GetServerSideProps<PageProps> = async () => {
-  try {
-    const preloadedAccessLevels = await getSecretsIdentifiedAccessLevel(1)
-    return { props : { data: { preloadedAccessLevels }}}
-  } catch (error) {
-    console.log(`Error on get Notification response: ${JSON.stringify(error)} . `)
-    return { props : {error}}
-  }
-}
 
 export default ProductManagement;

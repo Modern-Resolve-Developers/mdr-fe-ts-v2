@@ -4,36 +4,45 @@ import { GetServerSideProps } from "next"
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { PageProps } from "@/utils/types"
+import { useAuthContext } from "@/utils/context/base/AuthContext"
+import { useToastContext } from "@/utils/context/base/ToastContext"
+import { useAccessToken } from "@/utils/context/hooks/hooks"
 
-const DashboardAuth: React.FC<PageProps> = ({data}) => {
+const DashboardAuth: React.FC = () => {
     const [loading, setLoading] = useState(true)
+    const { signoutProcess, tokenExpired, TrackTokenMovement, accessToken } = useAuthContext();
+    const { handleOnToast } = useToastContext()
     const router = useRouter()
     useEffect(() => {
-        setTimeout(() => {
-            if(data?.preloadedAccessLevels == 1) {
+        const isExpired = TrackTokenMovement()
+        if(!accessToken || accessToken == undefined) {
+            router.push('/login')
+        } else {
+            if(isExpired) {
                 setLoading(false)
-                router.push('/sys-admin/admin-dashboard')
-            } else {
-                setLoading(false)
-                router.push('/login')
-            }
-        }, 3000)
-    }, [])
+                signoutProcess()
+                handleOnToast(
+                    "Token expired. Please re-login.",
+                    "top-right",
+                    false,
+                    true,
+                    true,
+                    true,
+                    undefined,
+                    "dark",
+                    "error"
+                );
+                } else {
+                    setLoading(false)
+                    router.push('/sys-admin/admin-dashboard')
+                }
+        }
+    }, [tokenExpired, accessToken])
     return (
         <>
             {loading && <ControlledBackdrop open={loading} />}
         </>
     )
-}
-
-export const getServerSideProps: GetServerSideProps<PageProps> = async () => {
-    try {
-        const preloadedAccessLevels = await getSecretsIdentifiedAccessLevel(1)
-        return { props : { data: { preloadedAccessLevels }}}
-    } catch (error) {
-        console.log(`Error on get Notification response: ${JSON.stringify(error)} . `)
-        return { props : {error}}
-    }
 }
 
 export default DashboardAuth

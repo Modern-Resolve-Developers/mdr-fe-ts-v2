@@ -39,6 +39,7 @@ import { meetAtom } from "@/utils/hooks/useAccountAdditionValues";
 import { GetServerSideProps } from "next";
 import { PageProps } from "@/utils/types";
 import { getSecretsIdentifiedAccessLevel } from "@/utils/secrets/secrets_identified_user";
+import { useUserId } from "@/utils/context/hooks/hooks";
 
 
 const baseJoinFormSchema = z.object({
@@ -93,7 +94,7 @@ const JoinForm = (props: JoinFormProps) => {
   );
 };
 
-const DigitalMeet: React.FC<PageProps> = ({data}) => {
+const DigitalMeet: React.FC = () => {
   const [joinAtom, setJoinAtom] = useAtom(joinMeetAtom);
   const [meetDetails, setMeetDetails] = useAtom(meetAtom);
   const form = useForm<JoinMeetingFormAccount>({
@@ -135,7 +136,8 @@ const DigitalMeet: React.FC<PageProps> = ({data}) => {
   const deleteroom = useApiCallBack(
     async (api, id: number) => await api.mdr.DeleteRoom(id)
   );
-  const { checkAuthentication } = useAuthContext();
+  const { signoutProcess, disableRefreshTokenCalled, tokenExpired, TrackTokenMovement, expirationTime, AlertTracker, FormatExpiry, refreshTokenBeingCalled, isMouseMoved, isKeyPressed,
+    accessToken } = useAuthContext();
   const router = useRouter();
   const { getAllRooms, rooms, setRooms } = useMeetContext();
   const { handleOnToast } = useContext(
@@ -306,7 +308,7 @@ const DigitalMeet: React.FC<PageProps> = ({data}) => {
     SessionContextMigrate
   ) as SessionStorageContextSetup;
   const { getPropsDynamic } = useDynamicDashboardContext();
-
+  const [uid, setUid] = useUserId()
   useEffect(() => {
     if(typeof window !== 'undefined' && window.localStorage) {
       getPropsDynamic(localStorage.getItem("uid") ?? 0).then((repo: any) => {
@@ -315,15 +317,44 @@ const DigitalMeet: React.FC<PageProps> = ({data}) => {
     }
   }, []);
   useEffect(() => {
-    setTimeout(() => {
-      if(data?.preloadedAccessLevels == 1) {
+    if(!accessToken || accessToken == undefined){
+      router.push('/login')
+      setTimeout(() => {
         setLoading(false)
-        checkAuthentication("admin");
-      } else {
-        router.push('/sys-admin/auth/dashboardauth')
+      }, 2000)
+    } else {
+      setLoading(false)
+      const isExpired = TrackTokenMovement()
+      if(isExpired) {
+        signoutProcess()
+        handleOnToast(
+          "Token expired. Please re-login.",
+          "top-right",
+          false,
+          true,
+          true,
+          true,
+          undefined,
+          "dark",
+          "error"
+        );
       }
-    }, 3000)
-  }, []);
+    }
+  }, [tokenExpired]);
+  useEffect(() => {
+    if(!disableRefreshTokenCalled){
+      if(isMouseMoved) {
+        refreshTokenBeingCalled()
+      }
+    }
+  }, [isMouseMoved, disableRefreshTokenCalled])
+  useEffect(() => {
+    if(!disableRefreshTokenCalled){
+      if(isKeyPressed){
+        refreshTokenBeingCalled()
+      }
+    }
+  }, [isKeyPressed, disableRefreshTokenCalled])
   const handleContinue = () => {
     handleSubmit((values) => {
       const obj = {
@@ -360,6 +391,12 @@ const DigitalMeet: React.FC<PageProps> = ({data}) => {
         <ControlledBackdrop open={loading} />
       ) : (
         <Container>
+          {
+            expirationTime != null && expirationTime <= 30 * 1000 &&
+            AlertTracker(
+              `You are idle. Token expires in: ${FormatExpiry(expirationTime)}`, "error"
+            )
+          }
           <UncontrolledCard>
             <ControlledTypography
               variant="h6"
@@ -413,15 +450,5 @@ const DigitalMeet: React.FC<PageProps> = ({data}) => {
     </>
   );
 };
-
-export const getServerSideProps: GetServerSideProps<PageProps> = async () => {
-  try {
-    const preloadedAccessLevels = await getSecretsIdentifiedAccessLevel(1)
-    return { props : { data: { preloadedAccessLevels }}}
-  } catch (error) {
-    console.log(`Error on get Notification response: ${JSON.stringify(error)} . `)
-    return { props : {error}}
-  }
-}
 
 export default DigitalMeet;

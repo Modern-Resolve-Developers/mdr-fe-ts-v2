@@ -30,6 +30,10 @@ import { useQuery, useMutation } from "react-query";
 
 import { zxcvbn, zxcvbnOptions } from "@zxcvbn-ts/core";
 import * as zxcvbnCommonPackage from "@zxcvbn-ts/language-common";
+import { GetServerSideProps } from "next";
+import { PageProps } from "@/utils/types";
+import { workWithAccountSetup } from "@/utils/secrets/secrets_migrate_route";
+import { ControlledMobileNumberField } from "@/components/TextField/MobileNumberField";
 
 const baseSchema = z.object({
   firstName: requiredString("Your firstname is required."),
@@ -37,6 +41,7 @@ const baseSchema = z.object({
   email: requiredString("Your email is required.").email(),
   password: requiredString("Your password is required."),
   conpassword: requiredString("Please confirm your password."),
+  phoneNumber: requiredString("Your phone number is required.")
 });
 
 const schema = z
@@ -64,12 +69,8 @@ const schema = z
 
 export type AccountCreation = z.infer<typeof schema>;
 
-const CreateAccount: React.FC = () => {
-  useRefreshTokenHandler();
-  const UAMCheckEmail = useApiCallBack(
-    async (api, randomNum: Number) =>
-      await api.users.UAMCheckAccounts(randomNum)
-  );
+const CreateAccount: React.FC<PageProps> = ({data}) => {
+  const [loading, setLoading] = useState(true)
   const UAMCreationOfAccount = useApiCallBack(
     async (api, args: UAMCreationAdminArgs) =>
       await api.users.UAMCreateAdmin(args)
@@ -123,14 +124,12 @@ const CreateAccount: React.FC = () => {
   const hasNoMiddleName = watch("hasNoMiddleName");
   const hasNoMiddleNamePrevValue = usePreviousValue(hasNoMiddleName);
   const passwordWatcher = watch("password");
-  const { data, isLoading, error } = useQuery("checkUser", () =>
-    UAMCheckEmail.execute(1).then((response) => response.data)
-  );
   useEffect(() => {
-    if (data != "not_exist") {
-      router.push("/");
+    if(!data?.preloadedAccountSetup){
+      // router.push('/')
+      setTimeout(() => setLoading(false), 2000)
     }
-  }, [data, isLoading, error]);
+  }, [data]);
 
   useEffect(() => {
     resetField("middleName");
@@ -141,8 +140,7 @@ const CreateAccount: React.FC = () => {
     hasNoMiddleName,
     hasNoMiddleNamePrevValue,
     resetField,
-    trigger,
-    passwordWatcher,
+    trigger
   ]);
   const result = zxcvbn(getValues().password);
   const useJwtAuthAccountCreation = useMutation(
@@ -208,7 +206,7 @@ const CreateAccount: React.FC = () => {
                   },
                   {
                     onSuccess: (response) => {
-                      const { data } = response;
+                      const { data }: any = response;
                       if (data?.status == "Success") {
                         setOpen(false);
                         reset({});
@@ -252,6 +250,8 @@ const CreateAccount: React.FC = () => {
 
   return (
     <>
+      {loading ? <ControlledBackdrop open={loading} /> 
+      :
       <Container style={{ marginTop: "100px" }}>
         <UncontrolledCard>
           <Typography variant="h5" mb="2">
@@ -295,8 +295,8 @@ const CreateAccount: React.FC = () => {
               </Grid>
             </ControlledGrid>
             <ControlledGrid>
-              <Grid item xs={4}>
-                <ControlledTextField
+              <Grid item xs={6}>
+              <ControlledTextField
                   control={control}
                   required
                   name="email"
@@ -304,7 +304,18 @@ const CreateAccount: React.FC = () => {
                   shouldUnregister={true}
                 />
               </Grid>
-              <Grid item xs={4}>
+              <Grid item xs={6}>
+                <ControlledMobileNumberField
+                  control={control}
+                  name='phoneNumber'
+                  label="Phone Number"
+                  shouldUnregister
+                  required
+                />
+              </Grid>
+            </ControlledGrid>
+            <ControlledGrid>
+              <Grid item xs={6}>
                 <ControlledTextField
                   control={control}
                   required
@@ -315,7 +326,7 @@ const CreateAccount: React.FC = () => {
                 />
                 <PasswordStrengthMeter result={result} />
               </Grid>
-              <Grid item xs={4}>
+              <Grid item xs={6}>
                 <ControlledTextField
                   control={control}
                   required
@@ -342,9 +353,25 @@ const CreateAccount: React.FC = () => {
           </FormProvider>
         </UncontrolledCard>
         <ControlledBackdrop open={open} />
-      </Container>
+      </Container>}
     </>
   );
 };
+
+export const getServerSideProps: GetServerSideProps<PageProps> = async () => {
+  try {
+    const preloadedAccountSetup = await workWithAccountSetup()
+    return {
+      props:{
+        data: {
+          preloadedAccountSetup
+        }
+      }
+    }
+  } catch (error) {
+    console.log(`Error on get migration response: ${JSON.stringify(error)}`)
+    return { props : {error}}
+  }
+}
 
 export default CreateAccount;

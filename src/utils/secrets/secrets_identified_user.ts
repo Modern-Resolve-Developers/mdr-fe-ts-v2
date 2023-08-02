@@ -6,7 +6,7 @@ export async function getSecretsIdentifiedAccessLevel(uuid: number){
         {
             headers: {
                 "Content-Type": "application/json",
-                "x-api-key" : config.value.AUTH_TOKEN
+                "x-api-key" : config.value.AUTH_TOKEN as string
             }
         }
     )

@@ -53,10 +53,8 @@ const TaskManagementList: React.FC<PageProps> = ({data}) => {
   const deleteTaskExecutioner = useApiCallBack((api, uuid: any) =>
     api.mdr.deletionTask(uuid)
   );
-  const { accessSavedAuth, accessUserId } = useContext(
-    SessionContextMigrate
-  ) as SessionStorageContextSetup;
-  const { checkAuthentication } = useAuthContext();
+  const { signoutProcess, disableRefreshTokenCalled, tokenExpired, TrackTokenMovement, expirationTime, AlertTracker, FormatExpiry, refreshTokenBeingCalled, isMouseMoved, isKeyPressed,
+    accessToken } = useAuthContext();
   const fetchAllTask = useApiCallBack((api) => api.mdr.fetchAllTask());
   const [searched, setSearched] = useState<string>("");
   const [taskOriginalArray, setTaskOriginalArray] = useState([]);
@@ -88,16 +86,44 @@ const TaskManagementList: React.FC<PageProps> = ({data}) => {
     fetchAllTaskDynamically();
   }, []);
   useEffect(() => {
-    checkAuthentication("admin");
-    setTimeout(() => {
-      if(data?.preloadedAccessLevels == 1){
+    if(!accessToken || accessToken == undefined) {
+      router.push('/login')
+      setTimeout(() => {
         setPreLoad(false)
-        checkAuthentication("admin");
-       } else {
-        router.push('/sys-admin/auth/dashboardauth')
-       }
-    }, 3000);
-  }, []);
+      }, 2000)
+    } else {
+      setPreLoad(false)
+      const isExpired = TrackTokenMovement()
+      if(isExpired) {
+        signoutProcess()
+        handleOnToast(
+          "Token expired. Please re-login.",
+          "top-right",
+          false,
+          true,
+          true,
+          true,
+          undefined,
+          "dark",
+          "error"
+        );
+      }
+    }
+  }, [tokenExpired]);
+  useEffect(() => {
+    if(!disableRefreshTokenCalled) {
+      if(isMouseMoved) {
+        refreshTokenBeingCalled()
+      }
+    }
+  }, [isMouseMoved, disableRefreshTokenCalled])
+  useEffect(() => {
+    if(!disableRefreshTokenCalled) {
+      if(isKeyPressed){
+        refreshTokenBeingCalled()
+      }
+    }
+  }, [isKeyPressed, disableRefreshTokenCalled])
   const globalSearch = (): TableSearchProps[] => {
     const filteredRepositories = tableSearchList.filter((value: any) => {
       return (
@@ -172,6 +198,12 @@ const TaskManagementList: React.FC<PageProps> = ({data}) => {
         <ControlledBackdrop open={preload} />
       ) : (
         <Container>
+          {
+            expirationTime != null && expirationTime <= 30 * 1000 &&
+            AlertTracker(
+              `You are idle. Token expires in: ${FormatExpiry(expirationTime)}`, "error"
+            )
+          }
           <UncontrolledCard>
             <ControlledTypography
               variant="h6"
@@ -225,14 +257,5 @@ const TaskManagementList: React.FC<PageProps> = ({data}) => {
   );
 };
 
-export const getServerSideProps: GetServerSideProps<PageProps> = async () => {
-  try {
-    const preloadedAccessLevels = await getSecretsIdentifiedAccessLevel(1)
-    return { props : { data: { preloadedAccessLevels }}}
-  } catch (error) {
-    console.log(`Error on get Notification response: ${JSON.stringify(error)} . `)
-    return { props : {error}}
-  }
-}
 
 export default TaskManagementList;
