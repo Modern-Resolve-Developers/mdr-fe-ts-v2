@@ -69,7 +69,7 @@ const Home: React.FC<PageProps> = ({ data }) => {
   );
   useEffect(() => {
     if(uid != undefined) {
-      useFoundSecuredRouter.mutate(uid ?? "0", {
+      useFoundSecuredRouter.mutate(uid, {
         onSuccess: (response: AxiosResponse | undefined) => {
           if(response?.data != 404){
             router.replace(response?.data)
@@ -84,7 +84,7 @@ const Home: React.FC<PageProps> = ({ data }) => {
       if(data?.preloadedAccountSetup){
         router.push('/create-account')
         setTimeout(() => setLoading(false), 2000)
-      }
+      } 
       setLoading(false)
     }
   }, []);
@@ -140,7 +140,10 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async () => {
     const preloadedCooldowns = await workWithCoolDowns()
     return {
       props: {
-        data: { preloadedGlobals, preloadedAccountSetup, preloadedCooldowns }
+        data: { 
+          preloadedGlobals,
+           preloadedAccountSetup,
+            preloadedCooldowns }
       }
     }
   } catch (error) {

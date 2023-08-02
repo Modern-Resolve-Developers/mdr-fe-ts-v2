@@ -120,13 +120,12 @@ const CreateAccount: React.FC<PageProps> = ({data}) => {
   };
   zxcvbnOptions.setOptions(options);
   const setAccountCreation = useSetAtom(accountCreationAtom);
-  const baseAccountInfo = useAtomValue(accountCreationAtom);
   const hasNoMiddleName = watch("hasNoMiddleName");
-  const hasNoMiddleNamePrevValue = usePreviousValue(hasNoMiddleName);
   const passwordWatcher = watch("password");
+  const hasNoMiddleNamePrevValue = usePreviousValue(hasNoMiddleName);
   useEffect(() => {
     if(!data?.preloadedAccountSetup){
-      // router.push('/')
+      router.push('/')
       setTimeout(() => setLoading(false), 2000)
     }
   }, [data]);
@@ -140,9 +139,10 @@ const CreateAccount: React.FC<PageProps> = ({data}) => {
     hasNoMiddleName,
     hasNoMiddleNamePrevValue,
     resetField,
-    trigger
+    trigger,
+    passwordWatcher
   ]);
-  const result = zxcvbn(getValues().password);
+  const result = zxcvbn(getValues().password == undefined ? "" : getValues().password);
   const useJwtAuthAccountCreation = useMutation(
     (args: AuthenticationJwtCreateAccount) =>
       jwtAuthAccountCreation.execute(args)
@@ -162,91 +162,96 @@ const CreateAccount: React.FC<PageProps> = ({data}) => {
     );
   };
   const { mutate } = checkUserEmail();
-  const onSubmit = (data: any) => {
-    setOpen(!open);
-    setAccountCreation(data);
-    const obj = {
-      firstname: data.firstName,
-      middlename: data.hasNoMiddleName ? "N/A" : data.middleName,
-      lastname: data.lastName,
-      email: data.email,
-      password: data.password,
-      phoneNumber: '',
-    };
-    const props = {
-      email: obj.email,
-      submissionData: obj,
-    };
-    mutate(props, {
-      onSuccess: (logger) => {
-        if (logger == "email_exist") {
-          setOpen(false);
-          handleOnToast(
-            "This email is already taken.",
-            "top-right",
-            false,
-            true,
-            true,
-            true,
-            undefined,
-            "dark",
-            "error"
-          );
-          return;
-        } else {
-          useCreateAccount.mutate(obj, {
-            onSuccess: (logger: any) => {
-              const { data }: any = logger;
-              if (data == "Success") {
-                useJwtAuthAccountCreation.mutate(
-                  {
-                    jwtusername: obj.email,
-                    jwtpassword: obj.password,
-                    isValid: "1",
-                  },
-                  {
-                    onSuccess: (response) => {
-                      const { data }: any = response;
-                      if (data?.status == "Success") {
-                        setOpen(false);
-                        reset({});
-                        handleOnToast(
-                          "Successfully Added.",
-                          "top-right",
-                          false,
-                          true,
-                          true,
-                          true,
-                          undefined,
-                          "dark",
-                          "success"
-                        );
-                        router.push("/");
+  const handleContinue = () => {
+    handleSubmit(
+      (values) => {
+        setOpen(!open);
+        setAccountCreation(values);
+        const obj = {
+          firstname: values.firstName,
+          middlename: values.hasNoMiddleName ? "N/A" : values.middleName,
+          lastname: values.lastName,
+          email: values.email,
+          password: values.password,
+          phoneNumber: values.phoneNumber,
+        };
+        const props = {
+          email: obj.email,
+          submissionData: obj,
+        };
+        mutate(props, {
+          onSuccess: (logger) => {
+            if (logger == "email_exist") {
+              setOpen(false);
+              handleOnToast(
+                "This email is already taken.",
+                "top-right",
+                false,
+                true,
+                true,
+                true,
+                undefined,
+                "dark",
+                "error"
+              );
+              return;
+            } else {
+              useCreateAccount.mutate(obj, {
+                onSuccess: (logger: any) => {
+                  const { data }: any = logger;
+                  if (data == "Success") {
+                    useJwtAuthAccountCreation.mutate(
+                      {
+                        jwtusername: obj.email,
+                        jwtpassword: obj.password,
+                        isValid: "1",
+                      },
+                      {
+                        onSuccess: (response) => {
+                          const { data }: any = response;
+                          if (data?.status == "Success") {
+                            setOpen(false);
+                            reset({});
+                            handleOnToast(
+                              "Successfully Added.",
+                              "top-right",
+                              false,
+                              true,
+                              true,
+                              true,
+                              undefined,
+                              "dark",
+                              "success"
+                            );
+                            router.push("/");
+                          }
+                        },
+                        onError: (error) => {
+                          setOpen(false);
+                          handleOnToast(
+                            "Something went wrong.",
+                            "top-right",
+                            false,
+                            true,
+                            true,
+                            true,
+                            undefined,
+                            "dark",
+                            "success"
+                          );
+                        },
                       }
-                    },
-                    onError: (error) => {
-                      setOpen(false);
-                      handleOnToast(
-                        "Something went wrong.",
-                        "top-right",
-                        false,
-                        true,
-                        true,
-                        true,
-                        undefined,
-                        "dark",
-                        "success"
-                      );
-                    },
+                    );
                   }
-                );
-              }
-            },
-          });
-        }
-      },
-    });
-  };
+                },
+              });
+            }
+          },
+        });
+      }
+    )()
+    return false
+  }
 
   return (
     <>
@@ -340,7 +345,7 @@ const CreateAccount: React.FC<PageProps> = ({data}) => {
             <Button
               variant="outlined"
               color="primary"
-              onClick={handleSubmit(onSubmit)}
+              onClick={handleContinue}
               disabled={!isValid}
               style={{
                 float: "right",
