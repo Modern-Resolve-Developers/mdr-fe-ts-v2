@@ -5,4 +5,5 @@ export type ProjectTableProps = {
     handleClick?: (props : any) => void;
     columns: any
     rowIsCreativeDesign?: boolean
+    loading: boolean
 }
