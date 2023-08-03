@@ -20,7 +20,7 @@ import { useAuthContext } from "@/utils/context/base/AuthContext";
 import { SessionContextMigrate } from "@/utils/context/base/SessionContext";
 import { GetServerSideProps } from "next";
 import { PageProps } from "@/utils/types";
-import { workWithAccountSetup, workWithMigrationRouter } from "@/utils/secrets/secrets_migrate_route";
+import { workWithAccountSetup, workWithCoolDowns, workWithMigrationRouter } from "@/utils/secrets/secrets_migrate_route";
 import { MigrationReceiver, RouteEntity, toBeMigrated } from "@/utils/sys-routing/sys-routing";
 import { AxiosError, AxiosResponse } from "axios";
 import { useUserId } from "@/utils/context/hooks/hooks";
@@ -137,9 +137,10 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async () => {
     }
     const preloadedGlobals = await workWithMigrationRouter(loadedObject)
     const preloadedAccountSetup = await workWithAccountSetup()
+    const preloadedCooldowns = await workWithCoolDowns()
     return {
       props: {
-        data: { preloadedGlobals, preloadedAccountSetup }
+        data: { preloadedGlobals, preloadedAccountSetup, preloadedCooldowns }
       }
     }
   } catch (error) {

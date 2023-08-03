@@ -24,7 +24,8 @@ const HTTP_OPTIONS: HttpOptions = {
 }
 const SELF_HTTP_OPTIONS: HttpOptions = {
     headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "x-api-key" : config.value.AUTH_TOKEN
     },
     onRequest: (req: any) => {
         const accessToken = getItem<string | undefined>('AT')

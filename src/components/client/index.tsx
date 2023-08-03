@@ -230,6 +230,9 @@ export const SignUpAdditionalForm = () => {
   const checkEmailOnCustomerRegistration = useApiCallBack(
     async (api, email: string) => await api.users.findEmailOnCustomerRegistration(email)
   )
+  const secureValidationResent = useSecureHiddenNetworkApi(
+    async (api, email: string) => await api.secure.sla_begin_revalidate_resent_code(email)
+  )
   const form = useForm<ClientAccountCreation>({
     resolver: zodResolver(schema),
     mode: "all",
@@ -272,41 +275,87 @@ export const SignUpAdditionalForm = () => {
         );
         setLoading(false)
       } else {
-        useSecureVerificationCodeSender.mutate(obj, {
-          onSuccess: (secured: any) => {
-            if(secured.data == 200) {
-              setClientDetailsAtom(values)
-              setLoading(false)
-              /* Navigate to verification code entry page. */
-              router.push('/verification/verify-account')
-            } else {
-              handleOnToast(
-                "You've reached the maximum sent email. Please use the last code sent to your email",
-                "top-right",
-                false,
-                true,
-                true,
-                true,
-                undefined,
-                "dark",
-                "error"
-              );
-              setLoading(false)
-            }
-          },
-          onError: (error) => {
-            handleOnToast(
-              "Something went wrong. Please try again",
-              "top-right",
-              false,
-              true,
-              true,
-              true,
-              undefined,
-              "dark",
-              "error"
-            );
-            setLoading(false)
+        
+        secureValidationResent.execute(obj.email)
+        .then((repo: AxiosResponse | undefined) => {
+          console.log(repo?.data)
+          if(repo?.data == 200) {
+            useSecureVerificationCodeSender.mutate(obj, {
+              onSuccess: (secured: any) => {
+                if(secured.data == 200) {
+                  setClientDetailsAtom(values)
+                  setLoading(false)
+                  /* Navigate to verification code entry page. */
+                  router.push('/verification/verify-account')
+                } else {
+                  handleOnToast(
+                    "You've reached the maximum sent email. Please use the last code sent to your email",
+                    "top-right",
+                    false,
+                    true,
+                    true,
+                    true,
+                    undefined,
+                    "dark",
+                    "error"
+                  );
+                  setLoading(false)
+                }
+              },
+              onError: (error) => {
+                handleOnToast(
+                  "Something went wrong. Please try again",
+                  "top-right",
+                  false,
+                  true,
+                  true,
+                  true,
+                  undefined,
+                  "dark",
+                  "error"
+                );
+                setLoading(false)
+              }
+            })
+          } else {
+            /* secure verification code sender must be reusable */
+            useSecureVerificationCodeSender.mutate(obj, {
+              onSuccess: (secured: any) => {
+                if(secured.data == 200) {
+                  setClientDetailsAtom(values)
+                  setLoading(false)
+                  /* Navigate to verification code entry page. */
+                  router.push('/verification/verify-account')
+                } else {
+                  handleOnToast(
+                    "You've reached the maximum sent email. Please use the last code sent to your email",
+                    "top-right",
+                    false,
+                    true,
+                    true,
+                    true,
+                    undefined,
+                    "dark",
+                    "error"
+                  );
+                  setLoading(false)
+                }
+              },
+              onError: (error) => {
+                handleOnToast(
+                  "Something went wrong. Please try again",
+                  "top-right",
+                  false,
+                  true,
+                  true,
+                  true,
+                  undefined,
+                  "dark",
+                  "error"
+                );
+                setLoading(false)
+              }
+            })
           }
         })
       }

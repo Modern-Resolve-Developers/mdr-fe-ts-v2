@@ -40,4 +40,13 @@ export class ServerLessApi {
     public sla_begin_fetching_saved_histories(userId: number){
         return this.axios.get(`/Authentication/history/${userId}`)
     }
+    public sla_begin_resending_code(props: {type: string, email: string | undefined}){
+        return this.axios.post(`/Authentication/verification/resend-code`, props)
+    }
+    public sla_begin_checking_resent_code(email: string | undefined){
+        return this.axios.get(`/Authentication/verification/${email}`)
+    }
+    public sla_begin_revalidate_resent_code(email: string | undefined){
+        return this.axios.put(`/Authentication/verification/validate/${email}`)
+    }
 }

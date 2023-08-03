@@ -33,6 +33,7 @@ import * as zxcvbnCommonPackage from "@zxcvbn-ts/language-common";
 import { GetServerSideProps } from "next";
 import { PageProps } from "@/utils/types";
 import { workWithAccountSetup } from "@/utils/secrets/secrets_migrate_route";
+import { ControlledMobileNumberField } from "@/components/TextField/MobileNumberField";
 
 const baseSchema = z.object({
   firstName: requiredString("Your firstname is required."),
@@ -40,6 +41,7 @@ const baseSchema = z.object({
   email: requiredString("Your email is required.").email(),
   password: requiredString("Your password is required."),
   conpassword: requiredString("Please confirm your password."),
+  phoneNumber: requiredString("Your phone number is required.")
 });
 
 const schema = z
@@ -68,7 +70,7 @@ const schema = z
 export type AccountCreation = z.infer<typeof schema>;
 
 const CreateAccount: React.FC<PageProps> = ({data}) => {
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const UAMCreationOfAccount = useApiCallBack(
     async (api, args: UAMCreationAdminArgs) =>
       await api.users.UAMCreateAdmin(args)
@@ -124,7 +126,7 @@ const CreateAccount: React.FC<PageProps> = ({data}) => {
   const passwordWatcher = watch("password");
   useEffect(() => {
     if(!data?.preloadedAccountSetup){
-      router.push('/')
+      // router.push('/')
       setTimeout(() => setLoading(false), 2000)
     }
   }, [data]);
@@ -292,8 +294,8 @@ const CreateAccount: React.FC<PageProps> = ({data}) => {
               </Grid>
             </ControlledGrid>
             <ControlledGrid>
-              <Grid item xs={4}>
-                <ControlledTextField
+              <Grid item xs={6}>
+              <ControlledTextField
                   control={control}
                   required
                   name="email"
@@ -301,7 +303,18 @@ const CreateAccount: React.FC<PageProps> = ({data}) => {
                   shouldUnregister={true}
                 />
               </Grid>
-              <Grid item xs={4}>
+              <Grid item xs={6}>
+                <ControlledMobileNumberField
+                  control={control}
+                  name='phoneNumber'
+                  label="Phone Number"
+                  shouldUnregister
+                  required
+                />
+              </Grid>
+            </ControlledGrid>
+            <ControlledGrid>
+              <Grid item xs={6}>
                 <ControlledTextField
                   control={control}
                   required
@@ -312,7 +325,7 @@ const CreateAccount: React.FC<PageProps> = ({data}) => {
                 />
                 <PasswordStrengthMeter result={result} />
               </Grid>
-              <Grid item xs={4}>
+              <Grid item xs={6}>
                 <ControlledTextField
                   control={control}
                   required

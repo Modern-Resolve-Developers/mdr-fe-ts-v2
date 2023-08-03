@@ -6,7 +6,7 @@ import { AuthenticationProps } from "./AdminRegistrationContext";
 import { useRouter } from "next/router";
 import { decrypt, encrypt } from "@/utils/secrets/hashed";
 import jwt, {JwtPayload} from 'jsonwebtoken'
-import { Alert, AlertColor } from "@mui/material";
+import { Alert, AlertColor, Typography } from "@mui/material";
 import { CreateAuthHistoryArgs, CreateTokenArgs, LoginProps, RequestRouterParams, Tokens } from "@/pages/api/Authentication/types";
 import { useToastContext } from "./ToastContext";
 import { useLoaders } from "./LoadingContext";
@@ -26,7 +26,14 @@ const context = createContext<{
   accessToken: string | undefined
   disableRefreshTokenCalled: boolean
   setDisableRefreshTokenCalled: any
-
+  handleResendCode(type: string, email: string | undefined) : void
+  maxResentWith401: any
+  formatCooldownTime(seconds: number) : string
+  cooldown: any
+  cooldownIsActive: boolean
+  remainingTime: number
+  resendCheckCounts(email: string | undefined) : void
+  resendRevalidate(email: string | undefined) : void
 }>(undefined as any);
 interface JwtProps extends JwtPayload {
   exp?: number
@@ -37,6 +44,11 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({
   const { handleOnToast } = useToastContext()
   const { setLoading } = useLoaders()
   const router = useRouter();
+  const [maxResentWith401, setMaxResentWith401] = useState<number | null>(null)
+  const [remainingTime, setRemainingTime] = useState<number>(0)
+  const secureResendCode = useSecureHiddenNetworkApi(
+    async (api, args: {type: string, email: string | undefined}) => await api.secure.sla_begin_resending_code(args)
+)
   const loginCb = useSecureHiddenNetworkApi(
     async (api, args:LoginProps) => await api.secure.sla_begin_work_login(args)
   )
@@ -73,12 +85,89 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({
   const [utype, setUType] = useUserType()
   const [tokenExpired, setTokenExpired] = useState<boolean>(false)
   const [expirationTime, setExpirationTime] = useState<number | null>(null)
+  const [cooldownIsActive, setCoolDownIsActive] = useState<boolean>(false)
   const FetchAuthentication = useApiCallBack(
     async (api, args: AuthenticationProps) => {
       const result = await api.authentication.userAvailabilityCheck(args);
       return result;
     }
   );
+  const secureCheckResentCounts = useSecureHiddenNetworkApi(
+    async (api, email: string) => await api.secure.sla_begin_checking_resent_code(email)
+  )
+  const secureValidationResent = useSecureHiddenNetworkApi(
+    async (api, email: string) => await api.secure.sla_begin_revalidate_resent_code(email)
+  )
+  const [cooldown, setCooldown] = useState<any>(null)
+  const resendRevalidate = (
+    email: string | undefined
+  ) => {
+    secureValidationResent.execute(email)
+    .then((res: AxiosResponse | undefined) => {
+      if(res?.data == 200) {
+        setMaxResentWith401(200)
+      }
+    })
+  }
+  const resendCheckCounts = (
+    email: string | undefined
+  ) => {
+    secureCheckResentCounts.execute(email)
+    .then((res: AxiosResponse | undefined) => {
+        if(res?.data == 3) {
+          setMaxResentWith401(401)
+        } else if(res?.data >= 5) {
+          setMaxResentWith401(400)
+        } else {
+          setMaxResentWith401(200)
+        }
+    })
+  }
+  const handleResendCode = (type: string, email: string | undefined) => {
+    secureResendCode.execute(
+      {
+        type: type,
+        email: email
+      }
+    ).then((response: AxiosResponse | undefined) => {
+      if(response?.data?.status == 401) {
+        setCooldown(response?.data?.cooldown)
+        setCoolDownIsActive(!cooldownIsActive)
+        handleOnToast(
+          "Successfully sent verification code",
+          "top-right",
+          false,
+          true,
+          true,
+          true,
+          undefined,
+          "dark",
+          "success"
+        );
+        setMaxResentWith401(response?.data?.status)
+      } else if(response?.data == 400) {
+        setMaxResentWith401(response?.data)
+      } else {
+        handleOnToast(
+          "Successfully sent verification code",
+          "top-right",
+          false,
+          true,
+          true,
+          true,
+          undefined,
+          "dark",
+          "success"
+        );
+        setMaxResentWith401(response?.data)
+      }
+    })
+  }
+  const formatCooldownTime = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = seconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`
+  }
   const refreshTokenBeingCalled = () => {
     const tokens = {
       AccessToken: accessToken,
@@ -151,6 +240,26 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({
     const intervalId = setInterval(checkAccessToken, 1000)
     return () => clearInterval(intervalId)
   }, [accessToken])
+  useEffect(() => {
+    if(cooldownIsActive) {
+      setRemainingTime(cooldown * 60)
+      const countInterval = setInterval(() => {
+        setRemainingTime((prevTime) => {
+          if(prevTime <= 1) {
+            setCoolDownIsActive(false)
+            return 0
+          }
+          return prevTime - 1
+        })
+      }, 1000)
+
+      return () => {
+        clearInterval(countInterval)
+        setCoolDownIsActive(false)
+        setRemainingTime(0)
+      }
+    }
+  }, [cooldownIsActive])
   useEffect(() => {
     const handleMouseMove = () => {
       setIsMouseMoved(true)
@@ -381,7 +490,15 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({
         isKeyPressed,
         refreshTokenBeingCalled,
         accessToken,
-        disableRefreshTokenCalled, setDisableRefreshTokenCalled
+        disableRefreshTokenCalled, setDisableRefreshTokenCalled,
+        handleResendCode,
+        formatCooldownTime,
+        maxResentWith401,
+        cooldown,
+        cooldownIsActive,
+        remainingTime,
+        resendCheckCounts,
+        resendRevalidate
       }}
     >
       {children}

@@ -39,6 +39,7 @@ const VerifyAccount: React.FC = () => {
     const SecureJwtAccountCreation = useSecureHiddenNetworkApi(
         async (api, args: AuthenticationJwtCreateAccount) => await api.secure.sla_jwt_account_creation(args)
     )
+    
     const useSecureBeginCheckCode = () => {
         return useMutation((data: BeginToVerifyCode) => 
             secureBeginCheckingCode.execute(data)
@@ -52,6 +53,7 @@ const VerifyAccount: React.FC = () => {
     );
     const { handleOnToast } = useToastContext()
     const { mutate } = useSecureBeginCheckCode()
+    const { resendRevalidate, handleResendCode, cooldownIsActive, cooldown, remainingTime, resendCheckCounts, formatCooldownTime, FormatExpiry, maxResentWith401 } = useAuthContext()
     const {
         formState: {isValid},
         handleSubmit,
@@ -60,13 +62,18 @@ const VerifyAccount: React.FC = () => {
         reset
     } = form;
     useEffect(() => {
-        setTimeout(() => {
-            if(!details) {
-                router.push('/login')
-            } else {
-                setLoading(false)
-            }
-        }, 3000)
+        setLoading(false)
+        // setTimeout(() => {
+        //     if(!details) {
+        //         router.push('/login')
+        //     } else {
+        //         setLoading(false)
+        //     }
+        // }, 3000)
+    }, [])
+    useEffect(() => {
+        resendCheckCounts(details?.email)
+        resendRevalidate(details?.email)
     }, [])
     const handleContinue = () => {
         handleSubmit(
@@ -144,6 +151,11 @@ const VerifyAccount: React.FC = () => {
             }
         )()
     }
+    const handleResend = () => {
+        setPreLoad(!preload)
+        handleResendCode("email", details?.email)
+        setTimeout(() => setPreLoad(false), 3000)
+    }
     return (
         <>
             {loading ? <ControlledBackdrop open={loading} /> :
@@ -156,14 +168,6 @@ const VerifyAccount: React.FC = () => {
                         marginTop: '50px'
                     }}
                     >
-                        
-                        {/* <img 
-                        src={}
-                        style={{
-                            width: "50.941px",
-                            height: "52.248px"
-                        }}
-                        /> */}
                         <ControlledGrid>
                             <Grid item xs={6}>
                                 <div
@@ -209,7 +213,7 @@ const VerifyAccount: React.FC = () => {
                                 name="code"
                                 fields={6}
                                 required
-                                onChange={(e: any) => console.log(e)}
+                                onChange={(e: any) => console.log()}
                                 value={getValues().code}
                                 type='text'
                                 style={styledCodeEntry}
@@ -223,15 +227,39 @@ const VerifyAccount: React.FC = () => {
                                     alignItems: "center",
                                     marginTop: "10px",
                                 }}
-                                >
-                                <Typography
-                                sx={{
-                                    color: '#808080'
-                                }}
-                                variant='caption'
-                                >
-                                    Did you not receive the code? <span style={{color: '#A43A38', fontWeight: "bold", cursor: 'pointer'}}>Resend</span>
+                            >
+                               {
+                                cooldownIsActive && maxResentWith401 == 401 ? 
+                                (
+<Typography
+                                    sx={{
+                                        color: '#808080'
+                                    }}
+                                    variant='caption'
+                                    >
+                                        Please wait {formatCooldownTime(remainingTime)} 
                                 </Typography>
+                                ) : 
+                                <>
+                                <Typography
+                                    sx={{
+                                        color: '#808080'
+                                    }}
+                                    variant='caption'
+                                    >
+                                        {
+                                            maxResentWith401 == 400 ? 
+                                            <>
+                                            You've reached maximum sent email. Please wait for 24 hours
+                                            </>
+                                            :
+                                            <>
+                                            Did you not receive the code? <span style={{color: '#A43A38', fontWeight: "bold", cursor: 'pointer'}} onClick={handleResend}>Resend</span>
+                                            </>
+                                        }
+                                </Typography>
+                                </>
+                               }
                                 </div>
                                 <div className="flex justify-center items-center">
                                     <button
