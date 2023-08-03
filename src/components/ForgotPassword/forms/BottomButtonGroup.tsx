@@ -1,6 +1,6 @@
 import { Button, Grid } from "@mui/material";
 import { PrimaryButton } from "@/components/Button";
-import { useActiveStepContext } from "@/utils/context/base/ActiveStepsContext";
+import { useActiveSteps } from "@/utils/hooks/useActiveSteps";
 
 export type BottomButtonGroupProps = {
   continueButtonLabel?: string;
@@ -13,6 +13,7 @@ export type BottomButtonGroupProps = {
   onresend?: () => void
   countdown?: number
   backtoLogin?: string;
+  max_length: number
 };
 
 export const BottomButtonGroup: React.FC<BottomButtonGroupProps> = ({
@@ -25,15 +26,16 @@ export const BottomButtonGroup: React.FC<BottomButtonGroupProps> = ({
   disableBtn,
   onresend,
   countdown,
-  backtoLogin = "< Back to Log in"
+  backtoLogin = "< Back to Log in",
+  max_length
 }) => {
   // const { nextfp, previous } = usefpActiveStep();
-  const { next, previous } = useActiveStepContext()
+  const { next, previous } = useActiveSteps(max_length)
   const handleContinue = () => {
     if (onContinue !== undefined) {
       if (!onContinue()) return;
     }
-    next("forgot-password");
+    next();
   };
   const handleBack = () => {
     if (onBack !== undefined) {

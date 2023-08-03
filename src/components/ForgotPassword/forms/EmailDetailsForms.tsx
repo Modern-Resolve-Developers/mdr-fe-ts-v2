@@ -17,8 +17,9 @@ import {
   ToastContextContinue,
 } from "@/utils/context/base/ToastContext";
 import { ToastContextSetup } from "@/utils/context";
+import { useActiveSteps } from "@/utils/hooks/useActiveSteps";
+import { MAX_FORGOT_FORM_STEPS } from "..";
 
-import { useActiveStepContext } from "@/utils/context/base/ActiveStepsContext";
 
 const emailBaseSchema = z.object({
   email: requiredString("Email is required").email(),
@@ -85,7 +86,7 @@ export const EmailDetailsForm = () => {
     formState: { isValid },
     handleSubmit,
   } = form;
-  const { next } = useActiveStepContext()
+  const { next } = useActiveSteps(MAX_FORGOT_FORM_STEPS)
   const { setResendBtnHide } = useHideResendButton()
   const handleContinue = () => {
     handleSubmit(
@@ -109,7 +110,7 @@ export const EmailDetailsForm = () => {
                 "dark",
                 "success"
               );
-              next("forgot-password")
+              next()
             } else if(data == 'max_3') {
               setBackdrop(false);
               handleOnToast(
@@ -124,7 +125,7 @@ export const EmailDetailsForm = () => {
                 "error"
               );
               setResendBtnHide(true)
-              next("forgot-password")
+              next()
             }
           },
           onError: (error) => {
@@ -156,6 +157,7 @@ export const EmailDetailsForm = () => {
         disabledContinue={!isValid}
         onContinue={handleContinue}
         hideBack
+        max_length={MAX_FORGOT_FORM_STEPS}
       />
     </FormProvider>
   );

@@ -18,13 +18,11 @@ import CssBaseline from "@mui/material/CssBaseline";
 import "react-quill/dist/quill.snow.css";
 import TableSearchContext from "@/utils/context/base/TableSearchContext";
 import { AuthProvider } from "@/utils/context/base/AuthContext";
-import { useRefreshTokenHandler } from "@/utils/hooks/useRefreshTokenHandler";
 import { CookiesProvider } from "react-cookie";
 import { MeetProvider } from "@/utils/context/base/MeetContext";
 import { LoadingProvider } from "@/utils/context/base/LoadingContext";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { DynamicDashboardProvider } from "@/utils/context/base/DynamicDashboardContext";
-import { ActiveStepsProvider } from "@/utils/context/base/ActiveStepsContext";
 import { GlobalsProvider } from "@/utils/context/base/GlobalContext";
 import { useAccessToken, useUserType } from "@/utils/context/hooks/hooks";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -86,8 +84,7 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
           <CssBaseline />
           <QueryClientProvider client={queryClient}>
             <GoogleOAuthProvider clientId="643485254029-mmi46n2kojuce223b8cpfqkck1s4gv0c.apps.googleusercontent.com">
-              <ActiveStepsProvider>
-                <DynamicDashboardProvider>
+            <DynamicDashboardProvider>
                 <SessionContext>
                 <ToastContext>
                   <AuthProvider>
@@ -133,7 +130,6 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
                   </ToastContext>
                   </SessionContext>
                 </DynamicDashboardProvider>
-              </ActiveStepsProvider>
             </GoogleOAuthProvider>
           </QueryClientProvider>
         </ThemeProvider>
