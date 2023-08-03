@@ -20,8 +20,9 @@ import {
 import { ToastContextContinue } from "@/utils/context/base/ToastContext";
 import { ToastContextSetup } from "@/utils/context";
 import { emailAtom } from "@/utils/hooks/useAccountAdditionValues";
-import { useActiveStepContext } from "@/utils/context/base/ActiveStepsContext";
 import { useHideResendButton } from ".";
+import { useActiveSteps } from "@/utils/hooks/useActiveSteps";
+import { MAX_FORGOT_FORM_STEPS } from "..";
 
 const verificationBaseSchema = z.object({
   code: requiredString("Verification code is required"),
@@ -104,7 +105,7 @@ export const VerificationDetailsForm = () => {
   );
   const { resendBtnHide } = useHideResendButton()
   const { mutate } = useCheckVerification();
-  const { next } = useActiveStepContext()
+  const { next } = useActiveSteps(MAX_FORGOT_FORM_STEPS)
   useEffect(() => {
     console.log(resendBtnHide)
   }, [])
@@ -135,7 +136,7 @@ export const VerificationDetailsForm = () => {
               "success"
             );
             setBackdrop(false);
-            next("forgot-password")
+            next()
           } else if (data == "expired") {
             handleOnToast(
               "The verification code is already expired. Kindly click re-send",
@@ -240,7 +241,7 @@ export const VerificationDetailsForm = () => {
     <FormProvider {...form}>
       <VerificationForm />
       <ControlledBackdrop open={backdrop} />
-      <BottomButtonGroup resendBtn onresend={handleResend} countdown={countdown} disableBtn={disable} hideBack onContinue={handleContinue} />
+      <BottomButtonGroup max_length={MAX_FORGOT_FORM_STEPS} resendBtn onresend={handleResend} countdown={countdown} disableBtn={disable} hideBack onContinue={handleContinue} />
     </FormProvider>
   );
 };

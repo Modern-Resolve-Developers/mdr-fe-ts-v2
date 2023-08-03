@@ -20,7 +20,8 @@ import { newCredentialsAtom } from "@/utils/hooks/useAccountAdditionValues";
 import { verificationAtom } from "@/utils/hooks/useAccountAdditionValues";
 import { emailAtom } from "@/utils/hooks/useAccountAdditionValues";
 import { FPChangePasswordProps } from "@/pages/api/types";
-import { useActiveStepContext } from "@/utils/context/base/ActiveStepsContext";
+import { MAX_FORGOT_FORM_STEPS } from "..";
+import { useActiveSteps } from "@/utils/hooks/useActiveSteps";
 
 const newCredentialsBaseSchema = z
   .object({
@@ -80,7 +81,7 @@ export const NewCredentialsDetailsForm = () => {
     mode: 'all',
     defaultValues : credentials
   })
-  const { next } = useActiveStepContext()
+  const { next } = useActiveSteps(MAX_FORGOT_FORM_STEPS)
   const { handleOnToast } = useContext(
     ToastContextContinue
   ) as ToastContextSetup;
@@ -117,7 +118,7 @@ export const NewCredentialsDetailsForm = () => {
                 "dark",
                 "success"
               );
-              next("forgot-password")
+              next()
             }
           }
         })
@@ -133,6 +134,7 @@ export const NewCredentialsDetailsForm = () => {
       disabledContinue={!isValid}
       onContinue={handleContinue}
       hideBack
+      max_length={MAX_FORGOT_FORM_STEPS}
       />
     </FormProvider>
   )

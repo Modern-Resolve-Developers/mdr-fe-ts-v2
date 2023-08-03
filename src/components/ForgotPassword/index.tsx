@@ -5,8 +5,9 @@ import { FormProvider } from "react-hook-form";
 import UncontrolledCard from "../Cards/Card";
 
 import { NewCredentialsDetailsForm } from "./forms/NewCredentialsForms";
-import { useActiveStepContext } from "@/utils/context/base/ActiveStepsContext";
+
 import { Completed } from "./forms/Completed";
+import { useActiveSteps } from "@/utils/hooks/useActiveSteps";
 const FORGOT_FORM_MAP: Array<{ label: string; form: React.FC }> = [
   {
     label: "Email Details",
@@ -29,7 +30,7 @@ const FORGOT_FORM_MAP: Array<{ label: string; form: React.FC }> = [
 export const MAX_FORGOT_FORM_STEPS = FORGOT_FORM_MAP.length;
 
 export const ForgotPasswordAdditionalDetails = () => {
-  const { activeStep } = useActiveStepContext()
+  const { activeStep } = useActiveSteps(MAX_FORGOT_FORM_STEPS)
   const { label, form: ActiveForm } = FORGOT_FORM_MAP[activeStep];
 
   return (
