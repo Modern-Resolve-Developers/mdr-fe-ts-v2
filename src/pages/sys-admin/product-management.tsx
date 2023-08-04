@@ -29,11 +29,8 @@ import { ControlledTextField } from "@/components/TextField/TextField";
 import { ControlledSelectField } from "@/components/SelectField";
 import { useContext, useEffect, useState } from "react";
 
-import { PMGridRow } from "@/utils/DataGridRowHelper";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { requiredString } from "@/utils/formSchema";
 import { ControlledRichTextField } from "@/components/TextField/RichTextField";
 import ControlledGrid from "@/components/Grid/Grid";
 import { productManagementAtom } from "@/utils/hooks/useAccountAdditionValues";
@@ -41,48 +38,16 @@ import { useAtom } from "jotai";
 import { ControlledMultipleSelectField } from "@/components/SelectField/MultipleSelection";
 import { useApiCallBack } from "@/utils/hooks/useApi";
 import { NormalButton } from "@/components/Button/NormalButton";
-import { DevTool } from "@hookform/devtools";
 import { ControlledProgressWithLabel } from "@/components/Progress/CircularProgress";
 import { useDynamicDashboardContext } from "@/utils/context/base/DynamicDashboardContext";
 import { SessionContextMigrate } from "@/utils/context/base/SessionContext";
-
 import { SessionStorageContextSetup } from "@/utils/context";
 import { useAuthContext } from "@/utils/context/base/AuthContext";
 import { GetServerSideProps } from "next";
 import { PageProps } from "@/utils/types";
 import { getSecretsIdentifiedAccessLevel } from "@/utils/secrets/secrets_identified_user";
-export const productManagementBaseSchema = z.object({
-  productName: requiredString("Product name is required."),
-  productDescription: requiredString("Product Description is required."),
-  productCategory: requiredString("Kindly select product category."),
-  projectType: requiredString("Kindly select project type"),
-  productFeatures: z
-    .object({
-      label: z.string(),
-      value: z.string(),
-    })
-    .array(),
-  productImage: z.string().optional(),
-  projectScale: requiredString("Kindly select project scale."),
-  productPrice: z.any(),
-  installment: requiredString("Please select installment"),
-  installmentInterest: z
-    .any({ required_error: "Kindly select interest percentage" })
-    .optional(),
-  downpaymentRequired: z.any().optional(),
-  monthlyPaymentSelection: z
-    .any({ required_error: "Kindly select monthly payment selection" })
-    .optional(),
-  monthlyPaymentRequired: z.any().optional(),
-  totalAmountBasedOnInstallation: z.any().optional(),
-  // product repository
-  repositoryName: requiredString("Repository Name is required."),
-  repositoryMaintainedBy: requiredString("Select team"),
-  repositoryUrl: z.string().optional(),
-});
-export type ProductManagementCreation = z.infer<
-  typeof productManagementBaseSchema
->;
+import { ProductManagementCreation, productManagementBaseSchema } from "@/utils/schema/Sys-adminSchema/Product-ManagementShema";
+
 const ProductPricingForm = () => {
   const [isEdit, setIsEdit] = useState(true);
   const [scale, setScale] = useState<

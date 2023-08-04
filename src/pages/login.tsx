@@ -46,16 +46,13 @@ import {
 import { useCookies } from "react-cookie";
 import { LockClosedIcon } from "@heroicons/react/20/solid";
 import { useMutation, useQuery } from "react-query";
-import { decrypt, encrypt } from "@/utils/secrets/hashed";
-import { useAuthContext } from "@/utils/context/base/AuthContext";
+import { GetServerSideProps } from "next";
+import { getSecretsIdentifiedAccessLevel } from "@/utils/secrets/secrets_identified_user";
+import { PageProps } from "@/utils/types";
+import { loginAccount, LoginSchema } from "@/utils/schema/LoginSchema";
 import { useLoaders } from "@/utils/context/base/LoadingContext";
-
-const baseSchema = z.object({
-  email: requiredString("Your email is required.").email(),
-  password: requiredString("Your password is required."),
-});
-
-export type loginAccount = z.infer<typeof baseSchema>;
+import { decrypt } from "@/utils/secrets/hashed";
+import { useAuthContext } from "@/utils/context/base/AuthContext";
 type JWTAuthLoginTypes = {
   jwtusername: string | any;
   jwtpassword: string | any;
@@ -69,7 +66,7 @@ const Login: React.FC = () => {
     setValue,
   } = useForm<loginAccount>({
     mode: "all",
-    resolver: zodResolver(baseSchema),
+    resolver: zodResolver(LoginSchema),
     defaultValues: {
       email: "",
       password: "",
@@ -374,3 +371,4 @@ const Login: React.FC = () => {
 
 
 export default Login;
+ 

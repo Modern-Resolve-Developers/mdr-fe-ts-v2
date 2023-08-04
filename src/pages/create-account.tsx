@@ -1,16 +1,13 @@
 import React, { useState, useEffect, useContext } from "react";
 import {
-  ResponsiveAppBar,
   UncontrolledCard,
   ControlledGrid,
   ControlledBackdrop,
 } from "@/components";
-import { Container, Typography, Button, Box, Grid } from "@mui/material";
+import { Container, Typography, Button, Grid } from "@mui/material";
 import { ControlledTextField } from "@/components/TextField/TextField";
 import { useForm, FormProvider } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { requiredString } from "@/utils/formSchema";
 import { usePreviousValue } from "@/utils/hooks/usePreviousValue";
 import { accountCreationAtom } from "@/utils/hooks/useAccountAdditionValues";
 import { useSetAtom, useAtomValue } from "jotai/react";
@@ -30,44 +27,11 @@ import { useQuery, useMutation } from "react-query";
 
 import { zxcvbn, zxcvbnOptions } from "@zxcvbn-ts/core";
 import * as zxcvbnCommonPackage from "@zxcvbn-ts/language-common";
-import { GetServerSideProps } from "next";
+import { AccountCreation, schema } from "@/utils/schema/Create-AccountSchema";
 import { PageProps } from "@/utils/types";
-import { workWithAccountSetup } from "@/utils/secrets/secrets_migrate_route";
 import { ControlledMobileNumberField } from "@/components/TextField/MobileNumberField";
-
-const baseSchema = z.object({
-  firstName: requiredString("Your firstname is required."),
-  lastName: requiredString("Your lastname is required."),
-  email: requiredString("Your email is required.").email(),
-  password: requiredString("Your password is required."),
-  conpassword: requiredString("Please confirm your password."),
-  phoneNumber: requiredString("Your phone number is required.")
-});
-
-const schema = z
-  .discriminatedUnion("hasNoMiddleName", [
-    z
-      .object({
-        hasNoMiddleName: z.literal(false),
-        middleName: requiredString(
-          "Please provide your middlename or select i do not have a middlename"
-        ),
-      })
-      .merge(baseSchema),
-    z
-      .object({
-        hasNoMiddleName: z.literal(true),
-      })
-      .merge(baseSchema),
-  ])
-  .refine(
-    ({ conpassword, password }) => {
-      return password === conpassword;
-    },
-    { path: ["conpassword"], message: "Password did not match" }
-  );
-
-export type AccountCreation = z.infer<typeof schema>;
+import { GetServerSideProps } from "next";
+import { workWithAccountSetup } from "@/utils/secrets/secrets_migrate_route";
 
 const CreateAccount: React.FC<PageProps> = ({data}) => {
   const [loading, setLoading] = useState(true)

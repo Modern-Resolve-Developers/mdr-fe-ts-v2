@@ -1,4 +1,3 @@
-import DashboardLayout from "@/components/DashboardLayout";
 import {
   ControlledTypography,
   UncontrolledCard,
@@ -7,17 +6,12 @@ import {
   ControlledBackdrop,
 } from "@/components";
 import { ControlledTabs } from "@/components/Tabs/Tabs";
-import { Container, Typography } from "@mui/material";
-import { sidebarList, sidebarExpand } from "@/utils/sys-routing/sys-routing";
-
-import { useCallback, useContext, useEffect, useState } from "react";
-
+import { Container } from "@mui/material";
+import { useContext, useEffect, useState } from "react";
 import { ControlledTextField } from "@/components/TextField/TextField";
 import { ControlledSelectField } from "@/components/SelectField";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { requiredString } from "@/utils/formSchema";
 import { Grid } from "@mui/material";
 import { useAtom } from "jotai";
 import { useApiCallBack } from "@/utils/hooks/useApi";
@@ -31,21 +25,14 @@ import { ControlledPopoverButton } from "@/components/Button/PopoverButton";
 import { NormalButton } from "@/components/Button/NormalButton";
 import { SessionContextMigrate } from "@/utils/context/base/SessionContext";
 import { SessionStorageContextSetup } from "@/utils/context";
-import { useMutation, useQuery } from "react-query";
 import { useDynamicDashboardContext } from "@/utils/context/base/DynamicDashboardContext";
 import { useAuthContext } from "@/utils/context/base/AuthContext";
 import { GetServerSideProps } from "next";
 import { PageProps } from "@/utils/types";
 import { getSecretsIdentifiedAccessLevel } from "@/utils/secrets/secrets_identified_user";
+import { categoryManagementCreation, categoryManagementBaseSchema } from "@/utils/schema/Sys-adminSchema/Category-manageSchema";
 import { useUserId } from "@/utils/context/hooks/hooks";
-import { AxiosResponse } from "axios";
-const categoryManagementBaseSchema = z.object({
-  label: requiredString("Label is required."),
-  type: requiredString("kindly select type."),
-});
-export type categoryManagementCreation = z.infer<
-  typeof categoryManagementBaseSchema
->;
+
 const CategoryForm = () => {
   const [categoryType, setCategoryType] = useState<
     Array<{
@@ -349,11 +336,10 @@ const CategoryManageAll: React.FC = () => {
               ) : (
                 <>
                   <ProjectTable
-                    columns={columns}
-                    data={categoryData}
-                    sx={{ marginTop: "10px" }}
-                    rowIsCreativeDesign={false}
-                  />
+                        columns={columns}
+                        data={categoryData}
+                        sx={{ marginTop: "10px" }}
+                        rowIsCreativeDesign={false} loading={false}                  />
                 </>
               )}
             </ControlledTabs>

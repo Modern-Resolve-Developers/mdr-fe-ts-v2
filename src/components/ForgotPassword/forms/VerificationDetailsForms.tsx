@@ -21,15 +21,11 @@ import { ToastContextContinue } from "@/utils/context/base/ToastContext";
 import { ToastContextSetup } from "@/utils/context";
 import { emailAtom } from "@/utils/hooks/useAccountAdditionValues";
 import { useHideResendButton } from ".";
+import { VerificationAccountCreation, verificationBaseSchema } from "@/utils/schema/ForgotPasswordSchema/VerificationDeatilsFormSchema";
 import { useActiveSteps } from "@/utils/hooks/useActiveSteps";
 import { MAX_FORGOT_FORM_STEPS } from "..";
 
-const verificationBaseSchema = z.object({
-  code: requiredString("Verification code is required"),
-});
-export type VerificationAccountCreation = z.infer<
-  typeof verificationBaseSchema
->;
+
 
 const VerificationForm = () => {
   const { control } = useFormContext<VerificationAccountCreation>();

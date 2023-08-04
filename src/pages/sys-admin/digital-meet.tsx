@@ -1,4 +1,3 @@
-import DashboardLayout from "@/components/DashboardLayout";
 import {
   ControlledBackdrop,
   ControlledChip,
@@ -6,10 +5,6 @@ import {
   ProjectTable,
   UncontrolledCard,
 } from "@/components";
-import {
-  sidebarList,
-  sidebarExpand,
-} from "../../utils/sys-routing/sys-routing";
 import { Container, Grid } from "@mui/material";
 import { StartupPage } from "@/components/Jitsi/StartupPage";
 import { ControlledPopoverButton } from "@/components/Button/PopoverButton";
@@ -24,9 +19,7 @@ import { SessionStorageContextSetup, ToastContextSetup } from "@/utils/context";
 import { useAuthContext } from "@/utils/context/base/AuthContext";
 import { ToastContextContinue } from "@/utils/context/base/ToastContext";
 import { ControlledModal } from "@/components";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { requiredString } from "@/utils/formSchema";
 import { useForm, FormProvider, useFormContext } from "react-hook-form";
 import { useAtom } from "jotai";
 import { ControlledTextField } from "@/components/TextField/TextField";
@@ -34,20 +27,15 @@ import { ControlledGrid } from "@/components";
 import { joinMeetAtom } from "@/utils/hooks/useAccountAdditionValues";
 import { useApiCallBack } from "@/utils/hooks/useApi";
 import { useMutation } from "react-query";
-
 import { meetAtom } from "@/utils/hooks/useAccountAdditionValues";
 import { GetServerSideProps } from "next";
 import { PageProps } from "@/utils/types";
 import { getSecretsIdentifiedAccessLevel } from "@/utils/secrets/secrets_identified_user";
+import { JoinMeetingFormAccount, baseJoinFormSchema } from "@/utils/schema/Sys-adminSchema/DigitalMeetSchema";
 import { useUserId } from "@/utils/context/hooks/hooks";
 
 
-const baseJoinFormSchema = z.object({
-  name: requiredString("Your name is required"),
-  password: z.string().optional(),
-});
 
-export type JoinMeetingFormAccount = z.infer<typeof baseJoinFormSchema>;
 type JoinFormProps = {
   isprivate: boolean;
 };
@@ -422,11 +410,10 @@ const DigitalMeet: React.FC = () => {
               ) : (
                 <>
                   <ProjectTable
-                    columns={columns}
-                    data={rooms}
-                    sx={{ marginTop: "10px" }}
-                    rowIsCreativeDesign={false}
-                  />
+                        columns={columns}
+                        data={rooms}
+                        sx={{ marginTop: "10px" }}
+                        rowIsCreativeDesign={false} loading={false}                  />
                 </>
               )}
             </ControlledTabs>

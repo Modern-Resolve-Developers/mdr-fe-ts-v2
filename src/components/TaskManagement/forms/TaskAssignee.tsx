@@ -1,37 +1,23 @@
-import { ControlledTextField } from "@/components/TextField/TextField";
-import { Grid, IconButton, Box } from "@mui/material";
+import { Grid,} from "@mui/material";
 import { useState, useEffect, useContext } from "react";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { requiredString } from "@/utils/formSchema";
 import { BottomButtonGroup } from "@/components/TaskManagement/forms/BottomButtonGroup";
-
 import { useForm, FormProvider, useFormContext } from "react-hook-form";
-
 import { useAtom } from "jotai";
 import { useActiveStepTask } from "../useActiveStep";
 import { ControlledSelectField } from "@/components/SelectField";
-
 import { useApiCallBack } from "@/utils/hooks/useApi";
 import {
   taskAssigneeAtom,
   taskInformationAtom,
 } from "@/utils/hooks/useAccountAdditionValues";
 import ControlledGrid from "@/components/Grid/Grid";
-
 import { CreateTask } from "@/pages/api/types";
 import ControlledBackdrop from "@/components/Backdrop/Backdrop";
 import { ToastContextContinue } from "@/utils/context/base/ToastContext";
 import { ToastContextSetup } from "@/utils/context";
+import { TaskAssigneeCreation, taskAssigneeBaseSchema } from "@/utils/schema/Task-Management/TaskAssigneeSchema";
 
-const taskAssigneeBaseSchema = z.object({
-  assignee: requiredString("Please select assignee."),
-  reporter: requiredString("Please select reporter."),
-  task_dept: requiredString("Please select task department."),
-  task_status: requiredString("Please provide status."),
-});
-
-export type TaskAssigneeCreation = z.infer<typeof taskAssigneeBaseSchema>;
 
 const TaskAssigneeForm = () => {
   const FetchUsersBasedType = useApiCallBack((api, usertype: any) =>

@@ -20,24 +20,11 @@ import { newCredentialsAtom } from "@/utils/hooks/useAccountAdditionValues";
 import { verificationAtom } from "@/utils/hooks/useAccountAdditionValues";
 import { emailAtom } from "@/utils/hooks/useAccountAdditionValues";
 import { FPChangePasswordProps } from "@/pages/api/types";
-import { MAX_FORGOT_FORM_STEPS } from "..";
+import { useActiveStepContext } from "@/utils/context/base/ActiveStepsContext";
+import { NewCredentialsAccountCreation, newCredentialsBaseSchema } from "@/utils/schema/ForgotPasswordSchema/NewCredentialsFormSchema";
 import { useActiveSteps } from "@/utils/hooks/useActiveSteps";
+import { MAX_FORGOT_FORM_STEPS } from "..";
 
-const newCredentialsBaseSchema = z
-  .object({
-    password: requiredString("Your password is required."),
-    conpass: requiredString("Kindly confirm your password."),
-  })
-  .refine(
-    ({ conpass, password }) => {
-      return password === conpass;
-    },
-    { path: ["conpass"], message: "Password is not match" }
-  );
-
-export type NewCredentialsAccountCreation = z.infer<
-  typeof newCredentialsBaseSchema
->;
 
 const NewCredentialsForm = () => {
   const { control } = useFormContext<NewCredentialsAccountCreation>();
