@@ -20,7 +20,6 @@ import { useActiveSteps } from "@/utils/hooks/useActiveSteps";
 import { useScreenSize } from "@/utils/hooks/useScreenSize";
 
 import { MAX_FORGOT_FORM_STEPS } from "..";
-import { Box } from "@mui/material";
 
 
 const EmailForm = () => {

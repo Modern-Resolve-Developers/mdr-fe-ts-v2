@@ -28,7 +28,6 @@ import { Box } from "@mui/material";
 import { useScreenSize } from "@/utils/hooks/useScreenSize";
 
 
-
 const VerificationForm = () => {
   const { control } = useFormContext<VerificationAccountCreation>();
   const { windowSize } = useScreenSize();
