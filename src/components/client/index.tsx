@@ -30,58 +30,17 @@ import { useMutation } from "react-query";
 import { usePreviousValue } from "@/utils/hooks/usePreviousValue";
 import { PasswordStrengthMeter } from "../PasswordStrengthMeter/PasswordStrengthMeter";
 import { LockClosedIcon } from "@heroicons/react/20/solid";
+import { ClientAccountCreation, schema } from "@/utils/schema/ClientRegisterSchema";
 
 import {
   accountClientCreationAtom,
   ClientCreationAtom,
 } from "@/utils/hooks/useAccountAdditionValues";
-import { UAMAddRequestArgs } from "@/pages/api/users/types";
-import ControlledBackdrop from "../Backdrop/Backdrop";
 import { ControlledMobileNumberField } from "../TextField/MobileNumberField";
+import { VerificationProps } from "@/pages/api/Authentication/types";
 import { useToastContext } from "@/utils/context/base/ToastContext";
-import { AuthenticationJwtCreateAccount, VerificationProps } from "@/pages/api/Authentication/types";
 import { AxiosResponse } from "axios";
-const clientRegistrationBaseSchema = z.object({
-  firstName: requiredString("Your firstname is required."),
-  lastName: requiredString("Your lastname is required"),
-  email: requiredString("Your email is required.").email(),
-  phoneNumber: requiredString("Your phone number is required."),
-  password: requiredString("Your password is required.").min(6),
-  conpassword: requiredString("Please confirm your password.").min(6),
-});
-
-/**
- * @author JM
- * There are multiple missing processes here. I marked down all the locations we can use to integrate the missing process.
- * > Process 1 - JWT Account Creation upon submission on sign up
- * > Process 2 - Send verification code API through email. 
- * > Process 3 - Navigate to verification code entry page
- */
-
-const schema = z
-  .discriminatedUnion("hasNoMiddleName", [
-    z
-      .object({
-        hasNoMiddleName: z.literal(false),
-        middleName: requiredString(
-          "Please provide your middlename or select i do not have a middlename"
-        ),
-      })
-      .merge(clientRegistrationBaseSchema),
-    z
-      .object({
-        hasNoMiddleName: z.literal(true),
-        middleName: z.string().optional()
-      })
-      .merge(clientRegistrationBaseSchema),
-  ])
-  .refine(
-    ({ conpassword, password }) => {
-      return password === conpassword;
-    },
-    { path: ["conpassword"], message: "Password did not match" }
-  );
-export type ClientAccountCreation = z.infer<typeof schema>;
+import ControlledBackdrop from "../Backdrop/Backdrop";
 const options = {
   dictionary: {
     ...zxcvbnCommonPackage.dictionary,

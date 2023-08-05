@@ -1,10 +1,7 @@
 import { ControlledTextField } from "@/components/TextField/TextField";
 import { useState, useEffect, useContext } from "react";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { requiredString } from "@/utils/formSchema";
 import { BottomButtonGroup } from "@/components/ForgotPassword/forms/BottomButtonGroup";
-
 import { useForm, FormProvider, useFormContext } from "react-hook-form";
 import { atom, useAtom } from "jotai";
 import { emailAtom } from "@/utils/hooks/useAccountAdditionValues";
@@ -17,14 +14,11 @@ import {
   ToastContextContinue,
 } from "@/utils/context/base/ToastContext";
 import { ToastContextSetup } from "@/utils/context";
+import { useActiveStepContext } from "@/utils/context/base/ActiveStepsContext";
+import { EmailAccountCreation, emailBaseSchema } from "@/utils/schema/ForgotPasswordSchema/EmailDetailFromSchema";
 import { useActiveSteps } from "@/utils/hooks/useActiveSteps";
 import { MAX_FORGOT_FORM_STEPS } from "..";
 
-
-const emailBaseSchema = z.object({
-  email: requiredString("Email is required").email(),
-});
-export type EmailAccountCreation = z.infer<typeof emailBaseSchema>;
 
 const EmailForm = () => {
   const { control } = useFormContext<EmailAccountCreation>();
