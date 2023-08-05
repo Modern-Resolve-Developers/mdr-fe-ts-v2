@@ -71,6 +71,8 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
       setStoredType(parseInt(decrypt(savedUserType)));
     } else {
       setLoading(false);
+      setStoredValue(undefined);
+      setStoredType(undefined)
     }
   }, [accessToken, userType]);
 
