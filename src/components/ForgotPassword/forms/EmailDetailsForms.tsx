@@ -17,33 +17,37 @@ import { ToastContextSetup } from "@/utils/context";
 import { useActiveStepContext } from "@/utils/context/base/ActiveStepsContext";
 import { EmailAccountCreation, emailBaseSchema } from "@/utils/schema/ForgotPasswordSchema/EmailDetailFromSchema";
 import { useActiveSteps } from "@/utils/hooks/useActiveSteps";
+import { useScreenSize } from "@/utils/hooks/useScreenSize";
+
 import { MAX_FORGOT_FORM_STEPS } from "..";
 
 
 const EmailForm = () => {
   const { control } = useFormContext<EmailAccountCreation>();
+  const { windowSize } = useScreenSize();
 
   return (
     <>
       <Typography className="forgot-text">
-      Forgot your password?
+        Forgot your password?
       </Typography>
       <Typography className="forgot-text-subtitle">
           Please enter the email address associated with your account.
       </Typography>
-      <ControlledGrid>
-        <Grid item xs={4}></Grid>
-        <Grid item xs={4}>
-          <ControlledTextField
-            control={control}
-            required
-            name="email"
-            label="Email Address"
-            shouldUnregister
-          />
-        </Grid>
-        <Grid item xs={4}></Grid>
-      </ControlledGrid>
+        <ControlledGrid>
+          <Grid item xs={windowSize.width > 600 ? 4 : 0}></Grid>
+          <Grid item xs={windowSize.width > 600 ? 4 : 12}>
+            <ControlledTextField
+              control={control}
+              required
+              name="email"
+              label="Email Address"
+              shouldUnregister
+              className="forgot-email-address"
+            />
+          </Grid>
+          <Grid item xs={windowSize.width > 600 ? 4 : 0}></Grid>
+        </ControlledGrid>
     </>
   );
 };
@@ -144,15 +148,15 @@ export const EmailDetailsForm = () => {
     return false;
   };
   return (
-    <FormProvider {...form}>
-      <EmailForm />
-      <ControlledBackdrop open={backdrop} />
-      <BottomButtonGroup continueButtonLabel="Confirm Email"
-        disabledContinue={!isValid}
-        onContinue={handleContinue}
-        hideBack
-        max_length={MAX_FORGOT_FORM_STEPS}
-      />
-    </FormProvider>
+      <FormProvider {...form}>
+        <EmailForm />
+        <ControlledBackdrop open={backdrop} />
+        <BottomButtonGroup continueButtonLabel="Confirm Email"
+          disabledContinue={!isValid}
+          onContinue={handleContinue}
+          hideBack
+          max_length={MAX_FORGOT_FORM_STEPS}
+        />
+      </FormProvider>
   );
 };

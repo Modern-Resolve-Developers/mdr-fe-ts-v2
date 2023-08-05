@@ -10,6 +10,8 @@ import { verificationAtom, emailAtom, newCredentialsAtom } from '@/utils/hooks/u
 import { useAtom } from 'jotai'
 import { useActiveSteps } from '@/utils/hooks/useActiveSteps'
 import { MAX_FORGOT_FORM_STEPS } from '..'
+import { Box } from "@mui/material";
+
 export const Completed = () => {
     const [verify, setVerify] = useAtom(verificationAtom)
     const [email, setEmail] = useAtom(emailAtom)
@@ -28,7 +30,7 @@ export const Completed = () => {
         }, 3000)
     }, [])
     return (
-        <>
+        <Box className="stepper-container">
             <ControlledGrid>
                 <Grid item xs={4}></Grid>
                 <Grid item xs={4}>
@@ -41,6 +43,6 @@ export const Completed = () => {
                 <Grid item xs={4}></Grid>
             </ControlledGrid>
             <ControlledBackdrop open={open} />
-        </>
+        </Box>
     )
 }
