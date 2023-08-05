@@ -214,33 +214,38 @@ code {
   }
 }
 
+/* Forgot password CSS */
 .forgot-pw-container {
   background-image: linear-gradient(#BC4337, #2B103D);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   height: 100vh;
   max-width: inherit;
 }
 
-.mdr-forgot-pwCard {
-  border-radius: 40px;
-  position: fixed;
-  right: 0;
-  left: 0;
-  margin-right: auto;
-  margin-left: auto;
-  width: 80%;
-  height: 52%
-}
-
-.mdr-logo {
-margin-left: 1%;
-margin-top: 2%;
+.forgot-pw-heading {
+  display: flex; 
+  align-items: center;
+  gap: 21px;
+  margin-left: 25.52px;
+  margin-top: 53.31px;
 }
 
 .forgot-pw-title {
-  float: right;
-  height: 50px;
-  margin-right: 84%;
-  margin-top: 3%;
+  color: #808080;
+  font-size: 22px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 152.77%;
+}
+
+.mdr-forgot-pwCard {
+  border-radius: 50px;
+  background: #FFF;
+  box-shadow: 8px 10px 8px 1px rgba(0, 0, 0, 0.10);
+  width: max(72.927vw, 1460px);
+  padding: unset;
 }
 
 .forgot-button{
@@ -271,3 +276,36 @@ margin-top: 2%;
   line-height: 152.77%; /* 27.499px */
 }
 
+.stepper-steps {
+  width: 50%;
+  margin: 0 auto;
+}
+
+@media screen and (max-width: 768px) {
+  .forgot-pw-heading {
+    justify-content: center;
+    margin: 20px 0;
+  }
+
+  .stepper-steps {
+    width: 100%;
+    margin: unset;
+  }
+}
+
+@media screen and (max-width: 576px) {
+  .forgot-pw-heading {
+    flex-direction: column;
+  }
+
+  .forgot-text {
+    font-size: 24px;
+  }
+
+  .forgot-text-subtitle {
+    font-size: 16px;
+  }
+}
+
+
+/* End of Forgot Password */

@@ -56,7 +56,6 @@ export const OnboardingStepper: React.FC<OnboardingStepperProps> = ({ activeStep
         activeStep={activeStep}
         alternativeLabel
         sx={{ width: '100%', px: 0, ...sx }}
-        
       >
         {steps.map((label: any, i: any) => (
           <Step sx={{ px: 0 }} key={label} completed={activeStep > i} active={i === activeStep}>
