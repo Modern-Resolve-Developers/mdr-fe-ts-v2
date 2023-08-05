@@ -271,7 +271,14 @@ export type RouteEntity = {
     exactPath: string
 }
 
-export const toBeMigrated: RouteEntity[] = []
+export const toBeMigrated: RouteEntity[] = [
+    {
+        id: 1,
+        access_level: 1,
+        ToWhomRoute: 'Administrator',
+        exactPath: 'sys-admin/auth/dashboardauth'
+    }
+]
 
 export type MigrationReceiver = {
     JsonRoutes: string

@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import { AccountCreation } from "../schema/Create-AcoountSchema";
+import { AccountCreation } from "../schema/Create-AccountSchema"; 
 import { loginAccount } from "../schema/LoginSchema";
 import { PersonalAccountCreation } from "../schema/UserManagement/PersonalDetailsFormSchema";
 import { CredentialsAccountCreation } from "../schema/UserManagement/CredentialsDetailsFormSchema";

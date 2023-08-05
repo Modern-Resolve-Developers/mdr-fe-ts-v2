@@ -10,9 +10,7 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { usePreviousValue } from "@/utils/hooks/usePreviousValue";
 import { accountCreationAtom } from "@/utils/hooks/useAccountAdditionValues";
-import { useSetAtom, useAtomValue } from "jotai/react";
-
-import { useRefreshTokenHandler } from "@/utils/hooks/useRefreshTokenHandler";
+import { useSetAtom } from "jotai/react";
 
 import { ControlledCheckbox } from "@/components/Checkbox/Checkbox";
 import { PasswordStrengthMeter } from "@/components/PasswordStrengthMeter/PasswordStrengthMeter";
@@ -23,7 +21,7 @@ import { useRouter } from "next/router";
 import { useApiCallBack } from "@/utils/hooks/useApi";
 import { UAMCreationAdminArgs } from "./api/users/types";
 import { AuthenticationJwtCreateAccount } from "./api/Authentication/types";
-import { useQuery, useMutation } from "react-query";
+import { useMutation } from "react-query";
 
 import { zxcvbn, zxcvbnOptions } from "@zxcvbn-ts/core";
 import * as zxcvbnCommonPackage from "@zxcvbn-ts/language-common";
