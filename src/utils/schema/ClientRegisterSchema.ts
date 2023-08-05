@@ -7,6 +7,7 @@ const clientRegistrationBaseSchema = z.object({
     email: requiredString("Your email is required.").email(),
     password: requiredString("Your password is required."),
     conpassword: requiredString("Please confirm your password."),
+    phoneNumber: requiredString("Kindly provide your phone number.")
   });
   
   export const schema = z
@@ -22,6 +23,7 @@ const clientRegistrationBaseSchema = z.object({
       z
         .object({
           hasNoMiddleName: z.literal(true),
+          middleName: z.string().optional()
         })
         .merge(clientRegistrationBaseSchema),
     ])
