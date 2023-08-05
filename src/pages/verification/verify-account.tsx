@@ -62,14 +62,13 @@ const VerifyAccount: React.FC = () => {
         reset
     } = form;
     useEffect(() => {
-        setLoading(false)
-        // setTimeout(() => {
-        //     if(!details) {
-        //         router.push('/login')
-        //     } else {
-        //         setLoading(false)
-        //     }
-        // }, 3000)
+        setTimeout(() => {
+            if(!details) {
+                router.push('/login')
+            } else {
+                setLoading(false)
+            }
+        }, 3000)
     }, [])
     useEffect(() => {
         resendCheckCounts(details?.email)

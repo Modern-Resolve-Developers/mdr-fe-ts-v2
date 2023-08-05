@@ -15,7 +15,7 @@ export const getItem = <T>(key: string): T | undefined => {
             return item ? JSON.parse(item) : undefined
         }
     } catch (error) {
-        console.log(error)
+        
     }
     return undefined
 }
