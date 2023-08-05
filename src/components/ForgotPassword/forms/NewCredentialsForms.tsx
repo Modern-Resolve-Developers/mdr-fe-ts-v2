@@ -24,15 +24,18 @@ import { useActiveStepContext } from "@/utils/context/base/ActiveStepsContext";
 import { NewCredentialsAccountCreation, newCredentialsBaseSchema } from "@/utils/schema/ForgotPasswordSchema/NewCredentialsFormSchema";
 import { useActiveSteps } from "@/utils/hooks/useActiveSteps";
 import { MAX_FORGOT_FORM_STEPS } from "..";
+import { Box } from "@mui/material";
+import { useScreenSize } from "@/utils/hooks/useScreenSize";
 
 
 const NewCredentialsForm = () => {
   const { control } = useFormContext<NewCredentialsAccountCreation>();
+  const { windowSize } = useScreenSize();
 
   return (
     <>
       <ControlledGrid>
-        <Grid item xs={6}>
+        <Grid item xs={windowSize.width > 600 ? 6 : 12}>
           <ControlledTextField 
             control={control}
             required
@@ -42,7 +45,7 @@ const NewCredentialsForm = () => {
             shouldUnregister
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid item xs={windowSize.width > 600 ? 6 : 12}>
         <ControlledTextField 
             control={control}
             required
@@ -118,10 +121,10 @@ export const NewCredentialsDetailsForm = () => {
       <NewCredentialsForm />
       <ControlledBackdrop open={open} />
       <BottomButtonGroup 
-      disabledContinue={!isValid}
-      onContinue={handleContinue}
-      hideBack
-      max_length={MAX_FORGOT_FORM_STEPS}
+        disabledContinue={!isValid}
+        onContinue={handleContinue}
+        hideBack
+        max_length={MAX_FORGOT_FORM_STEPS}
       />
     </FormProvider>
   )

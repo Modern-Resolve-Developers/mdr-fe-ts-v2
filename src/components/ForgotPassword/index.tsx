@@ -35,12 +35,14 @@ export const ForgotPasswordAdditionalDetails = () => {
 
   return (
     <>
-      <Container className="forgot-pw-container" sx={{ pt: 30 }}>
+      <Container className="forgot-pw-container">
         <UncontrolledCard className="mdr-forgot-pwCard">
-          <Typography className="forgot-pw-title" variant="subtitle1">
-          Forgot Password
-          </Typography>
-          <img className="mdr-logo" src="mdr-updated-logo.png" alt="mdrLogo"/>
+          <Box className="forgot-pw-heading">
+            <img className="mdr-logo" src="mdr-updated-logo.png" alt="mdrLogo"/>
+            <Typography className="forgot-pw-title" variant="subtitle1">
+              Forgot Password
+            </Typography>
+          </Box>
           <OnboardingStepper
             steps={[
               "Email Information",
@@ -48,7 +50,7 @@ export const ForgotPasswordAdditionalDetails = () => {
               "New Credentials",
               "Completed",
             ]}
-            sx={{ mt: 3 }}
+            sx={{ mt: '20px', mb: '20px' }}
             activeStep={activeStep}
           />
           <Box mt={2} width="100%">

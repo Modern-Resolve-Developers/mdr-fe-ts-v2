@@ -24,17 +24,20 @@ import { useHideResendButton } from ".";
 import { VerificationAccountCreation, verificationBaseSchema } from "@/utils/schema/ForgotPasswordSchema/VerificationDeatilsFormSchema";
 import { useActiveSteps } from "@/utils/hooks/useActiveSteps";
 import { MAX_FORGOT_FORM_STEPS } from "..";
+import { Box } from "@mui/material";
+import { useScreenSize } from "@/utils/hooks/useScreenSize";
 
 
 
 const VerificationForm = () => {
   const { control } = useFormContext<VerificationAccountCreation>();
+  const { windowSize } = useScreenSize();
 
   return (
     <>
       <ControlledGrid>
-        <Grid item xs={4}></Grid>
-        <Grid item xs={4}>
+        <Grid item xs={windowSize.width > 600 ? 4 : 0}></Grid>
+        <Grid item xs={windowSize.width > 600 ? 4 : 12}>
           <ControlledTextField
             control={control}
             required
@@ -43,7 +46,7 @@ const VerificationForm = () => {
             shouldUnregister
           />
         </Grid>
-        <Grid item xs={4}></Grid>
+        <Grid item xs={windowSize.width > 600 ? 4 : 0}></Grid>
       </ControlledGrid>
     </>
   );
