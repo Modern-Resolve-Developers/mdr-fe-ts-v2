@@ -1070,15 +1070,14 @@ const ProductManagement: React.FC = () => {
                           Product List
                         </Typography>
                         <ProjectTable
-                          data={pmlist}
-                          sx={{
-                            marginTop: "20px",
-                            overflowX: "scroll",
-                            width: "100%",
-                          }}
-                          columns={PMGridColumns}
-                          rowIsCreativeDesign={false}
-                        />
+                              data={pmlist}
+                              sx={{
+                                marginTop: "20px",
+                                overflowX: "scroll",
+                                width: "100%",
+                              }}
+                              columns={PMGridColumns}
+                              rowIsCreativeDesign={false} loading={false}                        />
                       </UncontrolledCard>
                     </Container>
                   </>
