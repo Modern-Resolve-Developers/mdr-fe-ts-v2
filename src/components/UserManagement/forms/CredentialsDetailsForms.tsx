@@ -31,6 +31,7 @@ import { UAMAddRequestArgs } from "@/pages/api/users/types";
 import { AuthenticationJwtCreateAccount } from "@/pages/api/Authentication/types";
 import { useMutation, useQuery } from "react-query";
 import { MAX_UAM_STEPS } from "..";
+import { AxiosResponse } from "axios";
 const credentialsBaseSchema = z
   .object({
     email: requiredString("Your email is required.").email(),
@@ -116,14 +117,14 @@ export const CredentialsOwnershipDetailsForm = () => {
   const { next } = useActiveStep();
   const useCheckEmail = () => {
     return useMutation((email: string) =>
-      uamcheckemail.execute(email).then((response) => response.data)
+      uamcheckemail.execute(email).then((response: AxiosResponse | undefined) => response?.data)
     );
   };
   const useAddNewUser = useMutation((props: UAMAddRequestArgs) =>
-    uamadduser.execute(props).then((response) => response.data)
+    uamadduser.execute(props).then((response: AxiosResponse | undefined) => response?.data)
   );
   const useJwtCreation = useMutation((args: AuthenticationJwtCreateAccount) =>
-    authjwtAccountCreation.execute(args).then((response) => response.data)
+    authjwtAccountCreation.execute(args).then((response: AxiosResponse | undefined) => response?.data)
   );
   const { mutate } = useCheckEmail();
   const handleContinue = () => {
