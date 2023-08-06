@@ -133,9 +133,9 @@ const ControlledAdministratorNavbar: React.FC<AdminNavbarProps> = (props) => {
           <Box className="flex items-center justify-between w-full">
             <h3 className="text-2xl font-medium font-body text-white">
               Hi,{" "}
-              {idetifiedUser == "Administrator"
+              {idetifiedUser == 1
                 ? "Administrator"
-                : idetifiedUser == "Developers"
+                : idetifiedUser == 2
                 ? "Developer"
                 : "Unknown"}
             </h3>
@@ -179,7 +179,7 @@ const ControlledAdministratorNavbar: React.FC<AdminNavbarProps> = (props) => {
                   "aria-labelledby": "basic-button",
                 }}
               >
-                <MenuItem>Profile</MenuItem>
+                <MenuItem onClick={() => router.push('/sys-admin/profile/user-profile')}>Profile</MenuItem>
                 <Divider>Others</Divider>
                 <MenuItem onClick={signoutModal} data-testid={"btnsignouttest"}>
                   Log out

@@ -1,50 +1,85 @@
 import DashboardLayout from "@/components/DashboardLayout";
-import { ControlledTypography, UncontrolledCard } from "@/components";
+import {
+  ControlledBackdrop,
+  ControlledTypography,
+  UncontrolledCard,
+} from "@/components";
 import { Container, ListItemIcon } from "@mui/material";
 import { TaskFormAdditionalDetails } from "@/components/TaskManagement";
-import {
-  sidebarList,
-  sidebarExpand,
-} from "../../utils/sys-routing/sys-routing";
 import { useDynamicDashboardContext } from "@/utils/context/base/DynamicDashboardContext";
 import { useContext, useEffect, useState } from "react";
-import { SessionContextMigrate } from "@/utils/context/base/SessionContext";
-import { SessionStorageContextSetup } from "@/utils/context";
 import { useAuthContext } from "@/utils/context/base/AuthContext";
-const Task: React.FC = () => {
+import { GetServerSideProps } from "next";
+import { PageProps } from "@/utils/types";
+import { getSecretsIdentifiedAccessLevel } from "@/utils/secrets/secrets_identified_user";
+import { useRouter } from "next/router";
+import { useToastContext } from "@/utils/context/base/ToastContext";
+const Task: React.FC<PageProps> = ({data}) => {
   const [idetifiedUser, setIdentifiedUser] = useState<any>("");
-  const { accessSavedAuth, accessUserId } = useContext(
-    SessionContextMigrate
-  ) as SessionStorageContextSetup;
+  const [loading, setLoading] = useState(true);
+  const { handleOnToast } = useToastContext()
   const { getPropsDynamic } = useDynamicDashboardContext();
-  const { checkAuthentication } = useAuthContext();
+  const { signoutProcess, disableRefreshTokenCalled, tokenExpired, TrackTokenMovement, expirationTime, AlertTracker, FormatExpiry, refreshTokenBeingCalled, isMouseMoved, isKeyPressed,
+    accessToken } = useAuthContext();
+  const router = useRouter()
   useEffect(() => {
-    getPropsDynamic(localStorage.getItem("uid")).then((repo: any) => {
-      setIdentifiedUser(repo?.data);
-    });
+    if(typeof window !== 'undefined' && window.localStorage) {
+      getPropsDynamic(localStorage.getItem("uid") ?? 0).then((repo: any) => {
+        setIdentifiedUser(repo?.data);
+      });
+    }
   }, []);
   useEffect(() => {
-    checkAuthentication("admin");
-  }, [accessSavedAuth, accessUserId]);
+    if(!accessToken || accessToken == undefined) {
+      router.push('/login')
+      setTimeout(() => {
+        setLoading(false)
+      }, 2000)
+    } else {
+      setLoading(false)
+      const isExpired = TrackTokenMovement()
+      if(isExpired) {
+        signoutProcess()
+        handleOnToast(
+          "Token expired. Please re-login.",
+          "top-right",
+          false,
+          true,
+          true,
+          true,
+          undefined,
+          "dark",
+          "error"
+        );
+      }
+    }
+  }, [tokenExpired]);
+  useEffect(() => {
+    if(!disableRefreshTokenCalled) {
+      if(isMouseMoved) {
+        refreshTokenBeingCalled()
+      }
+    }
+  }, [isMouseMoved, disableRefreshTokenCalled])
+  useEffect(() => {
+    if(!disableRefreshTokenCalled) {
+      if(isKeyPressed){
+        refreshTokenBeingCalled()
+      }
+    }
+  }, [isKeyPressed, disableRefreshTokenCalled])
   return (
     <>
-      <DashboardLayout
-        sidebarConfig={
-          idetifiedUser == "Administrator"
-            ? sidebarList
-            : idetifiedUser == "Developers"
-            ? []
-            : []
-        }
-        subsidebarConfig={
-          idetifiedUser == "Administrator"
-            ? sidebarExpand
-            : idetifiedUser == "Developers"
-            ? []
-            : []
-        }
-      >
+      {loading ? (
+        <ControlledBackdrop open={loading} />
+      ) : (
         <Container>
+          {
+            expirationTime != null && expirationTime <= 30 * 1000 &&
+            AlertTracker(
+              `You are idle. Token expires in: ${FormatExpiry(expirationTime)}`, "error"
+            )
+          }
           <UncontrolledCard>
             <ControlledTypography
               variant="h6"
@@ -54,7 +89,7 @@ const Task: React.FC = () => {
             <TaskFormAdditionalDetails />
           </UncontrolledCard>
         </Container>
-      </DashboardLayout>
+      )}
     </>
   );
 };

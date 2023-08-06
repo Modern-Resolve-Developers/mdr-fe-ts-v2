@@ -130,7 +130,12 @@ export const FormAdditionalDetails = () => {
   const { handleOnToast } = useContext(
     ToastContextContinue
   ) as ToastContextSetup;
-  const { users, callBackSyncGetAllUsers } = useContext(
+  const { 
+    users, 
+    callBackSyncGetAllUsers, 
+    isLoading, 
+    setLoading,
+  } = useContext(
     ARContext
   ) as ContextSetup;
   const [modalDetails, setModalDetails] = useState({
@@ -273,7 +278,7 @@ export const FormAdditionalDetails = () => {
               }
             />{" "}
             &nbsp;
-            {params.row.verified == "1" ? (
+            {params.row.verified.includes(1) ? (
               <></>
             ) : (
               <>
@@ -292,7 +297,7 @@ export const FormAdditionalDetails = () => {
               </>
             )}{" "}
             &nbsp;
-            {params.row.isstatus == "1" ? (
+            {params.row.isstatus.includes(1) ? (
               <>
                 <ControlledButton
                   text="Unlock"
@@ -326,7 +331,7 @@ export const FormAdditionalDetails = () => {
               </>
             )}
             &nbsp;
-            {params.row.userType != 1 && (
+            {params.row.userType != 1 && params.row.isstatus.includes(1) && (
               <ControlledButton
                 text="DELETE"
                 variant="outlined"
@@ -370,7 +375,7 @@ export const FormAdditionalDetails = () => {
     return useMutation((data: UpdateUsersDetailsArgs) =>
       updateUsersDetailsExecutioner
         .execute(data)
-        .then((response) => response.data)
+        .then((response: any) => response.data)
     );
   };
   const { mutate } = useUpdateUsersDetails();
@@ -603,14 +608,20 @@ export const FormAdditionalDetails = () => {
   };
   useEffect(() => {
     callBackSyncGetAllUsers();
+    setLoading(false);
   }, []);
-
   useEffect(() => {
     setValue("middleName", "N/A");
     if (hasNoMiddleNamePrevValue) {
       trigger("middleName");
     }
   }, [hasNoMiddleName, hasNoMiddleNamePrevValue, resetField, trigger]);
+  useEffect(() => {
+    setLoading(true);
+    if(users.length > 0) {
+      setLoading(false);
+    }
+  }, [users]);
   return (
     <FormProvider {...form}>
       <Container>
@@ -659,6 +670,7 @@ export const FormAdditionalDetails = () => {
                 data={users}
                 handleClick={handleClickProjectTable}
                 columns={columns}
+                loading={isLoading}
               />
             </>
           )}

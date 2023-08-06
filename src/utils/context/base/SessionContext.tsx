@@ -1,6 +1,7 @@
 import { createContext } from "react";
 import { SessionStorageContextSetup } from "..";
 import { useSessionStorage } from "@/utils/hooks/useSessionStorage";
+import { useTokens, useuid } from "../hooks/hooks";
 
 export const SessionContextMigrate = createContext<SessionStorageContextSetup | null>(null)
 
@@ -8,19 +9,19 @@ type SessionContextProps = {
     children: React.ReactNode
 }
 
-type AccessSavedAuth = {
+export type AccessSavedAuth = {
     savedAuth : any
   }
   
-  type AccessUserId = {
+export type AccessUserId = {
     userId : number | any
-  }
+}
 
 const SessionContext: React.FC<SessionContextProps> = ({
     children
 }) => {
-    const [accessSavedAuth, setAccessSavedAuth, clearAccessSavedAuth] = useSessionStorage<AccessSavedAuth | null>('token', null)
-    const [accessUserId, setAccessUserId, clearAccessUserId] = useSessionStorage<AccessUserId | null>('uid', null)
+    const [accessSavedAuth, setAccessSavedAuth, clearAccessSavedAuth] = useTokens()
+    const [accessUserId, setAccessUserId, clearAccessUserId] = useuid()
 
     return (
         <SessionContextMigrate.Provider

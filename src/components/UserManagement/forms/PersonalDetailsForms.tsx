@@ -1,57 +1,18 @@
 import { ControlledTextField } from "@/components/TextField/TextField";
 import { Grid } from "@mui/material";
-import ControlledTypography from "@/components/Typography/Typography";
 import ControlledGrid from "@/components/Grid/Grid";
-
-import { useState, useContext, useEffect } from "react";
-import { z } from "zod";
+import { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { requiredString } from "@/utils/formSchema";
 import { usePreviousValue } from "@/utils/hooks/usePreviousValue";
 import { BottomButtonGroup } from "./BottomButtonGroup";
-
 import { useForm, FormProvider, useFormContext } from "react-hook-form";
 import { ControlledCheckbox } from "@/components/Checkbox/Checkbox";
-
-import { ToastContextContinue } from "@/utils/context/base/ToastContext";
-import { ToastContextSetup } from "@/utils/context";
-
-import { Typography } from "@mui/material";
 import { useActiveStep } from "../useActiveStep";
-
 import { useAtom } from "jotai";
 import { personalAccountDetailsAtom } from "@/utils/hooks/useAccountAdditionValues";
-
 import { ControlledSelectField } from "@/components/SelectField";
+import { PersonalAccountCreation, personalSchema } from "@/utils/schema/UserManagement/PersonalDetailsFormSchema";
 
-import { DevTool } from "@hookform/devtools";
-import { useApiCallBack } from "@/utils/hooks/useApi";
-import { MAX_UAM_STEPS } from "..";
-
-const personalBaseSchema = z.object({
-  firstName: requiredString("Your firstname is required."),
-  lastName: requiredString("Your lastname is required."),
-  userType: requiredString("Kindly provide user type."),
-});
-
-export const personalSchema = z.discriminatedUnion("hasNoMiddleName", [
-  z
-    .object({
-      hasNoMiddleName: z.literal(false),
-      middleName: requiredString(
-        "Please provide your middlename or select i do not have a middlename."
-      ),
-    })
-    .merge(personalBaseSchema),
-  z
-    .object({
-      hasNoMiddleName: z.literal(true),
-      middleName: z.string().optional(),
-    })
-    .merge(personalBaseSchema),
-]);
-
-export type PersonalAccountCreation = z.infer<typeof personalSchema>;
 
 const PersonalDetailsForm = () => {
   const [userType, setUserType] = useState([

@@ -39,7 +39,11 @@ import { SessionContextMigrate } from "@/utils/context/base/SessionContext";
 import { SessionStorageContextSetup } from "@/utils/context";
 import { useAuthContext } from "@/utils/context/base/AuthContext";
 import { useDynamicDashboardContext } from "@/utils/context/base/DynamicDashboardContext";
-const TaskManagementList: React.FC = () => {
+import { GetServerSideProps } from "next";
+import { PageProps } from "@/utils/types";
+import { getSecretsIdentifiedAccessLevel } from "@/utils/secrets/secrets_identified_user";
+import { useRouter } from "next/router";
+const TaskManagementList: React.FC<PageProps> = ({data}) => {
   const { handleOnToast } = useContext(
     ToastContextContinue
   ) as ToastContextSetup;
@@ -49,10 +53,8 @@ const TaskManagementList: React.FC = () => {
   const deleteTaskExecutioner = useApiCallBack((api, uuid: any) =>
     api.mdr.deletionTask(uuid)
   );
-  const { accessSavedAuth, accessUserId } = useContext(
-    SessionContextMigrate
-  ) as SessionStorageContextSetup;
-  const { checkAuthentication } = useAuthContext();
+  const { signoutProcess, disableRefreshTokenCalled, tokenExpired, TrackTokenMovement, expirationTime, AlertTracker, FormatExpiry, refreshTokenBeingCalled, isMouseMoved, isKeyPressed,
+    accessToken } = useAuthContext();
   const fetchAllTask = useApiCallBack((api) => api.mdr.fetchAllTask());
   const [searched, setSearched] = useState<string>("");
   const [taskOriginalArray, setTaskOriginalArray] = useState([]);
@@ -60,17 +62,19 @@ const TaskManagementList: React.FC = () => {
   const [pg, setpg] = useState(0);
   const [rpg, setrpg] = useState(5);
   const [backdrop, setBackdrop] = useState(false);
-
+  const [preload, setPreLoad] = useState(true);
   const [taskInfoAtom, setTaskInfoAtom] = useAtom(taskInformationAtom);
   const [task_uuid, setTaskUUID] = useState(0);
   const [idetifiedUser, setIdentifiedUser] = useState<any>("");
-
+  const router = useRouter()
   const { getPropsDynamic } = useDynamicDashboardContext();
 
   useEffect(() => {
-    getPropsDynamic(localStorage.getItem("uid")).then((repo: any) => {
-      setIdentifiedUser(repo?.data);
-    });
+    if(typeof window !== 'undefined' && window.localStorage) {
+      getPropsDynamic(localStorage.getItem("uid") ?? 0).then((repo: any) => {
+        setIdentifiedUser(repo?.data);
+      });
+    }
   }, []);
   const fetchAllTaskDynamically = () => {
     fetchAllTask.execute().then((res: any) => {
@@ -82,8 +86,44 @@ const TaskManagementList: React.FC = () => {
     fetchAllTaskDynamically();
   }, []);
   useEffect(() => {
-    checkAuthentication("admin");
-  }, [accessSavedAuth, accessUserId]);
+    if(!accessToken || accessToken == undefined) {
+      router.push('/login')
+      setTimeout(() => {
+        setPreLoad(false)
+      }, 2000)
+    } else {
+      setPreLoad(false)
+      const isExpired = TrackTokenMovement()
+      if(isExpired) {
+        signoutProcess()
+        handleOnToast(
+          "Token expired. Please re-login.",
+          "top-right",
+          false,
+          true,
+          true,
+          true,
+          undefined,
+          "dark",
+          "error"
+        );
+      }
+    }
+  }, [tokenExpired]);
+  useEffect(() => {
+    if(!disableRefreshTokenCalled) {
+      if(isMouseMoved) {
+        refreshTokenBeingCalled()
+      }
+    }
+  }, [isMouseMoved, disableRefreshTokenCalled])
+  useEffect(() => {
+    if(!disableRefreshTokenCalled) {
+      if(isKeyPressed){
+        refreshTokenBeingCalled()
+      }
+    }
+  }, [isKeyPressed, disableRefreshTokenCalled])
   const globalSearch = (): TableSearchProps[] => {
     const filteredRepositories = tableSearchList.filter((value: any) => {
       return (
@@ -154,23 +194,16 @@ const TaskManagementList: React.FC = () => {
     : tableSearchList;
   return (
     <>
-      <DashboardLayout
-        sidebarConfig={
-          idetifiedUser == "Administrator"
-            ? sidebarList
-            : idetifiedUser == "Developers"
-            ? []
-            : []
-        }
-        subsidebarConfig={
-          idetifiedUser == "Administrator"
-            ? sidebarExpand
-            : idetifiedUser == "Developers"
-            ? []
-            : []
-        }
-      >
+      {preload ? (
+        <ControlledBackdrop open={preload} />
+      ) : (
         <Container>
+          {
+            expirationTime != null && expirationTime <= 30 * 1000 &&
+            AlertTracker(
+              `You are idle. Token expires in: ${FormatExpiry(expirationTime)}`, "error"
+            )
+          }
           <UncontrolledCard>
             <ControlledTypography
               variant="h6"
@@ -219,9 +252,10 @@ const TaskManagementList: React.FC = () => {
           />
           <ControlledBackdrop open={backdrop} />
         </Container>
-      </DashboardLayout>
+      )}
     </>
   );
 };
+
 
 export default TaskManagementList;

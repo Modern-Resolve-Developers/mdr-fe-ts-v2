@@ -4,12 +4,13 @@ type CardProps = {
     children?: React.ReactNode
     style?: React.CSSProperties
     className?: any
+    elevation?: number
 }
 
-const UncontrolledCard: React.FC<CardProps> = ({children, style, className}) => {
+const UncontrolledCard: React.FC<CardProps> = ({children, style, className, elevation}) => {
     return (
         <>
-            <Card className={className} style={style}>
+            <Card elevation={elevation} className={className} style={style}>
                 <CardContent>
                     {children}
                 </CardContent>

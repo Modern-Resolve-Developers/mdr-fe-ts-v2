@@ -21,30 +21,21 @@ import { verificationAtom } from "@/utils/hooks/useAccountAdditionValues";
 import { emailAtom } from "@/utils/hooks/useAccountAdditionValues";
 import { FPChangePasswordProps } from "@/pages/api/types";
 import { useActiveStepContext } from "@/utils/context/base/ActiveStepsContext";
+import { NewCredentialsAccountCreation, newCredentialsBaseSchema } from "@/utils/schema/ForgotPasswordSchema/NewCredentialsFormSchema";
+import { useActiveSteps } from "@/utils/hooks/useActiveSteps";
+import { MAX_FORGOT_FORM_STEPS } from "..";
+import { Box } from "@mui/material";
+import { useScreenSize } from "@/utils/hooks/useScreenSize";
 
-const newCredentialsBaseSchema = z
-  .object({
-    password: requiredString("Your password is required."),
-    conpass: requiredString("Kindly confirm your password."),
-  })
-  .refine(
-    ({ conpass, password }) => {
-      return password === conpass;
-    },
-    { path: ["conpass"], message: "Password is not match" }
-  );
-
-export type NewCredentialsAccountCreation = z.infer<
-  typeof newCredentialsBaseSchema
->;
 
 const NewCredentialsForm = () => {
   const { control } = useFormContext<NewCredentialsAccountCreation>();
+  const { windowSize } = useScreenSize();
 
   return (
     <>
       <ControlledGrid>
-        <Grid item xs={6}>
+        <Grid item xs={windowSize.width > 600 ? 6 : 12}>
           <ControlledTextField 
             control={control}
             required
@@ -54,7 +45,7 @@ const NewCredentialsForm = () => {
             shouldUnregister
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid item xs={windowSize.width > 600 ? 6 : 12}>
         <ControlledTextField 
             control={control}
             required
@@ -80,7 +71,7 @@ export const NewCredentialsDetailsForm = () => {
     mode: 'all',
     defaultValues : credentials
   })
-  const { next } = useActiveStepContext()
+  const { next } = useActiveSteps(MAX_FORGOT_FORM_STEPS)
   const { handleOnToast } = useContext(
     ToastContextContinue
   ) as ToastContextSetup;
@@ -117,7 +108,7 @@ export const NewCredentialsDetailsForm = () => {
                 "dark",
                 "success"
               );
-              next("forgot-password")
+              next()
             }
           }
         })
@@ -130,9 +121,10 @@ export const NewCredentialsDetailsForm = () => {
       <NewCredentialsForm />
       <ControlledBackdrop open={open} />
       <BottomButtonGroup 
-      disabledContinue={!isValid}
-      onContinue={handleContinue}
-      hideBack
+        disabledContinue={!isValid}
+        onContinue={handleContinue}
+        hideBack
+        max_length={MAX_FORGOT_FORM_STEPS}
       />
     </FormProvider>
   )

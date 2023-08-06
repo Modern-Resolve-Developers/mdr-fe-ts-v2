@@ -1,51 +1,26 @@
-import { useState, useContext, useEffect } from "react";
-import { z } from "zod";
+import { useState, useContext } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { requiredString } from "@/utils/formSchema";
-import { usePreviousValue } from "@/utils/hooks/usePreviousValue";
 import { BottomButtonGroup } from "./BottomButtonGroup";
-
 import { useForm, FormProvider, useFormContext } from "react-hook-form";
-
 import { ToastContextContinue } from "@/utils/context/base/ToastContext";
 import { ToastContextSetup } from "@/utils/context";
-
 import { useActiveStep } from "../useActiveStep";
-
 import { useAtom } from "jotai";
 import {
   credentialAccountDetailsAtom,
   personalAccountDetailsAtom,
 } from "@/utils/hooks/useAccountAdditionValues";
 import { ControlledTextField } from "@/components/TextField/TextField";
-
 import { DevTool } from "@hookform/devtools";
 import { Container } from "@mui/material";
-
-import { buildHttp } from "@/pages/api/http";
 import ControlledBackdrop from "@/components/Backdrop/Backdrop";
-
 import { useApiCallBack } from "@/utils/hooks/useApi";
-
 import { UAMAddRequestArgs } from "@/pages/api/users/types";
 import { AuthenticationJwtCreateAccount } from "@/pages/api/Authentication/types";
-import { useMutation, useQuery } from "react-query";
-import { MAX_UAM_STEPS } from "..";
+import { useMutation } from "react-query";
+import { CredentialsAccountCreation, credentialsBaseSchema } from "@/utils/schema/UserManagement/CredentialsDetailsFormSchema";
 import { AxiosResponse } from "axios";
-const credentialsBaseSchema = z
-  .object({
-    email: requiredString("Your email is required.").email(),
-    password: requiredString("Your password is required."),
-    conpassword: requiredString("Please confirm your password."),
-  })
-  .refine(
-    ({ conpassword, password }) => {
-      return password === conpassword;
-    },
-    { path: ["conpassword"], message: "Password did not match" }
-  );
 
-export type CredentialsAccountCreation = z.infer<typeof credentialsBaseSchema>;
 
 const CredentialDetailsForm = () => {
   const { control } = useFormContext<CredentialsAccountCreation>();
@@ -140,6 +115,7 @@ export const CredentialsOwnershipDetailsForm = () => {
           email: values.email,
           password: values.password,
           userType: personalDetailsAtom?.userType,
+          phoneNumber: ''
         };
         mutate(uam_add_request_data.email, {
           onSuccess: (data) => {

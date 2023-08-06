@@ -26,7 +26,7 @@ import EngineeringIcon from "@mui/icons-material/Engineering";
 import { useQuery } from "react-query";
 import { useApiCallBack } from "@/utils/hooks/useApi";
 import { useDynamicDashboardContext } from "@/utils/context/base/DynamicDashboardContext";
-
+import { sidebarSettingsArea } from "@/utils/sys-routing/sys-routing";
 const ControlledAdministratorSidebar: React.FC<AdminSidebarProps> = (props) => {
   const {
     open,
@@ -74,7 +74,7 @@ const ControlledAdministratorSidebar: React.FC<AdminSidebarProps> = (props) => {
               <Box className="flex gap-2 items-center">
                 {/* image logo here */}
                 <img
-                  src="/natwest.png"
+                  src="/drlogo.png"
                   style={{
                     width: "100%",
                   }}
@@ -90,7 +90,7 @@ const ControlledAdministratorSidebar: React.FC<AdminSidebarProps> = (props) => {
             </DrawerHeader>
             <Divider className="bg-sideBarTabHover" />
             <List style={{ marginTop: "5px" }}>
-              {idetifiedUser == "Administrator" &&
+              {idetifiedUser == 1 &&
                 sidebarConfig?.map((text: any, outerIndex: any) => (
                   <Box key={outerIndex} className="flex flex-col items-center">
                     <ListItem
@@ -199,10 +199,10 @@ const ControlledAdministratorSidebar: React.FC<AdminSidebarProps> = (props) => {
             </List>
             <Divider className="bg-sideBarTabHover" />
             <List>
-              {["Our Products", "Settings"].map((text: any, index: any) => (
+              {idetifiedUser == 1 && sidebarSettingsArea.map((item, index) => (
                 <Box className="flex flex-col items-center">
                   <ListItem
-                    key={text}
+                    key={item.text}
                     disablePadding
                     sx={{
                       display: "block",
@@ -221,6 +221,7 @@ const ControlledAdministratorSidebar: React.FC<AdminSidebarProps> = (props) => {
                         justifyContent: open ? "initial" : "center",
                         px: 2.5,
                       }}
+                      onClick={() => router.push(item.uri)}
                     >
                       <ListItemIcon
                         sx={{
@@ -230,10 +231,10 @@ const ControlledAdministratorSidebar: React.FC<AdminSidebarProps> = (props) => {
                           color: "white",
                         }}
                       >
-                        {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
+                        {item.icon}
                       </ListItemIcon>
                       <ListItemText
-                        primary={text}
+                        primary={item.text}
                         sx={{ opacity: open ? 1 : 0 }}
                       />
                     </ListItemButton>
@@ -251,7 +252,7 @@ const ControlledAdministratorSidebar: React.FC<AdminSidebarProps> = (props) => {
                 open ? "block font-serif text-white text-center" : "hidden"
               }
             >
-              All rights Reserved WTW
+              All rights Reserved DGR
             </h3>
           </Box>
           {/* SIDEBAR FOOTER ENDS */}
