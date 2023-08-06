@@ -1,8 +1,6 @@
 import { atom } from "jotai";
 import { AccountCreation } from "../schema/Create-AccountSchema";
 import { loginAccount } from "../schema/LoginSchema";
-import { PersonalAccountCreation } from "@/components/UserManagement/forms/PersonalDetailsForms";
-import { CredentialsAccountCreation } from "@/components/UserManagement/forms/CredentialsDetailsForms";
 import { EditFormUserAccount } from "@/components/UserManagement";
 
 import { ClientAccountCreation } from "../schema/ClientRegisterSchema"; 
@@ -17,6 +15,8 @@ import { categoryManagementCreation } from "./Sys-adminSchema/Category-manageSch
 import { ProductManagementCreation } from "./Sys-adminSchema/Product-ManagementShema";
 import { TaskAssigneeCreation } from "./Task-Management/TaskAssigneeSchema";
 import { TaskInformationCreation } from "./Task-Management/TaskInformationSchema";
+import { PersonalAccountCreation } from "./UserManagement/PersonalDetailsFormSchema";
+import { CredentialsAccountCreation } from "./UserManagement/CredentialsDetailsFormSchema";
 
 type AccountCreationFormData = {
   accountCreation: AccountCreation;
