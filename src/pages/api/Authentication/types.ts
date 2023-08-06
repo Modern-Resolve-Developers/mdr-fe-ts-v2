@@ -1,6 +1,6 @@
 export type LoginProps = {
-    email: string
-    password: string
+    email: string | undefined
+    password: string | undefined
 }
 
 export type CreateTokenArgs = {
@@ -16,12 +16,41 @@ export type CreateAuthHistoryArgs = {
 }
 
 export type AuthenticationJwtCreateAccount = {
-    jwtusername: any
-    jwtpassword: any
+    jwtusername: string | undefined
+    jwtpassword: string | undefined
     isValid: any
 }
 
 export type AuthenticationRefreshTokenArgs = {
     AccessToken: string | undefined
     RefreshToken: string | undefined
+}
+
+type VerificationCredentialsProps = {
+    email?: string | undefined
+    phoneNumber?: string | undefined
+}
+
+export type VerificationProps = {
+    email: string | undefined;
+    code: string | undefined;
+    resendCount: number | undefined;
+    isValid: number | undefined;
+    type: string | undefined;
+    verificationCredentials: VerificationCredentialsProps
+}
+
+export type BeginToVerifyCode = {
+    code: string | undefined
+    email: string | undefined
+    type: string
+}
+
+export type Tokens = {
+    AccessToken: string | undefined
+    RefreshToken: string | undefined
+}
+
+export type RequestRouterParams = {
+    requestId: string | undefined
 }

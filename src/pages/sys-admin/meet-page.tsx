@@ -17,6 +17,10 @@ import { useDynamicDashboardContext } from "@/utils/context/base/DynamicDashboar
 import { joinMeetAtom } from "@/utils/hooks/useAccountAdditionValues";
 import { useApiCallBack } from "@/utils/hooks/useApi";
 import { useMutation } from "react-query";
+import { GetServerSideProps } from "next";
+import { PageProps } from "@/utils/types";
+import { getSecretsIdentifiedAccessLevel } from "@/utils/secrets/secrets_identified_user";
+import { useToastContext } from "@/utils/context/base/ToastContext";
 
 declare var JitsiMeetExternalAPI: any;
 const MeetPage: React.FC = () => {
@@ -30,25 +34,59 @@ const MeetPage: React.FC = () => {
   const router = useRouter();
   const { name } = useMeetContext();
   const { match } = router.query;
-  const { checkAuthentication } = useAuthContext();
-  const { accessSavedAuth, accessUserId } = useContext(
-    SessionContextMigrate
-  ) as SessionStorageContextSetup;
+  const { signoutProcess, disableRefreshTokenCalled, tokenExpired, TrackTokenMovement, expirationTime, AlertTracker, FormatExpiry, refreshTokenBeingCalled, isMouseMoved, isKeyPressed,
+    accessToken } = useAuthContext();
   const [idetifiedUser, setIdentifiedUser] = useState<any>("");
-
+  const { handleOnToast } = useToastContext()
   const { getPropsDynamic } = useDynamicDashboardContext();
 
   useEffect(() => {
-    getPropsDynamic(localStorage.getItem("uid")).then((repo: any) => {
-      setIdentifiedUser(repo?.data);
-    });
+    if(typeof window !== 'undefined' && window.localStorage){
+      getPropsDynamic(localStorage.getItem("uid") ?? 0).then((repo: any) => {
+        setIdentifiedUser(repo?.data);
+      });
+    }
   }, []);
   useEffect(() => {
-    checkAuthentication("admin");
-    setTimeout(() => {
-      setLoading(false);
-    }, 3000);
-  }, [accessSavedAuth, accessUserId]);
+    
+    if(!accessToken || accessToken == undefined) {
+      router.push('/login')
+      setTimeout(() => {
+        setLoading(false)
+      }, 2000)
+    } else {
+      setLoading(false)
+      const isExpired = TrackTokenMovement()
+      if(isExpired) {
+        signoutProcess()
+        handleOnToast(
+          "Token expired. Please re-login.",
+          "top-right",
+          false,
+          true,
+          true,
+          true,
+          undefined,
+          "dark",
+          "error"
+        );
+      }
+    }
+  }, [tokenExpired]);
+  useEffect(() => {
+    if(!disableRefreshTokenCalled) {
+      if(isMouseMoved) {
+        refreshTokenBeingCalled()
+      }
+    }
+  }, [isMouseMoved, disableRefreshTokenCalled])
+  useEffect(() => {
+    if(!disableRefreshTokenCalled) {
+      if(isKeyPressed){
+        refreshTokenBeingCalled()
+      }
+    }
+  }, [isKeyPressed, disableRefreshTokenCalled])
   useEffect(() => {
     if (!jitsiApiRef.current && containerRef.current) {
       jitsiApiRef.current = new JitsiMeetExternalAPI("meet.jit.si", {
@@ -107,7 +145,15 @@ const MeetPage: React.FC = () => {
       {loading ? (
         <ControlledBackdrop open={loading} />
       ) : (
+        <>
+         {
+            expirationTime != null && expirationTime <= 30 * 1000 &&
+            AlertTracker(
+              `You are idle. Token expires in: ${FormatExpiry(expirationTime)}`, "error"
+            )
+          }
         <div ref={containerRef}></div>
+        </>
       )}
     </>
   );

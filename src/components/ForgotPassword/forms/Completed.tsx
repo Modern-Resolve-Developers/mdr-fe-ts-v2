@@ -7,15 +7,18 @@ import ControlledGrid from '@/components/Grid/Grid'
 import { useEffect, useState } from 'react'
 import ControlledBackdrop from '@/components/Backdrop/Backdrop'
 import { verificationAtom, emailAtom, newCredentialsAtom } from '@/utils/hooks/useAccountAdditionValues'
-import { useActiveStepContext } from '@/utils/context/base/ActiveStepsContext'
 import { useAtom } from 'jotai'
+import { useActiveSteps } from '@/utils/hooks/useActiveSteps'
+import { MAX_FORGOT_FORM_STEPS } from '..'
+import { Box } from "@mui/material";
+
 export const Completed = () => {
     const [verify, setVerify] = useAtom(verificationAtom)
     const [email, setEmail] = useAtom(emailAtom)
     const [credentials, setCredentials] = useAtom(newCredentialsAtom)
     const [open, setOpen] = useState(false)
     const router = useRouter()
-    const { setActiveStep } = useActiveStepContext()
+    const { setActiveStep } = useActiveSteps(MAX_FORGOT_FORM_STEPS)
     useEffect(() => {
         setOpen(!open)
         setTimeout(() => {
@@ -27,7 +30,7 @@ export const Completed = () => {
         }, 3000)
     }, [])
     return (
-        <>
+        <Box className="stepper-container">
             <ControlledGrid>
                 <Grid item xs={4}></Grid>
                 <Grid item xs={4}>
@@ -40,6 +43,6 @@ export const Completed = () => {
                 <Grid item xs={4}></Grid>
             </ControlledGrid>
             <ControlledBackdrop open={open} />
-        </>
+        </Box>
     )
 }

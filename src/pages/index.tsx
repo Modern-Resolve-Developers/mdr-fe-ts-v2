@@ -8,23 +8,26 @@ import {
   FingerPrintIcon,
   LockClosedIcon,
 } from "@heroicons/react/24/outline";
-import { useApiCallBack } from "@/utils/hooks/useApi";
+import { useApiCallBack, useSecureHiddenNetworkApi } from "@/utils/hooks/useApi";
 import HomeHeroSection from "@/components/Content/Home/HeroSection";
 import HomeFeatureSection from "@/components/Content/Home/FeatureSection";
 import HomeFooterSection from "@/components/Content/Home/FooterSection";
 import HomeFeatureSectionSecondLayer from "@/components/Content/Home/FeatureSectionSecondLayer";
 import { useRefreshTokenHandler } from "@/utils/hooks/useRefreshTokenHandler";
-import { useQuery } from "react-query";
+import { useMutation, useQuery } from "react-query";
 import { ControlledBackdrop } from "@/components";
 import { useAuthContext } from "@/utils/context/base/AuthContext";
 import { SessionContextMigrate } from "@/utils/context/base/SessionContext";
+import { GetServerSideProps } from "next";
+import { PageProps } from "@/utils/types";
+import { workWithAccountSetup, workWithCoolDowns, workWithMigrationRouter } from "@/utils/secrets/secrets_migrate_route";
+import { MigrationReceiver, RouteEntity, toBeMigrated } from "@/utils/sys-routing/sys-routing";
+import { AxiosError, AxiosResponse } from "axios";
+import { useUserId } from "@/utils/context/hooks/hooks";
 
-const Home: React.FC = () => {
-  useRefreshTokenHandler();
-  const UAMCheckAcc = useApiCallBack(
-    async (api, randomNumber: Number) =>
-      await api.users.UAMCheckAccounts(randomNumber)
-  );
+const Home: React.FC<PageProps> = ({ data }) => {
+  
+  const [uid] = useUserId()
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const { setIsHidden } = useContext(ARContext) as ContextSetup;
@@ -32,6 +35,9 @@ const Home: React.FC = () => {
     SessionContextMigrate
   ) as SessionStorageContextSetup;
   const { checkAuthentication } = useAuthContext();
+  const foundSecuredRouter = useSecureHiddenNetworkApi(
+    async (api, id: string | undefined) => await api.secure.sla_begin_work_find_secured_route(id)
+  )
   const features = [
     {
       name: "Push to deploy",
@@ -58,31 +64,35 @@ const Home: React.FC = () => {
       icon: FingerPrintIcon,
     },
   ];
-  const { data, isLoading, error } = useQuery("checkUser", () =>
-    UAMCheckAcc.execute(1).then((response: any) => response.data)
+  const useFoundSecuredRouter = useMutation((id: string | undefined) => 
+    foundSecuredRouter.execute(id)
   );
   useEffect(() => {
-    if (data == "not_exist") {
-      setIsHidden(true);
-      router.push("/create-account");
+    if(uid != undefined) {
+      useFoundSecuredRouter.mutate(uid, {
+        onSuccess: (response: AxiosResponse | undefined) => {
+          if(response?.data != 404){
+            router.replace(response?.data)
+            setTimeout(() => setLoading(false), 2000)
+          }
+        },
+        onError: (error: AxiosError | unknown) => {
+          setTimeout(() => setLoading(false), 2000)
+        }
+      })
     } else {
+      if(data?.preloadedAccountSetup){
+        router.push('/create-account')
+        setTimeout(() => setLoading(false), 2000)
+      } 
+      setLoading(false)
     }
-  }, [data, isLoading, error]);
-  useEffect(() => {
-    setTimeout(() => {
-      setLoading(false);
-    }, 3000);
   }, []);
-  useEffect(() => {
-      if(!accessSavedAuth || !accessUserId) {
-        return;
-      } else {
-        checkAuthentication("home");
-      }
-  }, [accessSavedAuth, accessUserId]);
   return (
     <>
-      {loading && <ControlledBackdrop open={loading} />}
+      {loading ? <ControlledBackdrop open={loading} />
+      : 
+      <>
       <HomeHeroSection />
       <HomeFeatureSection
         children={
@@ -114,8 +124,32 @@ const Home: React.FC = () => {
         ))}
       </HomeFeatureSectionSecondLayer>
       <HomeFooterSection />
+      </>}
+      
     </>
   );
 };
+
+export const getServerSideProps: GetServerSideProps<PageProps> = async () => {
+  try {
+    const loadedObject: MigrationReceiver = {
+      JsonRoutes: JSON.stringify(toBeMigrated)
+    }
+    const preloadedGlobals = await workWithMigrationRouter(loadedObject)
+    const preloadedAccountSetup = await workWithAccountSetup()
+    const preloadedCooldowns = await workWithCoolDowns()
+    return {
+      props: {
+        data: { 
+          preloadedGlobals,
+           preloadedAccountSetup,
+            preloadedCooldowns }
+      }
+    }
+  } catch (error) {
+    console.log(`Error on get migration response: ${JSON.stringify(error)}`)
+    return { props : {error}}
+  }
+}
 
 export default Home;

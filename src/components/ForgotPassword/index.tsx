@@ -5,8 +5,9 @@ import { FormProvider } from "react-hook-form";
 import UncontrolledCard from "../Cards/Card";
 
 import { NewCredentialsDetailsForm } from "./forms/NewCredentialsForms";
-import { useActiveStepContext } from "@/utils/context/base/ActiveStepsContext";
+
 import { Completed } from "./forms/Completed";
+import { useActiveSteps } from "@/utils/hooks/useActiveSteps";
 const FORGOT_FORM_MAP: Array<{ label: string; form: React.FC }> = [
   {
     label: "Email Details",
@@ -29,16 +30,19 @@ const FORGOT_FORM_MAP: Array<{ label: string; form: React.FC }> = [
 export const MAX_FORGOT_FORM_STEPS = FORGOT_FORM_MAP.length;
 
 export const ForgotPasswordAdditionalDetails = () => {
-  const { activeStep } = useActiveStepContext()
+  const { activeStep } = useActiveSteps(MAX_FORGOT_FORM_STEPS)
   const { label, form: ActiveForm } = FORGOT_FORM_MAP[activeStep];
 
   return (
     <>
-      <Container sx={{ mt: 5 }}>
-        <UncontrolledCard>
-          <Typography variant="subtitle1">
-            Digital Resolve | Forgot Password
-          </Typography>
+      <Container className="forgot-pw-container">
+        <UncontrolledCard className="mdr-forgot-pwCard">
+          <Box className="forgot-pw-heading">
+            <img className="mdr-logo" src="mdr-updated-logo.png" alt="mdrLogo"/>
+            <Typography className="forgot-pw-title" variant="subtitle1">
+              Forgot Password
+            </Typography>
+          </Box>
           <OnboardingStepper
             steps={[
               "Email Information",
@@ -46,7 +50,7 @@ export const ForgotPasswordAdditionalDetails = () => {
               "New Credentials",
               "Completed",
             ]}
-            sx={{ mt: 3 }}
+            sx={{ mt: '20px', mb: '20px' }}
             activeStep={activeStep}
           />
           <Box mt={2} width="100%">

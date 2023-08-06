@@ -38,7 +38,7 @@ export const useRefreshTokenHandler = () => {
     const refresh = async (error: AxiosError): Promise<void> => {
         if(accessToken && refreshToken){
             try {
-                const result = await refreshTokenCall.execute({ AccessToken: accessToken, RefreshToken : refreshToken })
+                const result: any = await refreshTokenCall.execute({ AccessToken: accessToken, RefreshToken : refreshToken })
                 setAccessToken(result.data.accessToken)
                 setRefreshToken(result.data.refreshToken)
                 return Promise.resolve()
