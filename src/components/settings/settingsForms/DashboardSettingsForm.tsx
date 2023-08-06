@@ -7,6 +7,7 @@ import { useMutation, useQuery } from "react-query";
 import ControlledBackdrop from "@/components/Backdrop/Backdrop";
 import { ToastContextContinue } from "@/utils/context/base/ToastContext";
 import { ToastContextSetup } from "@/utils/context";
+import { AxiosResponse } from "axios";
 export const DashboardSettings = () => {
   const [state, setState] = useState(false);
   const [open, setOpen] = useState(false);
@@ -30,7 +31,7 @@ export const DashboardSettings = () => {
   const { data } = useQuery({
     queryKey: "FetchDynamicDashboardSettings",
     queryFn: () =>
-      getDynamicDashboardChanges.execute().then((response) => response.data),
+      getDynamicDashboardChanges.execute().then((response: AxiosResponse | undefined) => response?.data),
   });
   const useChangeDynamicDashboardSettings = () => {
     return useMutation(
@@ -52,8 +53,8 @@ export const DashboardSettings = () => {
       settingsType: "DashboardSettings",
     };
     mutate(obj, {
-      onSuccess: (response) => {
-        if (response.data == 200) {
+      onSuccess: (response: AxiosResponse | undefined) => {
+        if (response?.data == 200) {
           setOpen(false);
           handleOnToast(
             "Successfully Saved!",
