@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState } from "react";
 import { useApiCallBack } from "@/utils/hooks/useApi";
+import { AxiosResponse } from "axios";
 export const MeetContext = createContext<{
     name: string,
     setName: any,
@@ -16,9 +17,8 @@ export const MeetProvider: React.FC<React.PropsWithChildren<{}>> = ({
     const getRoomList = useApiCallBack(api => api.mdr.GetAllRooms())
     const getAllRooms = () => {
         getRoomList.execute()
-        .then((response) => {
-            const { data } = response;
-            setRooms(data)
+        .then((response: AxiosResponse | undefined) => {
+            setRooms(response?.data)
         })
     }
     
