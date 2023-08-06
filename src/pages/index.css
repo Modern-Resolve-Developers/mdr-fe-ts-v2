@@ -49,6 +49,12 @@ body {
   );
   height: 100vh;
 }
+.verify-account-container {
+  background: var(--orig-bg, linear-gradient(180deg, #FFDF8F 0%, #8B255B 100%));
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
 .cl-account-creation {
   background: var(
     --bg,
@@ -207,3 +213,99 @@ code {
     @apply text-error;
   }
 }
+
+/* Forgot password CSS */
+.forgot-pw-container {
+  background-image: linear-gradient(#BC4337, #2B103D);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  max-width: inherit;
+}
+
+.forgot-pw-heading {
+  display: flex; 
+  align-items: center;
+  gap: 21px;
+  margin-left: 25.52px;
+  margin-top: 53.31px;
+}
+
+.forgot-pw-title {
+  color: #808080;
+  font-size: 22px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 152.77%;
+}
+
+.mdr-forgot-pwCard {
+  border-radius: 50px;
+  background: #FFF;
+  box-shadow: 8px 10px 8px 1px rgba(0, 0, 0, 0.10);
+  width: max(72.927vw, 1460px);
+  padding: unset;
+}
+
+.forgot-button{
+  color: #FFF;
+  background-color: #973B74;
+}
+
+.back-button {
+  color: #973B74;
+  font-size: 10px;
+}
+
+.forgot-text {
+  color: #3C3C3C;
+  text-align: center;
+  font-size: 30px;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 152.77%; /* 45.831px */
+}
+
+.forgot-text-subtitle {
+  color: #808080;
+  text-align: center;
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 152.77%; /* 27.499px */
+}
+
+.stepper-steps {
+  width: 50%;
+  margin: 0 auto;
+}
+
+@media screen and (max-width: 768px) {
+  .forgot-pw-heading {
+    justify-content: center;
+    margin: 20px 0;
+  }
+
+  .stepper-steps {
+    width: 100%;
+    margin: unset;
+  }
+}
+
+@media screen and (max-width: 576px) {
+  .forgot-pw-heading {
+    flex-direction: column;
+  }
+
+  .forgot-text {
+    font-size: 24px;
+  }
+
+  .forgot-text-subtitle {
+    font-size: 16px;
+  }
+}
+
+
+/* End of Forgot Password */

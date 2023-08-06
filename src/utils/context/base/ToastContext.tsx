@@ -3,9 +3,7 @@ import { ToastContextSetup } from "..";
 
 import { toast } from "react-toastify";
 
-export const ToastContextContinue = createContext<ToastContextSetup | null>(
-  null
-);
+export const ToastContextContinue = createContext<ToastContextSetup>(undefined as any);
 
 type ToastContextProps = {
   children: React.ReactNode;

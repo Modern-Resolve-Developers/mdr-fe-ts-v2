@@ -30,3 +30,15 @@ export type AdminSidebarProps = {
     sidebarConfig: SidebarTypes[]
     subsidebarConfig?: SubSidebarTypes[] | undefined
 }
+
+export type ClientSidebarProps = {
+    open: any
+    handleDrawerClose: any
+    theme: any
+    handleClick: any
+    dropDown: any
+    Drawer: any
+    DrawerHeader: any
+    sidebarConfig: SidebarTypes[]
+    subsidebarConfig?: SubSidebarTypes[] | undefined
+}

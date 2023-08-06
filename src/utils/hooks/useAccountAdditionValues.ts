@@ -1,21 +1,22 @@
 import { atom } from "jotai";
-import { AccountCreation } from "@/pages/create-account";
-import { loginAccount } from "@/pages/login";
-import { PersonalAccountCreation } from "@/components/UserManagement/forms/PersonalDetailsForms";
-import { CredentialsAccountCreation } from "@/components/UserManagement/forms/CredentialsDetailsForms";
+import { AccountCreation } from "../schema/Create-AccountSchema"; 
+import { loginAccount } from "../schema/LoginSchema";
+import { PersonalAccountCreation } from "../schema/UserManagement/PersonalDetailsFormSchema";
+import { CredentialsAccountCreation } from "../schema/UserManagement/CredentialsDetailsFormSchema";
 import { EditFormUserAccount } from "@/components/UserManagement";
-import { TaskInformationCreation } from "@/components/TaskManagement/forms";
-import { TaskAssigneeCreation } from "@/components/TaskManagement/forms/TaskAssignee";
-import { ProductManagementCreation } from "@/pages/sys-admin/product-management";
-import { categoryManagementCreation } from "@/pages/sys-admin/category-manage-all";
+import { TaskInformationCreation } from "../schema/Task-Management/TaskInformationSchema";
+import { TaskAssigneeCreation } from "../schema/Task-Management/TaskAssigneeSchema";
+import { ProductManagementCreation } from "../schema/Sys-adminSchema/Product-ManagementShema";
+import { categoryManagementCreation } from "../schema/Sys-adminSchema/Category-manageSchema"; 
 import { MeetCreation } from "@/components/Jitsi/StartupPage";
-import { EmailAccountCreation } from "@/components/ForgotPassword/forms/EmailDetailsForms";
-import { VerificationAccountCreation } from "@/components/ForgotPassword/forms/VerificationDetailsForms";
-import { NewCredentialsAccountCreation } from "@/components/ForgotPassword/forms/NewCredentialsForms";
-import { JoinMeetingFormAccount } from "@/pages/sys-admin/digital-meet";
-import { ClientAccountCreation } from "@/components/client";
+import { EmailAccountCreation } from "../schema/ForgotPasswordSchema/EmailDetailFromSchema";
+import { VerificationAccountCreation } from "../schema/ForgotPasswordSchema/VerificationDeatilsFormSchema";
+import { NewCredentialsAccountCreation } from "../schema/ForgotPasswordSchema/NewCredentialsFormSchema";
+import { JoinMeetingFormAccount } from "../schema/Sys-adminSchema/DigitalMeetSchema";
+import { ClientAccountCreation } from "../schema/ClientRegisterSchema"; 
 import { UserProfileType } from "../schema/UserProfileSchema";
 import { ContactType } from "../schema/ContactSchema";
+import { VerifyType } from "../schema/VerifySchema";
 
 type AccountCreationFormData = {
   accountCreation: AccountCreation;
@@ -68,6 +69,8 @@ export const personalAccountDetailsAtom = atom<
 export const editFormUserAccountAtom = atom<EditFormUserAccount | undefined>(
   undefined
 );
+
+export const verifyAtom = atom<VerifyType | undefined>(undefined)
 
 export const credentialAccountDetailsAtom = atom<
   CredentialsAccountCreation | undefined

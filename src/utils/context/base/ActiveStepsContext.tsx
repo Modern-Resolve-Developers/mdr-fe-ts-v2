@@ -14,7 +14,9 @@ export const ActiveStepsContext = createContext<ActiveStepsContextState>({
     next: (max_array_string: string) => {},
     previous: () => {}
 })
-
+/**
+ * @deprecated ActiveStepsProvider is deprecated
+ */
 export const ActiveStepsProvider: React.FC<React.PropsWithChildren<{}>> = ({
     children
 }) => {

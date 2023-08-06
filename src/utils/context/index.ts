@@ -5,6 +5,8 @@ export type ContextSetup = {
     users: any
     setUsers: any
     callBackSyncGetAllUsers: () => void
+    isLoading: boolean
+    setLoading: any
 }
 
 export type ToastContextSetup = {

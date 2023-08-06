@@ -18,17 +18,16 @@ import CssBaseline from "@mui/material/CssBaseline";
 import "react-quill/dist/quill.snow.css";
 import TableSearchContext from "@/utils/context/base/TableSearchContext";
 import { AuthProvider } from "@/utils/context/base/AuthContext";
-import { useRefreshTokenHandler } from "@/utils/hooks/useRefreshTokenHandler";
 import { CookiesProvider } from "react-cookie";
 import { MeetProvider } from "@/utils/context/base/MeetContext";
-
+import { LoadingProvider } from "@/utils/context/base/LoadingContext";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { DynamicDashboardProvider } from "@/utils/context/base/DynamicDashboardContext";
-import { ActiveStepsProvider } from "@/utils/context/base/ActiveStepsContext";
 import { GlobalsProvider } from "@/utils/context/base/GlobalContext";
 import { useAccessToken, useUserType } from "@/utils/context/hooks/hooks";
 import DashboardLayout from "@/components/DashboardLayout";
-import { sidebarExpand, sidebarList } from "@/utils/sys-routing/sys-routing";
+import { sidebarExpand, sidebarList, clientSidebarList } from "@/utils/sys-routing/sys-routing";
+import { decrypt } from "@/utils/secrets/hashed";
 export type NextPageWithLayout<P = any, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode;
 };
@@ -46,7 +45,6 @@ const darkTheme = createTheme({
 const queryClient = new QueryClient({});
 
 export default function App({ Component, pageProps }: AppPropsWithLayout) {
-  useRefreshTokenHandler();
   const getLayout = Component.getLayout ?? ((page) => page);
   const [loading, setLoading] = useState(false);
   const [userType, setUserType] = useUserType();
@@ -67,15 +65,14 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
       savedAuthenticationStorage = JSON.parse(savedAuthStorage);
       savedUserType = JSON.parse(savedUserTypeStorage);
     }
-
-    if (!accessToken || accessToken == undefined) {
-      setLoading(false);
-      setStoredValue(savedAuthenticationStorage);
-      setStoredType(savedUserType);
-    } else {
+    if (accessToken != undefined) {
       setLoading(false);
       setStoredValue(accessToken);
-      setStoredType(savedUserType);
+      setStoredType(parseInt(decrypt(savedUserType)));
+    } else {
+      setLoading(false);
+      setStoredValue(undefined);
+      setStoredType(undefined)
     }
   }, [accessToken, userType]);
 
@@ -84,18 +81,18 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
       <GlobalsProvider
         globals={{ storedValue: storedValue, storedType: storedType }}
       >
+        <LoadingProvider>
         <ThemeProvider theme={darkTheme}>
           <CssBaseline />
           <QueryClientProvider client={queryClient}>
             <GoogleOAuthProvider clientId="643485254029-mmi46n2kojuce223b8cpfqkck1s4gv0c.apps.googleusercontent.com">
-              <ActiveStepsProvider>
-                <DynamicDashboardProvider>
+            <DynamicDashboardProvider>
+                <SessionContext>
+                <ToastContext>
                   <AuthProvider>
                     <MeetProvider>
                       <TableSearchContext>
                         <AdminRegistrationContext>
-                          <SessionContext>
-                            <ToastContext>
                               <ControlledToast
                                 position="top-right"
                                 autoClose={5000}
@@ -115,7 +112,7 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
                                   <>
                                     <DashboardLayout
                                       sidebarConfig={
-                                        storedType == 1 ? sidebarList : []
+                                        storedType == 1 ? sidebarList : storedType == 3 ? clientSidebarList : []
                                       }
                                       subsidebarConfig={
                                         storedType == 1 ? sidebarExpand : []
@@ -128,17 +125,17 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
                                   <>{getLayout(<Component {...pageProps} />)}</>
                                 )}
                               </CookiesProvider>
-                            </ToastContext>
-                          </SessionContext>
                         </AdminRegistrationContext>
                       </TableSearchContext>
                     </MeetProvider>
                   </AuthProvider>
+                  </ToastContext>
+                  </SessionContext>
                 </DynamicDashboardProvider>
-              </ActiveStepsProvider>
             </GoogleOAuthProvider>
           </QueryClientProvider>
         </ThemeProvider>
+        </LoadingProvider>
       </GlobalsProvider>
     </>
   );

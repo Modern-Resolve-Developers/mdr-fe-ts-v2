@@ -1,4 +1,3 @@
-import DashboardLayout from "@/components/DashboardLayout";
 import {
   ControlledTypography,
   UncontrolledCard,
@@ -7,17 +6,12 @@ import {
   ControlledBackdrop,
 } from "@/components";
 import { ControlledTabs } from "@/components/Tabs/Tabs";
-import { Container, Typography } from "@mui/material";
-import { sidebarList, sidebarExpand } from "@/utils/sys-routing/sys-routing";
-
-import { useCallback, useContext, useEffect, useState } from "react";
-
+import { Container } from "@mui/material";
+import { useContext, useEffect, useState } from "react";
 import { ControlledTextField } from "@/components/TextField/TextField";
 import { ControlledSelectField } from "@/components/SelectField";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { requiredString } from "@/utils/formSchema";
 import { Grid } from "@mui/material";
 import { useAtom } from "jotai";
 import { useApiCallBack } from "@/utils/hooks/useApi";
@@ -31,16 +25,14 @@ import { ControlledPopoverButton } from "@/components/Button/PopoverButton";
 import { NormalButton } from "@/components/Button/NormalButton";
 import { SessionContextMigrate } from "@/utils/context/base/SessionContext";
 import { SessionStorageContextSetup } from "@/utils/context";
-import { useQuery } from "react-query";
 import { useDynamicDashboardContext } from "@/utils/context/base/DynamicDashboardContext";
 import { useAuthContext } from "@/utils/context/base/AuthContext";
-const categoryManagementBaseSchema = z.object({
-  label: requiredString("Label is required."),
-  type: requiredString("kindly select type."),
-});
-export type categoryManagementCreation = z.infer<
-  typeof categoryManagementBaseSchema
->;
+import { GetServerSideProps } from "next";
+import { PageProps } from "@/utils/types";
+import { getSecretsIdentifiedAccessLevel } from "@/utils/secrets/secrets_identified_user";
+import { categoryManagementCreation, categoryManagementBaseSchema } from "@/utils/schema/Sys-adminSchema/Category-manageSchema";
+import { useUserId } from "@/utils/context/hooks/hooks";
+
 const CategoryForm = () => {
   const [categoryType, setCategoryType] = useState<
     Array<{
@@ -100,10 +92,8 @@ const CategoryManageAll: React.FC = () => {
   const handleChangeTabs = (event: React.SyntheticEvent, newValue: number) => {
     setValueChange(newValue);
   };
-  const { checkAuthentication } = useAuthContext();
-  const { accessSavedAuth, accessUserId } = useContext(
-    SessionContextMigrate
-  ) as SessionStorageContextSetup;
+  const { signoutProcess, tokenExpired, disableRefreshTokenCalled, TrackTokenMovement, expirationTime, AlertTracker, FormatExpiry, refreshTokenBeingCalled, isMouseMoved, isKeyPressed,
+    accessToken } = useAuthContext();
   const router = useRouter();
   const CreationProductCategory = useApiCallBack(
     async (api, args: { label: string; value: string; type: string }) =>
@@ -122,6 +112,7 @@ const CategoryManageAll: React.FC = () => {
   });
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
   const [categoryId, setCategoryId] = useState<number>(0);
+  const [categoryData, setCategoryData] = useState([])
   const handleShowPopOver = (
     event: React.MouseEvent<HTMLButtonElement>,
     id: any
@@ -186,33 +177,66 @@ const CategoryManageAll: React.FC = () => {
   const [idetifiedUser, setIdentifiedUser] = useState<any>("");
 
   const { getPropsDynamic } = useDynamicDashboardContext();
-
+  const [uid, setUid] = useUserId()
   useEffect(() => {
-    getPropsDynamic(localStorage.getItem("uid")).then((repo: any) => {
-      setIdentifiedUser(repo?.data);
-    });
+    if(typeof window !== 'undefined' && window.localStorage) {
+      getPropsDynamic(localStorage.getItem("uid") ?? 0).then((repo: any) => {
+        setIdentifiedUser(repo?.data);
+      });
+    }
   }, []);
   useEffect(() => {
-    checkAuthentication("admin");
-    setTimeout(() => {
-      setPreLoad(false);
-    }, 3000);
-  }, [accessSavedAuth, accessUserId]);
+    if(!accessToken || accessToken == undefined) {
+      router.push('/login')
+      setTimeout(() => setPreLoad(false), 2000)
+    } else {
+      setPreLoad(false)
+      const isExpired = TrackTokenMovement()
+      if(isExpired) {
+        signoutProcess()
+        handleOnToast(
+          "Token expired. Please re-login.",
+          "top-right",
+          false,
+          true,
+          true,
+          true,
+          undefined,
+          "dark",
+          "error"
+        );
+      }
+    }
+  }, [tokenExpired]);
+  useEffect(() => {
+    if(!disableRefreshTokenCalled){
+      if(isMouseMoved) {
+        refreshTokenBeingCalled()
+      }
+    }
+  }, [isMouseMoved, disableRefreshTokenCalled])
+  useEffect(() => {
+    if(!disableRefreshTokenCalled){
+      if(isKeyPressed){
+        refreshTokenBeingCalled()
+      }
+    }
+  }, [isKeyPressed, disableRefreshTokenCalled])
   const {
     formState: { isValid },
     handleSubmit,
     reset,
     setValue,
   } = form;
-
-  const { data } = useQuery(
-    "category-list",
-    async () => {
-      const result = await GetAllProductCategory.execute();
-      return result.data;
-    },
-    { initialData: undefined }
-  );
+  useEffect(() => {
+    GetAllProductCategory.execute().then((response: any) => {
+      setCategoryData(response.data)
+    }).catch(error => {
+      if(error.response?.status === 401) {
+        router.push('/sys-admin/auth/dashboardauth')
+      }
+    })
+  }, [])
   const handleContinue = () => {
     handleSubmit((values) => {
       setLoading(!loading);
@@ -268,6 +292,12 @@ const CategoryManageAll: React.FC = () => {
         <ControlledBackdrop open={preload} />
       ) : (
         <Container>
+          {
+            expirationTime != null && expirationTime <= 30 * 1000 &&
+            AlertTracker(
+              `You are idle. Token expires in: ${FormatExpiry(expirationTime)}`, "error"
+            )
+          }
           <UncontrolledCard>
             <ControlledTypography
               variant="h6"
@@ -306,11 +336,10 @@ const CategoryManageAll: React.FC = () => {
               ) : (
                 <>
                   <ProjectTable
-                    columns={columns}
-                    data={data}
-                    sx={{ marginTop: "10px" }}
-                    rowIsCreativeDesign={false}
-                  />
+                        columns={columns}
+                        data={categoryData}
+                        sx={{ marginTop: "10px" }}
+                        rowIsCreativeDesign={false} loading={false}                  />
                 </>
               )}
             </ControlledTabs>

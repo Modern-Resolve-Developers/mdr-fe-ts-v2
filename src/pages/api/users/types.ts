@@ -12,6 +12,8 @@ export type UAMAddRequestArgs = {
     email: string | undefined
     password: string | undefined
     userType: string | undefined
+    key?: string | undefined
+    phoneNumber: string | undefined
 }
 
 export type UAMCreationAdminArgs = {
@@ -20,4 +22,5 @@ export type UAMCreationAdminArgs = {
     lastname: string | undefined
     email: string | undefined
     password: string | undefined
+    phoneNumber: string | undefined
 }

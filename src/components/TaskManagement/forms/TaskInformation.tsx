@@ -1,10 +1,8 @@
 import { ControlledTextField } from "@/components/TextField/TextField";
-import { Grid, Typography, IconButton, Box } from "@mui/material";
+import { Grid, IconButton, Box } from "@mui/material";
 import ControlledGrid from "@/components/Grid/Grid";
 import { useState, useEffect } from "react";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { requiredString } from "@/utils/formSchema";
 import { BottomButtonGroup } from "@/components/TaskManagement/forms/BottomButtonGroup";
 
 import {
@@ -13,34 +11,18 @@ import {
   useFormContext,
   useFieldArray,
 } from "react-hook-form";
-
 import { useAtom } from "jotai";
-
 import { ControlledRichTextField } from "@/components/TextField/RichTextField";
 import { taskInformationAtom } from "@/utils/hooks/useAccountAdditionValues";
 import { useActiveStepTask } from "../useActiveStep";
-import { Button, TextField } from "@mui/material";
+import { Button} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import UncontrolledCard from "@/components/Cards/Card";
-
 import { ControlledSelectField } from "@/components/SelectField";
-
 import DeleteIcon from "@mui/icons-material/Delete";
+import { TaskInformationCreation, taskInformationBaseSchema } from "@/utils/schema/Task-Management/TaskInformationSchema";
 
-const taskInformationBaseSchema = z.object({
-  title: requiredString("Title is required."),
-  description: requiredString("Description is required."),
-  imgurl: z.any().optional(),
-  priority: requiredString("Kindly set task priority level."),
-  subtask: z
-    .object({
-      task: requiredString("Title is required."),
-      priority: requiredString("Kindly set task priority level."),
-    })
-    .array(),
-});
 
-export type TaskInformationCreation = z.infer<typeof taskInformationBaseSchema>;
 
 const TaskInformationForm = () => {
   const [taskPriority, setTaskPriority] = useState([

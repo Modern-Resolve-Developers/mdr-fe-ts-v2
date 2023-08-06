@@ -1,6 +1,6 @@
 import { Button, Grid } from "@mui/material";
 import { PrimaryButton } from "@/components/Button";
-import { useActiveStepContext } from "@/utils/context/base/ActiveStepsContext";
+import { useActiveSteps } from "@/utils/hooks/useActiveSteps";
 
 export type BottomButtonGroupProps = {
   continueButtonLabel?: string;
@@ -12,6 +12,8 @@ export type BottomButtonGroupProps = {
   disableBtn?: boolean;
   onresend?: () => void
   countdown?: number
+  backtoLogin?: string;
+  max_length: number
 };
 
 export const BottomButtonGroup: React.FC<BottomButtonGroupProps> = ({
@@ -23,15 +25,17 @@ export const BottomButtonGroup: React.FC<BottomButtonGroupProps> = ({
   resendBtn,
   disableBtn,
   onresend,
-  countdown
+  countdown,
+  backtoLogin = "< Back to Log in",
+  max_length
 }) => {
   // const { nextfp, previous } = usefpActiveStep();
-  const { next, previous } = useActiveStepContext()
+  const { next, previous } = useActiveSteps(max_length)
   const handleContinue = () => {
     if (onContinue !== undefined) {
       if (!onContinue()) return;
     }
-    next("forgot-password");
+    next();
   };
   const handleBack = () => {
     if (onBack !== undefined) {
@@ -58,10 +62,9 @@ export const BottomButtonGroup: React.FC<BottomButtonGroupProps> = ({
       </Grid>
      }
       <Grid item xs={8} display="flex" justifyContent="center">
-        <Button
+        <Button className="forgot-button"
           sx={{ mx: "auto", mt: 2, width: [, 300] }}
-          color="primary"
-          variant="outlined"
+          variant="contained"
           fullWidth
           disabled={disabledContinue}
           onClick={handleContinue}
@@ -71,13 +74,13 @@ export const BottomButtonGroup: React.FC<BottomButtonGroupProps> = ({
       </Grid>
       {!hideBack && (
         <Grid item xs={8} display="flex" justifyContent="center">
-          <Button
+          <Button className="back-button"
             sx={{ mx: "auto", mt: 2, width: [, 300] }}
             fullWidth
             variant="text"
             onClick={handleBack}
           >
-            Back
+            {backtoLogin}
           </Button>
         </Grid>
       )}
