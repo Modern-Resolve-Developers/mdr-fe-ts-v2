@@ -4,18 +4,19 @@ import { loginAccount } from "../schema/LoginSchema";
 import { PersonalAccountCreation } from "@/components/UserManagement/forms/PersonalDetailsForms";
 import { CredentialsAccountCreation } from "@/components/UserManagement/forms/CredentialsDetailsForms";
 import { EditFormUserAccount } from "@/components/UserManagement";
-import { TaskInformationCreation } from "@/components/TaskManagement/forms";
-import { TaskAssigneeCreation } from "@/components/TaskManagement/forms/TaskAssignee";
-import { ProductManagementCreation } from "@/pages/sys-admin/product-management";
-import { categoryManagementCreation } from "@/pages/sys-admin/category-manage-all";
-import { MeetCreation } from "@/components/Jitsi/StartupPage";
-import { EmailAccountCreation } from "@/components/ForgotPassword/forms/EmailDetailsForms";
-import { VerificationAccountCreation } from "@/components/ForgotPassword/forms/VerificationDetailsForms";
-import { NewCredentialsAccountCreation } from "@/components/ForgotPassword/forms/NewCredentialsForms";
-import { JoinMeetingFormAccount } from "@/pages/sys-admin/digital-meet";
+
 import { ClientAccountCreation } from "../schema/ClientRegisterSchema"; 
 import { UserProfileType } from "../schema/UserProfileSchema";
 import { ContactType } from "../schema/ContactSchema";
+import { VerificationAccountCreation } from "./ForgotPasswordSchema/VerificationDeatilsFormSchema";
+import { JoinMeetingFormAccount } from "./Sys-adminSchema/DigitalMeetSchema";
+import { EmailAccountCreation } from "./ForgotPasswordSchema/EmailDetailFromSchema";
+import { MeetCreation } from "@/components/Jitsi/StartupPage";
+import { NewCredentialsAccountCreation } from "./ForgotPasswordSchema/NewCredentialsFormSchema";
+import { categoryManagementCreation } from "./Sys-adminSchema/Category-manageSchema";
+import { ProductManagementCreation } from "./Sys-adminSchema/Product-ManagementShema";
+import { TaskAssigneeCreation } from "./Task-Management/TaskAssigneeSchema";
+import { TaskInformationCreation } from "./Task-Management/TaskInformationSchema";
 
 type AccountCreationFormData = {
   accountCreation: AccountCreation;
