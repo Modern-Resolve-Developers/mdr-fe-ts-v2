@@ -29,6 +29,7 @@ import { SessionContextMigrate } from '@/utils/context/base/SessionContext'
 
 import { useMutation } from 'react-query'
 import { useRefreshToken } from '@/utils/context/hooks/hooks'
+import { AxiosResponse } from 'axios'
 
 export const meetBaseSchema = z.object({
     username: requiredString('Username is required.'),
@@ -107,7 +108,7 @@ export const StartupPage = () => {
     const storeMeetDetails = useApiCallBack(async (api, args: JitserStoreDetails) => await api.mdr.StoreMeetDetails(args))
     const storeMeetJoinedTeam = useApiCallBack(async (api, props : { roomId: number, name: string }) => await api.mdr.JoinRoomStoreDetails(props))
     const useStoreDetails = () => {
-        return useMutation((data: JitserStoreDetails) => storeMeetDetails.execute(data).then((response) => response.data))
+        return useMutation((data: JitserStoreDetails) => storeMeetDetails.execute(data).then((response: AxiosResponse | undefined) => response?.data))
     }
     const useJoinMeeting = useMutation((props : {roomId: number, name: string}) => 
         storeMeetJoinedTeam.execute(props)
