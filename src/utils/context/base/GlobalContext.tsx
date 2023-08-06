@@ -22,10 +22,15 @@ export const GlobalsProvider: React.FC<React.PropsWithChildren<Props>> = ({
   globals,
 }) => {
   const getAuthenticatedRouterAPI = useApiCallBack(
-    async (api, requestId: string | undefined) => await api.authentication.authenticatedRouter(requestId))
+    async (api, args: {
+      requestId: string | undefined
+    }) => await api.authentication.authenticatedRouter(args))
   const getAuthenticatedRouter = (requestId: string | undefined) => {
     return new Promise((resolve) => {
-      getAuthenticatedRouterAPI.execute(requestId)
+      const obj = {
+        requestId : requestId
+      }
+      getAuthenticatedRouterAPI.execute(obj)
       .then((response: any) => {
         resolve(response.data)
       })
