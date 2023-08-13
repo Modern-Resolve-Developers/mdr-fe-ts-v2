@@ -2,14 +2,7 @@ import { useState } from "react";
 import { Dialog } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/router";
-import EastIcon from "@mui/icons-material/East";
-
-const navigation = [
-  { name: "Product", href: "#" },
-  { name: "Features", href: "#" },
-  { name: "Marketplace", href: "#" },
-  { name: "Company", href: "#" },
-];
+import { menuItems } from "./menu-items";
 
 const NavSection: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -68,7 +61,7 @@ const NavSection: React.FC = () => {
             </button>
           </div>
           <div className="hidden lg:flex lg:gap-x-12">
-            {navigation.map((item) => (
+            {menuItems.map((item) => (
               <a
                 key={item.name}
                 href={item.href}
@@ -110,7 +103,7 @@ const NavSection: React.FC = () => {
             <div className="mt-6 flow-root">
               <div className="-my-6 divide-y divide-gray-500/10">
                 <div className="space-y-2 py-6">
-                  {navigation.map((item) => (
+                  {menuItems.map((item) => (
                     <a
                       key={item.name}
                       href={item.href}
