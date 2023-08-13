@@ -3,8 +3,8 @@
 @tailwind utilities;
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -50,7 +50,7 @@ body {
   height: 100vh;
 }
 .verify-account-container {
-  background: var(--orig-bg, linear-gradient(180deg, #FFDF8F 0%, #8B255B 100%));
+  background: var(--orig-bg, linear-gradient(180deg, #ffdf8f 0%, #8b255b 100%));
   width: 100vw;
   height: 100vh;
   overflow: hidden;
@@ -76,7 +76,7 @@ body {
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
 
@@ -90,7 +90,7 @@ code {
 }
 
 .curve::before {
-  content: "";
+  content: '';
   display: block;
   position: absolute;
   border-radius: 100% 50%;
@@ -101,7 +101,7 @@ code {
 }
 
 .curve::after {
-  content: "";
+  content: '';
   display: block;
   position: absolute;
   border-radius: 100% 50%;
@@ -216,7 +216,7 @@ code {
 
 /* Forgot password CSS */
 .forgot-pw-container {
-  background-image: linear-gradient(#BC4337, #2B103D);
+  background-image: linear-gradient(#bc4337, #2b103d);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -225,7 +225,7 @@ code {
 }
 
 .forgot-pw-heading {
-  display: flex; 
+  display: flex;
   align-items: center;
   gap: 21px;
   margin-left: 25.52px;
@@ -242,24 +242,24 @@ code {
 
 .mdr-forgot-pwCard {
   border-radius: 50px;
-  background: #FFF;
-  box-shadow: 8px 10px 8px 1px rgba(0, 0, 0, 0.10);
+  background: #fff;
+  box-shadow: 8px 10px 8px 1px rgba(0, 0, 0, 0.1);
   width: max(72.927vw, 1460px);
   padding: unset;
 }
 
-.forgot-button{
-  color: #FFF;
-  background-color: #973B74;
+.forgot-button {
+  color: #fff;
+  background-color: #973b74;
 }
 
 .back-button {
-  color: #973B74;
+  color: #973b74;
   font-size: 10px;
 }
 
 .forgot-text {
-  color: #3C3C3C;
+  color: #3c3c3c;
   text-align: center;
   font-size: 30px;
   font-style: normal;
@@ -307,5 +307,58 @@ code {
   }
 }
 
-
 /* End of Forgot Password */
+
+/* Effects for Login  */
+.fade-in {
+  animation: fadeIn ease 8s;
+  -webkit-animation: fadeIn ease 8s;
+  -moz-animation: fadeIn ease 8s;
+  -o-animation: fadeIn ease 8s;
+  -ms-animation: fadeIn ease 8s;
+}
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@-moz-keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@-webkit-keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@-o-keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@-ms-keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+/* End of effects of login */
