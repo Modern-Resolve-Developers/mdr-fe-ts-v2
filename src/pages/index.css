@@ -50,7 +50,7 @@ body {
   height: 100vh;
 }
 .verify-account-container {
-  background: var(--orig-bg, linear-gradient(180deg, #FFDF8F 0%, #8B255B 100%));
+  background: var(--orig-bg, linear-gradient(180deg, #ffdf8f 0%, #8b255b 100%));
   width: 100vw;
   height: 100vh;
   overflow: hidden;
@@ -216,7 +216,7 @@ code {
 
 /* Forgot password CSS */
 .forgot-pw-container {
-  background-image: linear-gradient(#BC4337, #2B103D);
+  background-image: linear-gradient(#bc4337, #2b103d);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -225,7 +225,7 @@ code {
 }
 
 .forgot-pw-heading {
-  display: flex; 
+  display: flex;
   align-items: center;
   gap: 21px;
   margin-left: 25.52px;
@@ -242,24 +242,24 @@ code {
 
 .mdr-forgot-pwCard {
   border-radius: 50px;
-  background: #FFF;
-  box-shadow: 8px 10px 8px 1px rgba(0, 0, 0, 0.10);
+  background: #fff;
+  box-shadow: 8px 10px 8px 1px rgba(0, 0, 0, 0.1);
   width: max(72.927vw, 1460px);
   padding: unset;
 }
 
-.forgot-button{
-  color: #FFF;
-  background-color: #973B74;
+.forgot-button {
+  color: #fff;
+  background-color: #973b74;
 }
 
 .back-button {
-  color: #973B74;
+  color: #973b74;
   font-size: 10px;
 }
 
 .forgot-text {
-  color: #3C3C3C;
+  color: #3c3c3c;
   text-align: center;
   font-size: 30px;
   font-style: normal;
@@ -307,5 +307,19 @@ code {
   }
 }
 
-
 /* End of Forgot Password */
+
+/* Animation bounce css */
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+.animate-bounce {
+  animation: bounce 2s infinite;
+}
