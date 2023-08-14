@@ -3,8 +3,8 @@
 @tailwind utilities;
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -76,7 +76,7 @@ body {
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
 
@@ -90,7 +90,7 @@ code {
 }
 
 .curve::before {
-  content: "";
+  content: '';
   display: block;
   position: absolute;
   border-radius: 100% 50%;
@@ -101,7 +101,7 @@ code {
 }
 
 .curve::after {
-  content: "";
+  content: '';
   display: block;
   position: absolute;
   border-radius: 100% 50%;
@@ -323,3 +323,57 @@ code {
 .animate-bounce {
   animation: bounce 2s infinite;
 }
+
+/* Effects for Login  */
+.fade-in {
+  animation: fadeIn ease 8s;
+  -webkit-animation: fadeIn ease 8s;
+  -moz-animation: fadeIn ease 8s;
+  -o-animation: fadeIn ease 8s;
+  -ms-animation: fadeIn ease 8s;
+}
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@-moz-keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@-webkit-keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@-o-keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@-ms-keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+/* End of effects of login */
