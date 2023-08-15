@@ -1,39 +1,47 @@
-import { Typography } from '@mui/material'
-import NavSection from './HomeNav'
-
+import { Typography } from "@mui/material";
+import NavSection from "./HomeNav";
 
 const HomeHeroSection = () => {
-
-    return (
-    <div className="isolate bg-white">
+  return (
+    <div className="isolate ">
       <NavSection />
+      <div
+        className="absolute -z-20 top-0 h-screen w-full bg-gradient-to-t from-primary via-ff80b5 to-[#a1366e]"
+        style={{
+          clipPath: "polygon(0 0, 100% 0, 100% 50%, 0 100%)",
+        }}
+      ></div>
       <main>
-        <div className="relative px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl py-32 sm:py-48 lg:py-56">
-            <div className="hidden sm:mb-8 sm:flex sm:justify-center">
-              <div className="relative rounded-full py-1 px-3 text-sm leading-6 text-gray-600 ring-1 ring-gray-900/10 hover:ring-gray-900/20">
-                Announcing our next round of motor accessories.{' '}
+        <div className="relative px-6 lg:px-20 flex flex-col justify-center items-center md:gap-[10rem]  md:flex-row ">
+          <div className=" max-w-2xl py-32">
+            <div className="hidden sm:mb-8 sm:flex ">
+              <div className="relative rounded-full backdrop-blur-sm bg-white/30 py-1 px-3 text-sm leading-6 text-gray-600 shadow-md">
+                Announcing our next round of motor accessories.{" "}
                 <a href="#" className="font-semibold text-indigo-600">
                   <span className="absolute inset-0" aria-hidden="true" />
                   Read more <span aria-hidden="true">&rarr;</span>
                 </a>
               </div>
             </div>
-            <div className="text-center">
-              <Typography className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
-                Digital Resolve
+
+            <div className="flex flex-col items-center md:items-start">
+              <Typography className="text-4xl text-center md:text-left font-bold tracking-tight text-gray-900 md:text-5xl lg:text-8xl">
+                Digital Resolve Technologies
               </Typography>
               <p className="mt-6 text-lg leading-8 text-gray-600">
                 Let's make your business digital.
               </p>
-              <div className="mt-10 flex items-center justify-center gap-x-6">
+              <div className="mt-10 flex items-center  gap-x-6">
                 <a
                   href="#"
                   className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                 >
                   Get started
                 </a>
-                <a href="#" className="text-sm font-semibold leading-6 text-gray-900">
+                <a
+                  href="#"
+                  className="text-sm font-semibold leading-6 text-gray-900"
+                >
                   Learn more <span aria-hidden="true">→</span>
                 </a>
               </div>
@@ -64,10 +72,20 @@ const HomeHeroSection = () => {
               </defs>
             </svg>
           </div>
+          <div className="relative py-0 -mt-[120px] lg:py-32 ">
+            <div>
+              <img
+                src="/clientregpic-removebg-preview.png"
+                alt=""
+                width="500"
+                className="animate-bounce"
+              />
+            </div>
+          </div>
         </div>
       </main>
     </div>
-    )
-}
+  );
+};
 
-export default HomeHeroSection
+export default HomeHeroSection;
