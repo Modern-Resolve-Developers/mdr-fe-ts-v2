@@ -54,3 +54,17 @@ export type Tokens = {
 export type RequestRouterParams = {
     requestId: string | undefined
 }
+
+export type RequestDeviceRecognition = {
+    deviceInfoStringify: string | undefined
+    isActive: number
+    createdAt: Date
+    email: string | undefined
+    deviceId?: string | undefined
+}
+
+export type TokenStore = {
+    email: string | undefined
+    AccessToken: string | undefined
+    RefreshToken: string | undefined
+}

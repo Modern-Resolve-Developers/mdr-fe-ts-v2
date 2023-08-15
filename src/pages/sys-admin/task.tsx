@@ -4,7 +4,7 @@ import {
   ControlledTypography,
   UncontrolledCard,
 } from "@/components";
-import { Container, ListItemIcon } from "@mui/material";
+import { Container, ListItemIcon, Typography } from "@mui/material";
 import { TaskFormAdditionalDetails } from "@/components/TaskManagement";
 import { useDynamicDashboardContext } from "@/utils/context/base/DynamicDashboardContext";
 import { useContext, useEffect, useState } from "react";
@@ -14,13 +14,18 @@ import { PageProps } from "@/utils/types";
 import { getSecretsIdentifiedAccessLevel } from "@/utils/secrets/secrets_identified_user";
 import { useRouter } from "next/router";
 import { useToastContext } from "@/utils/context/base/ToastContext";
+import { useLoaders } from "@/utils/context/base/LoadingContext";
+import { useReferences } from "@/utils/context/hooks/hooks";
 const Task: React.FC<PageProps> = ({data}) => {
   const [idetifiedUser, setIdentifiedUser] = useState<any>("");
-  const [loading, setLoading] = useState(true);
   const { handleOnToast } = useToastContext()
   const { getPropsDynamic } = useDynamicDashboardContext();
-  const { signoutProcess, disableRefreshTokenCalled, tokenExpired, TrackTokenMovement, expirationTime, AlertTracker, FormatExpiry, refreshTokenBeingCalled, isMouseMoved, isKeyPressed,
-    accessToken } = useAuthContext();
+  const { signoutProcess, tokenExpired, disableRefreshTokenCalled, TrackTokenMovement, expirationTime, AlertTracker, FormatExpiry, refreshTokenBeingCalled, isMouseMoved, isKeyPressed,
+    accessToken, devicePromptApproval, requestGetNums,
+   requestNum, approveIncomingDevice, cookies } = useAuthContext();
+   const { setLoading, loading } = useLoaders()
+   const [references, setReferences] = useReferences()
+   const [devicePrompt, setDevicePrompt] = useState<boolean>(false)
   const router = useRouter()
   useEffect(() => {
     if(typeof window !== 'undefined' && window.localStorage) {
@@ -30,6 +35,15 @@ const Task: React.FC<PageProps> = ({data}) => {
     }
   }, []);
   useEffect(() => {
+    const interval = setInterval(requestGetNums, 1000)
+    return () => clearInterval(interval)
+  }, [])
+  useEffect(() => {
+    if(requestNum == 1 || requestNum == 2) {
+      setDevicePrompt(true)
+    }
+  }, [requestNum])
+  useEffect(() => {
     if(!accessToken || accessToken == undefined) {
       router.push('/login')
       setTimeout(() => {
@@ -37,21 +51,21 @@ const Task: React.FC<PageProps> = ({data}) => {
       }, 2000)
     } else {
       setLoading(false)
-      const isExpired = TrackTokenMovement()
-      if(isExpired) {
-        signoutProcess()
-        handleOnToast(
-          "Token expired. Please re-login.",
-          "top-right",
-          false,
-          true,
-          true,
-          true,
-          undefined,
-          "dark",
-          "error"
-        );
-      }
+        const isExpired = TrackTokenMovement()
+        if(isExpired) {
+          signoutProcess("expired")
+          handleOnToast(
+            "Token expired. Please re-login.",
+            "top-right",
+            false,
+            true,
+            true,
+            true,
+            undefined,
+            "dark",
+            "error"
+          );
+        }
     }
   }, [tokenExpired]);
   useEffect(() => {
@@ -68,6 +82,9 @@ const Task: React.FC<PageProps> = ({data}) => {
       }
     }
   }, [isKeyPressed, disableRefreshTokenCalled])
+  const handleApproveDeviceIncoming = () => {
+    approveIncomingDevice(cookies.deviceId, references?.email)
+  }
   return (
     <>
       {loading ? (
@@ -88,6 +105,37 @@ const Task: React.FC<PageProps> = ({data}) => {
             />
             <TaskFormAdditionalDetails />
           </UncontrolledCard>
+          {
+            devicePromptApproval({
+              content: (
+                <>
+                 <Typography gutterBottom variant="button">New Device Approval</Typography>
+                 <Container>
+                  <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}
+                  >
+                    <img 
+                    src='https://cdn.dribbble.com/userupload/7433107/file/original-dd35f5eb54ba85db5dedda17c84e0353.png?resize=1200x900'
+                    style={{
+                      width: '50%',
+                  }}
+                    />
+                  </div>
+                  <Typography variant="caption">
+                    A new device is trying to sign in. Please select between approve and decline. Once approved you will automatically logged out on this device
+                  </Typography>
+                 </Container>
+                </>
+              ),
+              handleAuthApproved: handleApproveDeviceIncoming,
+              handleAuthDeclined: () => {},
+              openState: devicePrompt
+            })
+          }
         </Container>
       )}
     </>

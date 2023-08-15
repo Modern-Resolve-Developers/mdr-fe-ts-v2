@@ -36,4 +36,7 @@ export class AuthenticationApi {
     public authenticatedRouter(props: RequestRouterParams){
         return this.axios.post('/api/users/get-router', props)
     }
+    public authrevoke(email: string) {
+        return this.axios.post(`/api/authentication/revoke/${email}`)
+    }
 }

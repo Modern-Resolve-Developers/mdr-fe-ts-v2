@@ -6,10 +6,7 @@ import {
 import { Typography } from "@mui/material";
 import { useState, useEffect, useContext } from "react";
 import { ControlledTextField } from "@/components/TextField/TextField";
-import { FieldValues, useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { requiredString } from "@/utils/formSchema";
 
 import GoogleButton from "react-google-button";
 
@@ -35,6 +32,7 @@ import { SessionContextMigrate } from "@/utils/context/base/SessionContext";
 import { SessionStorageContextSetup } from "@/utils/context";
 import {
   useAccessToken,
+  useDevice,
   useGoogleAccountInfo,
   useReferences,
   useRefreshToken,
@@ -51,8 +49,9 @@ import { getSecretsIdentifiedAccessLevel } from "@/utils/secrets/secrets_identif
 import { PageProps } from "@/utils/types";
 import { loginAccount, LoginSchema } from "@/utils/schema/LoginSchema";
 import { useLoaders } from "@/utils/context/base/LoadingContext";
-import { decrypt } from "@/utils/secrets/hashed";
+import { decrypt, encrypt } from "@/utils/secrets/hashed";
 import { useAuthContext } from "@/utils/context/base/AuthContext";
+import { useForm } from "react-hook-form";
 type JWTAuthLoginTypes = {
   jwtusername: string | any;
   jwtpassword: string | any;
@@ -77,37 +76,20 @@ const Login: React.FC = () => {
   const [googleAccountInfo, setGoogleAccountInfo] = useGoogleAccountInfo()
   const [dr, setDr] = useRouting();
   const { loading, setLoading, preload, setPreLoad } = useLoaders()
-  const { setAccessSavedAuth, setAccessUserId, accessSavedAuth, accessUserId } =
-    useContext(SessionContextMigrate) as SessionStorageContextSetup;
   const { handleOnToast } = useContext(
     ToastContextContinue
   ) as ToastContextSetup;
   const setAccountLogin = useSetAtom(accountLoginAtom);
   const router = useRouter();
   const [user, setUser] = useState<any>({});
+  const [device, setDevice] = useDevice()
+  const [references, setReferences] = useReferences()
+  const { toBeEncryptedPassword } = useAuthContext()
   /* api callbacks */
   const authSignin = useApiCallBack(async (api, args: LoginProps) => {
     const result = await api.authentication.userAuthLogin(args);
     return result;
   });
-
-  const createtoken = useApiCallBack(async (api, args: CreateTokenArgs) => {
-    const result = await api.authentication.createToken(args);
-    return result;
-  });
-  const createAuthHistory = useApiCallBack(
-    async (api, args: CreateAuthHistoryArgs) => {
-      const result = await api.authentication.createAuthenticationHistory(args);
-      return result;
-    }
-  );
-  const jwtAuthLogin = useApiCallBack(
-    async (api, args: JWTAuthLoginTypes) =>
-      await api.authentication.authenticationJwtLogin(
-        args.jwtusername,
-        args.jwtpassword
-      )
-  );
   const foundSecuredRouter = useSecureHiddenNetworkApi(
     async (api, id: string | undefined) => await api.secure.sla_begin_work_find_secured_route(id)
   )
@@ -168,20 +150,31 @@ const Login: React.FC = () => {
     foundSecuredRouter.execute(id)
   );
   useEffect(() => {
-    if(uid != undefined) {
-      useFoundSecuredRouter.mutate(uid ?? "0", {
-        onSuccess: (response: AxiosResponse | undefined) => {
-          if(response?.data != 404){
-            router.replace(response?.data)
-            setTimeout(() => setPreLoad(false), 2000)
-          }
-        },
-        onError: (error: AxiosError | unknown) => {
-          setPreLoad(false)
+    setLoading(false)
+    if(device != undefined) {
+      router.push({
+        pathname: '/device/device-new-registration/new-device-registration',
+        query: {
+          email: encrypt(references?.email ?? ""),
+          password: encrypt(toBeEncryptedPassword ?? "")
         }
       })
     } else {
-      setPreLoad(false)
+      if(uid != undefined) {
+        useFoundSecuredRouter.mutate(uid ?? "0", {
+          onSuccess: (response: AxiosResponse | undefined) => {
+            if(response?.data != 404){
+              router.replace(response?.data)
+              setTimeout(() => setPreLoad(false), 2000)
+            }
+          },
+          onError: (error: AxiosError | unknown) => {
+            setPreLoad(false)
+          }
+        })
+      } else {
+        setPreLoad(false)
+      }
     }
   }, []);
   const [checkedVal, setCheckedVal] = useState(false);
@@ -196,6 +189,7 @@ const Login: React.FC = () => {
   };
   useEffect(() => {
     checkRememberMe();
+    deviceInfo()
   }, []);
 
   const handleCheckBox = (event: any) => {
@@ -227,10 +221,7 @@ const Login: React.FC = () => {
       localStorage.removeItem("rm");
     }
   };
-  const useAuthSignIn = () => {
-    return useMutation((args: LoginProps) => authSignin.execute(args));
-  };
-  const { login } = useAuthContext();
+  const { login, deviceInfo } = useAuthContext();
 
   const handleSignin = async () => {
     const value = getValues();

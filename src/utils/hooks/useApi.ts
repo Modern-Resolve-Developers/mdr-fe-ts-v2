@@ -72,7 +72,6 @@ function secureCreateApi(client: AxiosInstance){
 }
 
 function handleError(e: any) {
-   console.log(e)
    const rawErrors = e.response.data?.errors
    return Array.isArray(rawErrors) ? rawErrors.map(e => e.code ?? 'Something went wrong') : ['Something went wrong']
 }

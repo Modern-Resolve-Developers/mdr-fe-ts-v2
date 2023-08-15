@@ -1,22 +1,39 @@
-import { AxiosResponse } from "axios";
+import { AxiosError, AxiosResponse } from "axios";
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { useApiCallBack, useSecureHiddenNetworkApi } from "@/utils/hooks/useApi";
-import { useAccessToken, useReferences, useRefreshToken, useRouting, useTokens, useUserId, useUserType, useuid } from "../hooks/hooks";
+import { useAccessToken, useDevice, useDeviceId, useReferences, useRefreshToken, useRouting, useTokens, useUserId, useUserType, useuid } from "../hooks/hooks";
 import { AuthenticationProps } from "./AdminRegistrationContext";
 import { useRouter } from "next/router";
 import { decrypt, encrypt } from "@/utils/secrets/hashed";
 import jwt, {JwtPayload} from 'jsonwebtoken'
-import { Alert, AlertColor, Typography } from "@mui/material";
-import { CreateAuthHistoryArgs, CreateTokenArgs, LoginProps, RequestRouterParams, Tokens } from "@/pages/api/Authentication/types";
+import { Alert, AlertColor, AlertTitle, Typography } from "@mui/material";
+import { AuthenticationRefreshTokenArgs, CreateAuthHistoryArgs, CreateTokenArgs, LoginProps, RequestDeviceRecognition, RequestRouterParams, TokenStore, Tokens } from "@/pages/api/Authentication/types";
 import { useToastContext } from "./ToastContext";
 import { useLoaders } from "./LoadingContext";
+import { useCookies } from "react-cookie";
+import { ControlledModal } from "@/components";
+import { NormalButton } from "@/components/Button/NormalButton";
+
+type deviceApprovedProps = {
+  deviceId: string
+  email: string
+}
+
+type devicePromptApprovalProps = {
+  openState: boolean
+  handleClose?: () => void
+  handleAuthApproved: () => void
+  handleAuthDeclined: () => void
+  content: React.ReactNode
+}
+
 const context = createContext<{
   login(email: string | undefined, password: string | undefined): void;
   checkAuthentication(currentScreen: string): Promise<any>;
   AccessTokenExpired(token: string): boolean
   tokenExpired: boolean
   TrackTokenMovement(): boolean
-  signoutProcess(): void
+  signoutProcess(type: string): void
   expirationTime: any
   AlertTracker(message: string, severity: AlertColor | undefined) : React.ReactNode
   FormatExpiry(milliseconds: number | null): string
@@ -34,6 +51,16 @@ const context = createContext<{
   remainingTime: number
   resendCheckCounts(email: string | undefined) : void
   resendRevalidate(email: string | undefined) : void
+  deviceInfo(): void
+  compressedDeviceInfo: string | undefined
+  requestNum: number
+  devicePromptApproval: (props: devicePromptApprovalProps) => React.ReactNode
+  toBeEncryptedPassword: string | undefined
+  requestGetNums(): void
+  approveIncomingDevice(deviceId: string | undefined, email: string) : void
+  cookies: any
+  approvedDeviceTrigger(email: string | undefined): void
+  isApprovedDeviceAlive: boolean
 }>(undefined as any);
 interface JwtProps extends JwtPayload {
   exp?: number
@@ -44,13 +71,21 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({
   const { handleOnToast } = useToastContext()
   const { setLoading } = useLoaders()
   const router = useRouter();
+  const [isApprovedDeviceAlive, setIsApprovedDeviceAlive] = useState<boolean>(false)
   const [maxResentWith401, setMaxResentWith401] = useState<number | null>(null)
+  const [compressedDeviceInfo, setCompressedDeviceInfo] = useState<string | undefined>(undefined)
   const [remainingTime, setRemainingTime] = useState<number>(0)
+  const [deviceId, setDeviceId] = useDeviceId()
+  const [toBeEncryptedPassword, setToBeEncryptedPassword] = useState<string | undefined>(undefined)
+  const [cookies, setCookie, removeCookies] = useCookies(['deviceId'])
   const secureResendCode = useSecureHiddenNetworkApi(
     async (api, args: {type: string, email: string | undefined}) => await api.secure.sla_begin_resending_code(args)
 )
   const loginCb = useSecureHiddenNetworkApi(
     async (api, args:LoginProps) => await api.secure.sla_begin_work_login(args)
+  )
+  const deviceCb = useSecureHiddenNetworkApi(
+    async (api, args: RequestDeviceRecognition) => await api.secure.sla_begin_device_recognition(args)
   )
   const tokenCb = useSecureHiddenNetworkApi(
     async (api, args: CreateTokenArgs) => await api.secure.sla_begin_work_create_token(args)
@@ -64,9 +99,22 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({
   const FetchAuthCb = useSecureHiddenNetworkApi(
     async (api, userId: number) => await api.secure.sla_begin_fetching_saved_histories(userId)
   )
+  const FetchRequestCb = useApiCallBack(
+    async (api, deviceId: string | undefined) => await api.users.deviceGetRequest(deviceId)
+  )
+  const approveDevice = useApiCallBack(
+    async (api, args: {
+      deviceId: string | undefined,
+      email: string
+    }) => await api.users.authDeviceApproval(args)
+  )
   const FoundAuthCb = useApiCallBack(
     async (api, args: RequestRouterParams) => 
     await api.authentication.authenticatedRouter(args)
+  )
+  const deviceRequestCb = useApiCallBack(
+    async (api, email: string | undefined) => 
+    await api.users.deviceRequestUpdate(email)
   )
   const [disableRefreshTokenCalled, setDisableRefreshTokenCalled] = useState<boolean>(false)
   const [isMouseMoved, setIsMouseMoved] = useState<boolean>(false)
@@ -75,28 +123,40 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({
   const refreshTokenCalled = useSecureHiddenNetworkApi(
     async (api, args: Tokens) => await api.secure.sla_begin_work_refresh_tokens(args)
   )
-  const [accessSavedAuth, setAccessSavedAuth] = useTokens()
-  const [accessUserId, setAccessUserId] = useuid()
-  const [references, setReferences] = useReferences()
-  const [dr, setDr] = useRouting()
-  const [accessToken, setAccessToken] = useAccessToken();
-  const [refreshToken, setRefreshToken] = useRefreshToken();
-  const [uuid, setUUID] = useUserId()
-  const [utype, setUType] = useUserType()
+  const [accessSavedAuth, setAccessSavedAuth, clearSavedAuth] = useTokens()
+  const [accessUserId, setAccessUserId, clearuid] = useuid()
+  const [references, setReferences, clearReferences] = useReferences()
+  const [dr, setDr, clearDr] = useRouting()
+  const [accessToken, setAccessToken, clearAccessToken] = useAccessToken();
+  const [refreshToken, setRefreshToken, clearRefreshToken] = useRefreshToken();
+  const [uuid, setUUID, clearUUID] = useUserId()
+  const [utype, setUType, clearUType] = useUserType()
   const [tokenExpired, setTokenExpired] = useState<boolean>(false)
   const [expirationTime, setExpirationTime] = useState<number | null>(null)
   const [cooldownIsActive, setCoolDownIsActive] = useState<boolean>(false)
+  const [requestNum, setRequestNum] = useState(0)
+  const [device, setDevice, clearDevice] = useDevice()
   const FetchAuthentication = useApiCallBack(
     async (api, args: AuthenticationProps) => {
       const result = await api.authentication.userAvailabilityCheck(args);
       return result;
     }
   );
+  const refreshTokenCall = useApiCallBack((api, p: AuthenticationRefreshTokenArgs) => api.authentication.authenticationJwtRefreshToken(p))
+  const revokeCb = useApiCallBack(
+    async (api, email: string) => await api.authentication.authrevoke(email)
+  )
+  const revokeDeviceCb = useApiCallBack(
+    async (api, email: string) => await api.users.revokeDevice(email)
+  )
   const secureCheckResentCounts = useSecureHiddenNetworkApi(
     async (api, email: string) => await api.secure.sla_begin_checking_resent_code(email)
   )
   const secureValidationResent = useSecureHiddenNetworkApi(
     async (api, email: string) => await api.secure.sla_begin_revalidate_resent_code(email)
+  )
+  const APTCb = useApiCallBack(
+    async (api, email: string) => await api.users.approvedDeviceTriggered(email)
   )
   const [cooldown, setCooldown] = useState<any>(null)
   const resendRevalidate = (
@@ -108,6 +168,106 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({
         setMaxResentWith401(200)
       }
     })
+  }
+  const approvedDeviceTrigger = (email: string | undefined) => {
+    APTCb.execute(email)
+    .then((trigger: AxiosResponse | undefined) => {
+      setIsApprovedDeviceAlive(trigger?.data)
+    })
+  }
+  const devicePromptApproval = (props: devicePromptApprovalProps) => {
+    const {
+      openState,
+      handleClose,
+      handleAuthApproved,
+      handleAuthDeclined,
+      content
+    } = props;
+    return (
+      <>
+        <ControlledModal
+        open={openState}
+        buttonTextAccept="APPROVE"
+        buttonTextDecline="DECLINE"
+        color="success"
+        handleDecline={handleAuthDeclined}
+        handleSubmit={handleAuthApproved}
+        enableDecline={false}
+        >
+          {content}
+        </ControlledModal>
+      </>
+    )
+  }
+  const approveIncomingDevice = (deviceId: string | undefined, email: string) => {
+    const obj: {
+      deviceId: string | undefined,
+      email: string
+    } = {
+        deviceId: deviceId,
+        email: email
+    }
+    setLoading(true)
+    approveDevice.execute(obj)
+    .then((response: AxiosResponse | undefined) => {
+      if(response?.data == 200){
+        handleOnToast(
+          "Approved successfully.",
+          "top-right",
+          false,
+          true,
+          true,
+          true,
+          undefined,
+          "dark",
+          "success"
+        );
+        signoutProcess("revoke-approved")
+        setLoading(false)
+      }
+    }).catch((err: AxiosError) => {
+      if(err.response?.status == 401) {
+        handleOnToast(
+          "Something went wrong unauthorized request.",
+          "top-right",
+          false,
+          true,
+          true,
+          true,
+          undefined,
+          "dark",
+          "error"
+        );
+        localStorage.clear()
+      } else {
+        handleOnToast(
+          "Something went wrong.",
+          "top-right",
+          false,
+          true,
+          true,
+          true,
+          undefined,
+          "dark",
+          "error"
+        );
+      }
+    })
+  }
+  const deviceInfo = () => {
+    if(!navigator){
+      console.log("device info is not available.")
+      return;
+    }
+    const deviceInf = {
+      userAgent: navigator.userAgent,
+      platform: navigator.platform,
+      language: navigator.language,
+      screenWidth: window.screen.width,
+      screenHeight: window.screen.height,
+      isMobile: /Mobi/.test(navigator.userAgent)
+    }
+    setCompressedDeviceInfo(JSON.stringify(deviceInf))
   }
   const resendCheckCounts = (
     email: string | undefined
@@ -168,15 +328,18 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({
     const remainingSeconds = seconds % 60;
     return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`
   }
-  const refreshTokenBeingCalled = () => {
-    const tokens = {
-      AccessToken: accessToken,
-      RefreshToken: refreshToken
+  const refreshTokenBeingCalled = async () => {
+    if(accessToken && refreshToken) {
+      try {
+        const result: any = await refreshTokenCall.execute({
+          AccessToken: accessToken, RefreshToken: refreshToken
+        })
+        setAccessToken(result.data.accessToken)
+        setRefreshToken(result.data.refreshToken)
+      } catch (error) {
+        throw error;
+      }
     }
-    refreshTokenCalled.execute(tokens).then((response: AxiosResponse | undefined) => {
-      setAccessToken(response?.data?.accessToken)
-      setRefreshToken(response?.data?.refreshToken)
-    })
   }
   const AccessTokenExpired = (token: string | undefined) => {
     try {
@@ -214,7 +377,10 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({
       <div style={{
         position: 'fixed', top: '20px', right: '20px', zIndex: 9999
       }}>
-        <Alert severity={severity ?? "error"}>{message}</Alert>
+        <Alert severity={severity ?? "error"}>
+          <AlertTitle>Idle Timer</AlertTitle>
+          {message}
+        </Alert>
       </div>
     )
   }
@@ -226,14 +392,87 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({
   const TrackTokenMovement = () => {
     return checkAccessToken()
   }
-  const signoutProcess = () => {
-    signoutInProgress.execute(uuid)
-    .then((response: AxiosResponse | undefined) => {
-      if(response?.data == 'success_destroy'){
-        localStorage.clear()
-        router.push('/login')
-      }
-    })
+  const signoutProcess = (type: string) => {
+    switch(type){
+      case "expired":
+        signoutInProgress.execute(uuid)
+        .then((response: AxiosResponse | undefined) => {
+          if(response?.data == 'success_destroy'){
+            clearAccessToken()
+            clearReferences()
+            clearDevice()
+            clearRefreshToken()
+            clearDr()
+            clearSavedAuth()
+            clearUType()
+            clearuid()
+            clearUUID()
+            router.push('/login')
+          }
+        })
+        break;
+      case "revoke-approved":
+        signoutInProgress.execute(uuid)
+        .then((response: AxiosResponse | undefined) => {
+          if(response?.data == 'success_destroy'){
+            revokeCb.execute(references?.email)
+            .then(() => {
+              clearAccessToken()
+              clearReferences()
+              clearDevice()
+              clearRefreshToken()
+              clearDr()
+              clearSavedAuth()
+              clearUType()
+              clearuid()
+              clearUUID()
+              
+              router.push('/login')
+            })
+          }
+        })
+        break;
+        default:
+          signoutInProgress.execute(uuid)
+          .then((response: AxiosResponse | undefined) => {
+            if(response?.data == 'success_destroy'){
+              revokeCb.execute(references?.email)
+              .then(() => {
+                revokeDeviceCb.execute(references?.email)
+                .then((rvDevice: AxiosResponse | undefined) => {
+                  if(rvDevice?.data == 200) {
+                    clearAccessToken()
+                    clearReferences()
+                    clearDevice()
+                    clearRefreshToken()
+                    clearDr()
+                    clearSavedAuth()
+                    clearUType()
+                    clearuid()
+                    clearUUID()
+                    
+                    router.push('/login')
+                  }
+                })
+              }).catch((err: AxiosError) => {
+                if(err.response?.status == 401) {
+                  clearAccessToken()
+                  clearReferences()
+                  clearDevice()
+                  clearRefreshToken()
+                  clearDr()
+                  clearSavedAuth()
+                  clearUType()
+                  clearuid()
+                  clearUUID()
+                  
+                  router.push('/login')
+                }
+              })
+            }
+          })
+          break;
+    }
   }
   useEffect(() => {
     checkAccessToken()
@@ -260,6 +499,10 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({
       }
     }
   }, [cooldownIsActive])
+  const requestGetNums = () => {
+    FetchRequestCb.execute(cookies['deviceId'])
+    .then((repository: AxiosResponse | undefined) => setRequestNum(repository?.data))
+  }
   useEffect(() => {
     const handleMouseMove = () => {
       setIsMouseMoved(true)
@@ -284,10 +527,19 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({
     api.mdr.IdentifyUserTypeFunc(uuid)
   );
   const login = async (email: string | undefined, password: string | undefined) => {
+    const deviceInf: RequestDeviceRecognition = {
+      deviceInfoStringify: compressedDeviceInfo,
+      isActive: 1,
+      createdAt: new Date(),
+      email: email,
+      deviceId: cookies.deviceId
+    }
+    
     const loginArgs: LoginProps = {
       email: email,
       password: password
     }
+    
     loginCb.execute(loginArgs)
     .then((response: AxiosResponse | undefined) => {
       if(response?.data == "NOT_FOUND"){
@@ -334,71 +586,117 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({
           userId: response?.data?.bundle[0]?.id,
           token: "auto-generated-token-backend-side"
         }
-        tokenCb.execute(tokenCreation)
-        .then((authAfter: AxiosResponse | undefined) => {
-          if(authAfter?.data?.message == 'token-creation-success'
-          || authAfter?.data?.message == 'token-exist-success') {
-            const savedObj = {
-              firstname: response?.data?.bundle[0]?.firstname,
-              lastname: response?.data?.bundle[0]?.lastname,
-              email: response?.data?.bundle[0]?.email,
-              userId: response?.data?.bundle[0]?.Id,
-              token: authAfter?.data?.tokenResult[0]?.token
-            }
-            const structure = {
-              userId: response?.data?.bundle[0]?.id,
-              savedAuth: "auto-generated-backend-area",
-              preserve_data: JSON.stringify(savedObj)
-            }
-            historyCb.execute(structure)
-            .then((repository: AxiosResponse | undefined) => {
-              if(repository?.data == 'success-save-auth-history'
-              || repository?.data == 'save-auth-exist'){
-                const JwtProps = {
-                  jwtusername: email,
-                  jwtpassword: password
+        // re-fetch api to get the device id by email - tentative
+        deviceCb.execute(deviceInf).then((device: AxiosResponse | undefined) => {
+          if(device?.data?.message == "recognized_succeed"){
+            setCookie('deviceId', device?.data?.deviceId)
+            tokenCb.execute(tokenCreation)
+            .then((authAfter: AxiosResponse | undefined) => {
+              if(authAfter?.data?.message == 'token-creation-success'
+              || authAfter?.data?.message == 'token-exist-success') {
+                const savedObj = {
+                  firstname: response?.data?.bundle[0]?.firstname,
+                  lastname: response?.data?.bundle[0]?.lastname,
+                  email: response?.data?.bundle[0]?.email,
+                  userId: response?.data?.bundle[0]?.Id,
+                  token: authAfter?.data?.tokenResult[0]?.token
                 }
-                JwtloginCb.execute(JwtProps)
-                .then((JwtAfterAuthSubmission: AxiosResponse | undefined) => {
-                  setDr(response?.data?.routeInfo)
-                  setReferences(response?.data?.bundle[0])
-                  const uuid: string | undefined = JSON.stringify(response?.data?.bundle[0]?.id)
-                  setUUID(uuid)
-                  const access_level: string | undefined = JSON.stringify(response?.data?.bundle[0]?.userType)
-                  setUType(encrypt(access_level.toString()))
-                  setAccessToken(JwtAfterAuthSubmission?.data?.token)
-                  setRefreshToken(JwtAfterAuthSubmission?.data?.refreshToken)
-                  FetchAuthCb.execute(structure.userId)
-                  .then((savedRepo: AxiosResponse | undefined) => {
-                    setAccessSavedAuth(savedRepo?.data?.token[0]?.savedAuth)
-                    setAccessUserId(structure.userId)
-                    setDisableRefreshTokenCalled(false)
-                    setLoading(false)
-                    handleOnToast(
-                      "Successfully Logged in.",
-                      "top-right",
-                      false,
-                      true,
-                      true,
-                      true,
-                      undefined,
-                      "dark",
-                      "success"
-                    );
-                    const reqParams = {
-                      requestId: response?.data?.routeInfo
+                const structure = {
+                  userId: response?.data?.bundle[0]?.id,
+                  savedAuth: "auto-generated-backend-area",
+                  preserve_data: JSON.stringify(savedObj)
+                }
+                historyCb.execute(structure)
+                .then((repository: AxiosResponse | undefined) => {
+                  if(repository?.data == 'success-save-auth-history'
+                  || repository?.data == 'save-auth-exist'){
+                    const JwtProps = {
+                      jwtusername: email,
+                      jwtpassword: password
                     }
-                    console.log(reqParams)
-                    FoundAuthCb.execute(reqParams)
-                    .then((authpath: AxiosResponse | undefined) => {
-                      router.push({
-                        pathname: authpath?.data?.exactPath,
-                        query : {
-                          key: response?.data?.bundle[0]?.id
-                        }
+                    JwtloginCb.execute(JwtProps)
+                    .then((JwtAfterAuthSubmission: AxiosResponse | undefined) => {
+                      setDr(response?.data?.routeInfo)
+                      setReferences(response?.data?.bundle[0])
+                      const uuid: string | undefined = JSON.stringify(response?.data?.bundle[0]?.id)
+                      setUUID(uuid)
+                      const access_level: string | undefined = JSON.stringify(response?.data?.bundle[0]?.userType)
+                      setUType(encrypt(access_level.toString()))
+                      setAccessToken(JwtAfterAuthSubmission?.data?.token)
+                      setRefreshToken(JwtAfterAuthSubmission?.data?.refreshToken)
+                      FetchAuthCb.execute(structure.userId)
+                      .then((savedRepo: AxiosResponse | undefined) => {
+                        setAccessSavedAuth(savedRepo?.data?.token[0]?.savedAuth)
+                            setAccessUserId(structure.userId)
+                            setDisableRefreshTokenCalled(false)
+                            setLoading(false)
+                            handleOnToast(
+                              "Successfully Logged in.",
+                              "top-right",
+                              false,
+                              true,
+                              true,
+                              true,
+                              undefined,
+                              "dark",
+                              "success"
+                            );
+                            const reqParams = {
+                              requestId: response?.data?.routeInfo
+                            }
+                            FoundAuthCb.execute(reqParams)
+                            .then((authpath: AxiosResponse | undefined) => {
+                              router.push({
+                                pathname: authpath?.data?.exactPath,
+                                query : {
+                                  key: response?.data?.bundle[0]?.id
+                                }
+                              })
+                            })
                       })
                     })
+                  }
+                })
+              }
+            })
+          } else if(device?.data == 201) {
+            alert("Send verification code on email")
+          }
+          else {
+            deviceRequestCb.execute(email)
+            .then((req: AxiosResponse | undefined) => {
+              if(req?.data == 200) {
+                setDevice("ndd")
+                setLoading(false)
+                setToBeEncryptedPassword(password)
+                  router.push({
+                    pathname: '/device/device-new-registration/new-device-registration',
+                    query: {
+                      email: encrypt(email),
+                      password: encrypt(password),
+                      isAccess: true
+                    }
                   })
+              } else if (req?.data == 500) {
+                setLoading(false)
+                handleOnToast(
+                  "Maximum device request",
+                  "top-right",
+                  false,
+                  true,
+                  true,
+                  true,
+                  undefined,
+                  "dark",
+                  "error"
+                );
+                router.push({
+                  pathname: '/device/device-new-registration/new-device-registration',
+                  query: {
+                    email: encrypt(email),
+                    password: encrypt(password),
+                    isAccess: true
+                  }
                 })
               }
             })
@@ -408,7 +706,7 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({
     })
   };
   /**
-   * @deprecated checkAuthentication will remove on release V5
+   * @deprecated checkAuthentication will remove on release V6
    */
   const checkAuthentication = (currentScreen: string) => {
     return new Promise((resolve) => {
@@ -498,7 +796,17 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({
         cooldownIsActive,
         remainingTime,
         resendCheckCounts,
-        resendRevalidate
+        resendRevalidate,
+        deviceInfo,
+        compressedDeviceInfo,
+        requestNum,
+        devicePromptApproval,
+        toBeEncryptedPassword,
+        requestGetNums,
+        approveIncomingDevice,
+        cookies,
+        approvedDeviceTrigger,
+        isApprovedDeviceAlive
       }}
     >
       {children}

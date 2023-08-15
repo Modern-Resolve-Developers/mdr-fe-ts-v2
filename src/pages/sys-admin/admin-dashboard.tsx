@@ -25,9 +25,10 @@ import { useDynamicDashboardContext } from "@/utils/context/base/DynamicDashboar
 import { PageProps } from "@/utils/types";
 import { GetServerSideProps } from "next";
 import { getSecretsIdentifiedAccessLevel } from "@/utils/secrets/secrets_identified_user";
-import { useAccessToken, useRouting, useUserId } from "@/utils/context/hooks/hooks";
+import { useAccessToken, useReferences, useRouting, useUserId } from "@/utils/context/hooks/hooks";
 import { getDataFromLocalStorage } from "@/utils/ssr/storageWithSsr";
 import { useToastContext } from "@/utils/context/base/ToastContext";
+import { useLoaders } from "@/utils/context/base/LoadingContext";
 
 if (typeof Highcharts === "object") {
   exportingInit(Highcharts);
@@ -38,8 +39,8 @@ if (typeof Highcharts === "object") {
 
 const TestAdminDashboard: React.FC = () => {
   const { signoutProcess, tokenExpired, TrackTokenMovement, expirationTime, AlertTracker, FormatExpiry, refreshTokenBeingCalled, isMouseMoved, isKeyPressed,
-  accessToken, disableRefreshTokenCalled } = useAuthContext();
-  const [loading, setLoading] = useState(true);
+  accessToken, disableRefreshTokenCalled, requestNum, devicePromptApproval, requestGetNums, approveIncomingDevice, cookies } = useAuthContext();
+  const { loading, setLoading } = useLoaders()
   const [options, setOptions] = useState<any>({
     chart: {
       type: "spline",
@@ -67,6 +68,8 @@ const TestAdminDashboard: React.FC = () => {
       text: "Users Overall Count",
     },
   });
+  const [references, setReferences] = useReferences()
+  const [devicePrompt, setDevicePrompt] = useState<boolean>(false)
   const FetchUsersReport = useApiCallBack((api) => api.mdr.fetchUsersReport());
   const router = useRouter()
   const [idetifiedUser, setIdentifiedUser] = useState<any>("");
@@ -126,9 +129,19 @@ const TestAdminDashboard: React.FC = () => {
     })
   };
   useEffect(() => {
+    setLoading(false)
     calculateReport();
   }, []);
 
+  useEffect(() => {
+    const interval = setInterval(requestGetNums, 1000)
+    return () => clearInterval(interval)
+  }, [])
+  useEffect(() => {
+    if(requestNum == 1 || requestNum == 2) {
+      setDevicePrompt(true)
+    }
+  }, [requestNum])
   useEffect(() => {
     if(!accessToken || accessToken == undefined) {
       router.push('/login')
@@ -139,7 +152,7 @@ const TestAdminDashboard: React.FC = () => {
       setLoading(false)
         const isExpired = TrackTokenMovement()
         if(isExpired) {
-          signoutProcess()
+          signoutProcess("expired")
           handleOnToast(
             "Token expired. Please re-login.",
             "top-right",
@@ -168,6 +181,9 @@ const TestAdminDashboard: React.FC = () => {
       }
     }
   }, [isKeyPressed, disableRefreshTokenCalled])
+  const handleApproveDeviceIncoming = () => {
+    approveIncomingDevice(cookies.deviceId, references?.email)
+  }
   return (
     <>
       {loading ? (
@@ -290,6 +306,37 @@ const TestAdminDashboard: React.FC = () => {
             />
             <HighchartsReact highcharts={Highcharts} options={options} />
           </UncontrolledCard>
+          {
+            devicePromptApproval({
+              content: (
+                <>
+                 <Typography gutterBottom variant="button">New Device Approval</Typography>
+                 <Container>
+                  <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}
+                  >
+                    <img 
+                    src='https://cdn.dribbble.com/userupload/7433107/file/original-dd35f5eb54ba85db5dedda17c84e0353.png?resize=1200x900'
+                    style={{
+                      width: '50%',
+                  }}
+                    />
+                  </div>
+                  <Typography variant="caption">
+                    A new device is trying to sign in. Please select between approve and decline. Once approved you will automatically logged out on this device
+                  </Typography>
+                 </Container>
+                </>
+              ),
+              handleAuthApproved: handleApproveDeviceIncoming,
+              handleAuthDeclined: () => {},
+              openState: devicePrompt
+            })
+          }
         </Container>
       )}
     </>

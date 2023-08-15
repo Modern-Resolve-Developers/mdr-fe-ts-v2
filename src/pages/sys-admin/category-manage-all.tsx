@@ -6,7 +6,7 @@ import {
   ControlledBackdrop,
 } from "@/components";
 import { ControlledTabs } from "@/components/Tabs/Tabs";
-import { Container } from "@mui/material";
+import { Container, Typography } from "@mui/material";
 import { useContext, useEffect, useState } from "react";
 import { ControlledTextField } from "@/components/TextField/TextField";
 import { ControlledSelectField } from "@/components/SelectField";
@@ -31,7 +31,8 @@ import { GetServerSideProps } from "next";
 import { PageProps } from "@/utils/types";
 import { getSecretsIdentifiedAccessLevel } from "@/utils/secrets/secrets_identified_user";
 import { categoryManagementCreation, categoryManagementBaseSchema } from "@/utils/schema/Sys-adminSchema/Category-manageSchema";
-import { useUserId } from "@/utils/context/hooks/hooks";
+import { useReferences, useUserId } from "@/utils/context/hooks/hooks";
+import { useLoaders } from "@/utils/context/base/LoadingContext";
 
 const CategoryForm = () => {
   const [categoryType, setCategoryType] = useState<
@@ -85,16 +86,19 @@ const CategoryManageAll: React.FC = () => {
   const [categoryManageAtom, setCategoryManageAtom] = useAtom(
     categoryManagementAtom
   );
-  const [preload, setPreLoad] = useState(true);
   const [valueChange, setValueChange] = useState(0);
   const [loading, setLoading] = useState(false);
   const [category, setCategory] = useState([]);
   const handleChangeTabs = (event: React.SyntheticEvent, newValue: number) => {
     setValueChange(newValue);
   };
+  const [devicePrompt, setDevicePrompt] = useState<boolean>(false)
   const { signoutProcess, tokenExpired, disableRefreshTokenCalled, TrackTokenMovement, expirationTime, AlertTracker, FormatExpiry, refreshTokenBeingCalled, isMouseMoved, isKeyPressed,
-    accessToken } = useAuthContext();
+    accessToken, devicePromptApproval, requestGetNums,
+   requestNum, approveIncomingDevice, cookies,  } = useAuthContext();
+   const { setPreLoad, preload } = useLoaders()
   const router = useRouter();
+  const [references, setReferences] = useReferences()
   const CreationProductCategory = useApiCallBack(
     async (api, args: { label: string; value: string; type: string }) =>
       await api.mdr.CreateProductCategory(args)
@@ -186,42 +190,56 @@ const CategoryManageAll: React.FC = () => {
     }
   }, []);
   useEffect(() => {
+    const interval = setInterval(requestGetNums, 1000)
+    return () => clearInterval(interval)
+  }, [])
+  useEffect(() => {
+    if(requestNum == 1 || requestNum == 2) {
+      setDevicePrompt(true)
+    }
+  }, [requestNum])
+  useEffect(() => {
     if(!accessToken || accessToken == undefined) {
       router.push('/login')
-      setTimeout(() => setPreLoad(false), 2000)
+      setTimeout(() => {
+        setLoading(false)
+      }, 2000)
     } else {
-      setPreLoad(false)
-      const isExpired = TrackTokenMovement()
-      if(isExpired) {
-        signoutProcess()
-        handleOnToast(
-          "Token expired. Please re-login.",
-          "top-right",
-          false,
-          true,
-          true,
-          true,
-          undefined,
-          "dark",
-          "error"
-        );
-      }
+      setLoading(false)
+        const isExpired = TrackTokenMovement()
+        if(isExpired) {
+          signoutProcess("expired")
+          handleOnToast(
+            "Token expired. Please re-login.",
+            "top-right",
+            false,
+            true,
+            true,
+            true,
+            undefined,
+            "dark",
+            "error"
+          );
+        }
     }
   }, [tokenExpired]);
   useEffect(() => {
-    if(!disableRefreshTokenCalled){
+    if(!disableRefreshTokenCalled) {
       if(isMouseMoved) {
         refreshTokenBeingCalled()
       }
     }
   }, [isMouseMoved, disableRefreshTokenCalled])
   useEffect(() => {
-    if(!disableRefreshTokenCalled){
+    if(!disableRefreshTokenCalled) {
       if(isKeyPressed){
         refreshTokenBeingCalled()
       }
     }
   }, [isKeyPressed, disableRefreshTokenCalled])
+  const handleApproveDeviceIncoming = () => {
+    approveIncomingDevice(cookies.deviceId, references?.email)
+  }
   const {
     formState: { isValid },
     handleSubmit,
@@ -344,6 +362,37 @@ const CategoryManageAll: React.FC = () => {
               )}
             </ControlledTabs>
           </UncontrolledCard>
+          {
+            devicePromptApproval({
+              content: (
+                <>
+                 <Typography gutterBottom variant="button">New Device Approval</Typography>
+                 <Container>
+                  <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}
+                  >
+                    <img 
+                    src='https://cdn.dribbble.com/userupload/7433107/file/original-dd35f5eb54ba85db5dedda17c84e0353.png?resize=1200x900'
+                    style={{
+                      width: '50%',
+                  }}
+                    />
+                  </div>
+                  <Typography variant="caption">
+                    A new device is trying to sign in. Please select between approve and decline. Once approved you will automatically logged out on this device
+                  </Typography>
+                 </Container>
+                </>
+              ),
+              handleAuthApproved: handleApproveDeviceIncoming,
+              handleAuthDeclined: () => {},
+              openState: devicePrompt
+            })
+          }
         </Container>
       )}
     </>

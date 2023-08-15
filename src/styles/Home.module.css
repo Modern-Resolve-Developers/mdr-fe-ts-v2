@@ -7,6 +7,13 @@
   min-height: 100vh;
 }
 
+.UIElement {
+  margin: 2vmin auto;
+  text-align: center;
+  font-size: medium;
+  width: 80vw;
+}
+
 .description {
   display: inherit;
   justify-content: inherit;

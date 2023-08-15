@@ -1,5 +1,5 @@
 import { AxiosInstance } from "axios";
-import { AuthenticationJwtCreateAccount, BeginToVerifyCode, CreateAuthHistoryArgs, CreateTokenArgs, LoginProps, RequestRouterParams, Tokens, VerificationProps } from "../Authentication/types";
+import { AuthenticationJwtCreateAccount, BeginToVerifyCode, CreateAuthHistoryArgs, CreateTokenArgs, LoginProps, RequestDeviceRecognition, RequestRouterParams, TokenStore, Tokens, VerificationProps } from "../Authentication/types";
 import { RouteEntity } from "@/utils/sys-routing/sys-routing";
 
 export class ServerLessApi {
@@ -48,5 +48,8 @@ export class ServerLessApi {
     }
     public sla_begin_revalidate_resent_code(email: string | undefined){
         return this.axios.put(`/Authentication/verification/validate/${email}`)
+    }
+    public sla_begin_device_recognition(props: RequestDeviceRecognition){
+        return this.axios.post('/Authentication/login/device/device-recognition', props)
     }
 }

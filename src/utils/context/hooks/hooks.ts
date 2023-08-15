@@ -21,3 +21,5 @@ export const useRouting = () =>
   useSessionStorage<string | undefined>("DR", undefined)
   export const useTokens = () => useSessionStorage<AccessSavedAuth | null>('token', null)
   export const useuid = () => useSessionStorage<AccessUserId | null>('uid', null)
+  export const useDeviceId = () => useSessionStorage<string | undefined>('DI', undefined)
+  export const useDevice = () => useSessionStorage<string | undefined>('D', undefined)

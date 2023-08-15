@@ -13,7 +13,7 @@ import {
   sidebarExpand,
 } from "../../utils/sys-routing/sys-routing";
 import { ControlledTabs } from "@/components/Tabs/Tabs";
-import storage from "../../../firebaseConfig";
+import {storage} from "../../../firebaseConfig";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { ToastContextContinue } from "@/utils/context/base/ToastContext";
 import { ToastContextSetup } from "@/utils/context";
@@ -47,6 +47,8 @@ import { GetServerSideProps } from "next";
 import { PageProps } from "@/utils/types";
 import { getSecretsIdentifiedAccessLevel } from "@/utils/secrets/secrets_identified_user";
 import { ProductManagementCreation, productManagementBaseSchema } from "@/utils/schema/Sys-adminSchema/Product-ManagementShema";
+import { useReferences } from "@/utils/context/hooks/hooks";
+import { useLoaders } from "@/utils/context/base/LoadingContext";
 
 const ProductPricingForm = () => {
   const [isEdit, setIsEdit] = useState(true);
@@ -103,7 +105,7 @@ const ProductPricingForm = () => {
       monthlyPayment * monthsToPay + downPayment;
     const totalAmountWithInterest =
       totalAmountWithoutInterest +
-      totalAmountWithoutInterest * (installmentPercentage / 100) * monthsToPay;
+      totalAmountWithoutInterest * (installmentPercentage / 100) * monthsToPay - dpRequired;
     if (!monthsToPay) {
       return;
     } else {
@@ -170,7 +172,7 @@ const ProductPricingForm = () => {
               defaultValue={slideValue}
               style={{ marginTop: "10px" }}
               step={10}
-              min={15000}
+              min={7500}
               max={120000}
               value={slideValue}
               onChange={(e, val) => handleSlideChange(val)}
@@ -791,7 +793,6 @@ const ProductManagement: React.FC = () => {
   const [productManageAtom, setProductManageAtom] = useAtom(
     productManagementAtom
   );
-  const [preload, setPreLoad] = useState(true);
   const PMCreation = useApiCallBack(
     async (api, args: CreateProducts | any) =>
       await api.mdr.ProductManagementCreation(args)
@@ -807,8 +808,12 @@ const ProductManagement: React.FC = () => {
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValueChange(newValue);
   };
-  const { signoutProcess, disableRefreshTokenCalled, tokenExpired, TrackTokenMovement, expirationTime, AlertTracker, FormatExpiry, refreshTokenBeingCalled, isMouseMoved, isKeyPressed,
-    accessToken } = useAuthContext();
+  const { signoutProcess, tokenExpired, disableRefreshTokenCalled, TrackTokenMovement, expirationTime, AlertTracker, FormatExpiry, refreshTokenBeingCalled, isMouseMoved, isKeyPressed,
+    accessToken, devicePromptApproval, requestGetNums,
+   requestNum, approveIncomingDevice, cookies } = useAuthContext();
+   const { setLoading, loading } = useLoaders()
+   const [references, setReferences] = useReferences()
+   const [devicePrompt, setDevicePrompt] = useState<boolean>(false)
   const { handleOnToast } = useContext(
     ToastContextContinue
   ) as ToastContextSetup;
@@ -829,28 +834,37 @@ const ProductManagement: React.FC = () => {
   } = form;
 
   useEffect(() => {
+    const interval = setInterval(requestGetNums, 1000)
+    return () => clearInterval(interval)
+  }, [])
+  useEffect(() => {
+    if(requestNum == 1 || requestNum == 2) {
+      setDevicePrompt(true)
+    }
+  }, [requestNum])
+  useEffect(() => {
     if(!accessToken || accessToken == undefined) {
       router.push('/login')
       setTimeout(() => {
-        setPreLoad(false)
+        setLoading(false)
       }, 2000)
     } else {
-      setPreLoad(false)
-      const isExpired = TrackTokenMovement()
-      if(isExpired) {
-        signoutProcess()
-        handleOnToast(
-          "Token expired. Please re-login.",
-          "top-right",
-          false,
-          true,
-          true,
-          true,
-          undefined,
-          "dark",
-          "error"
-        );
-      }
+      setLoading(false)
+        const isExpired = TrackTokenMovement()
+        if(isExpired) {
+          signoutProcess("expired")
+          handleOnToast(
+            "Token expired. Please re-login.",
+            "top-right",
+            false,
+            true,
+            true,
+            true,
+            undefined,
+            "dark",
+            "error"
+          );
+        }
     }
   }, [tokenExpired]);
   useEffect(() => {
@@ -867,6 +881,9 @@ const ProductManagement: React.FC = () => {
       }
     }
   }, [isKeyPressed, disableRefreshTokenCalled])
+  const handleApproveDeviceIncoming = () => {
+    approveIncomingDevice(cookies.deviceId, references?.email)
+  }
   const getAllProducts = () => {
     PMList.execute().then((res: any) => {
       const { data }: any = res;
@@ -984,8 +1001,8 @@ const ProductManagement: React.FC = () => {
   }, []);
   return (
     <>
-      {preload ? (
-        <ControlledBackdrop open={preload} />
+      {loading ? (
+        <ControlledBackdrop open={loading} />
       ) : (
         <Container>
           {
@@ -1086,6 +1103,37 @@ const ProductManagement: React.FC = () => {
               <ControlledBackdrop open={open} />
             </FormProvider>
           </UncontrolledCard>
+          {
+            devicePromptApproval({
+              content: (
+                <>
+                 <Typography gutterBottom variant="button">New Device Approval</Typography>
+                 <Container>
+                  <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}
+                  >
+                    <img 
+                    src='https://cdn.dribbble.com/userupload/7433107/file/original-dd35f5eb54ba85db5dedda17c84e0353.png?resize=1200x900'
+                    style={{
+                      width: '50%',
+                  }}
+                    />
+                  </div>
+                  <Typography variant="caption">
+                    A new device is trying to sign in. Please select between approve and decline. Once approved you will automatically logged out on this device
+                  </Typography>
+                 </Container>
+                </>
+              ),
+              handleAuthApproved: handleApproveDeviceIncoming,
+              handleAuthDeclined: () => {},
+              openState: devicePrompt
+            })
+          }
         </Container>
       )}
     </>

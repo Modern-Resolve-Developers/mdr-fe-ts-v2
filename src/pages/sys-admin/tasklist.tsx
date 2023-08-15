@@ -43,6 +43,8 @@ import { GetServerSideProps } from "next";
 import { PageProps } from "@/utils/types";
 import { getSecretsIdentifiedAccessLevel } from "@/utils/secrets/secrets_identified_user";
 import { useRouter } from "next/router";
+import { useLoaders } from "@/utils/context/base/LoadingContext";
+import { useReferences } from "@/utils/context/hooks/hooks";
 const TaskManagementList: React.FC<PageProps> = ({data}) => {
   const { handleOnToast } = useContext(
     ToastContextContinue
@@ -53,8 +55,11 @@ const TaskManagementList: React.FC<PageProps> = ({data}) => {
   const deleteTaskExecutioner = useApiCallBack((api, uuid: any) =>
     api.mdr.deletionTask(uuid)
   );
-  const { signoutProcess, disableRefreshTokenCalled, tokenExpired, TrackTokenMovement, expirationTime, AlertTracker, FormatExpiry, refreshTokenBeingCalled, isMouseMoved, isKeyPressed,
-    accessToken } = useAuthContext();
+  const { signoutProcess, tokenExpired, TrackTokenMovement, expirationTime, AlertTracker, FormatExpiry, refreshTokenBeingCalled, isMouseMoved, isKeyPressed,
+    accessToken, disableRefreshTokenCalled, requestNum, devicePromptApproval, requestGetNums, approveIncomingDevice, cookies } = useAuthContext();
+    const { setLoading } = useLoaders()
+   const [references, setReferences] = useReferences()
+   const [devicePrompt, setDevicePrompt] = useState<boolean>(false)
   const fetchAllTask = useApiCallBack((api) => api.mdr.fetchAllTask());
   const [searched, setSearched] = useState<string>("");
   const [taskOriginalArray, setTaskOriginalArray] = useState([]);
@@ -86,28 +91,37 @@ const TaskManagementList: React.FC<PageProps> = ({data}) => {
     fetchAllTaskDynamically();
   }, []);
   useEffect(() => {
+    const interval = setInterval(requestGetNums, 1000)
+    return () => clearInterval(interval)
+  }, [])
+  useEffect(() => {
+    if(requestNum == 1 || requestNum == 2) {
+      setDevicePrompt(true)
+    }
+  }, [requestNum])
+  useEffect(() => {
     if(!accessToken || accessToken == undefined) {
       router.push('/login')
       setTimeout(() => {
-        setPreLoad(false)
+        setLoading(false)
       }, 2000)
     } else {
-      setPreLoad(false)
-      const isExpired = TrackTokenMovement()
-      if(isExpired) {
-        signoutProcess()
-        handleOnToast(
-          "Token expired. Please re-login.",
-          "top-right",
-          false,
-          true,
-          true,
-          true,
-          undefined,
-          "dark",
-          "error"
-        );
-      }
+      setLoading(false)
+        const isExpired = TrackTokenMovement()
+        if(isExpired) {
+          signoutProcess("expired")
+          handleOnToast(
+            "Token expired. Please re-login.",
+            "top-right",
+            false,
+            true,
+            true,
+            true,
+            undefined,
+            "dark",
+            "error"
+          );
+        }
     }
   }, [tokenExpired]);
   useEffect(() => {
@@ -124,6 +138,9 @@ const TaskManagementList: React.FC<PageProps> = ({data}) => {
       }
     }
   }, [isKeyPressed, disableRefreshTokenCalled])
+  const handleApproveDeviceIncoming = () => {
+    approveIncomingDevice(cookies.deviceId, references?.email)
+  }
   const globalSearch = (): TableSearchProps[] => {
     const filteredRepositories = tableSearchList.filter((value: any) => {
       return (
@@ -251,6 +268,37 @@ const TaskManagementList: React.FC<PageProps> = ({data}) => {
             color="error"
           />
           <ControlledBackdrop open={backdrop} />
+          {
+            devicePromptApproval({
+              content: (
+                <>
+                 <Typography gutterBottom variant="button">New Device Approval</Typography>
+                 <Container>
+                  <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}
+                  >
+                    <img 
+                    src='https://cdn.dribbble.com/userupload/7433107/file/original-dd35f5eb54ba85db5dedda17c84e0353.png?resize=1200x900'
+                    style={{
+                      width: '50%',
+                  }}
+                    />
+                  </div>
+                  <Typography variant="caption">
+                    A new device is trying to sign in. Please select between approve and decline. Once approved you will automatically logged out on this device
+                  </Typography>
+                 </Container>
+                </>
+              ),
+              handleAuthApproved: handleApproveDeviceIncoming,
+              handleAuthDeclined: () => {},
+              openState: devicePrompt
+            })
+          }
         </Container>
       )}
     </>

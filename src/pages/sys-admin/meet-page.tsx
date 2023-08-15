@@ -2,7 +2,7 @@ import { useEffect, useCallback, useRef, useContext, useState } from "react";
 import { useMeetContext } from "@/utils/context/base/MeetContext";
 import { useRouter } from "next/router";
 import DashboardLayout from "@/components/DashboardLayout";
-import { Container } from "@mui/material";
+import { Container, Typography } from "@mui/material";
 import {
   sidebarList,
   sidebarExpand,
@@ -21,12 +21,13 @@ import { GetServerSideProps } from "next";
 import { PageProps } from "@/utils/types";
 import { getSecretsIdentifiedAccessLevel } from "@/utils/secrets/secrets_identified_user";
 import { useToastContext } from "@/utils/context/base/ToastContext";
+import { useLoaders } from "@/utils/context/base/LoadingContext";
+import { useReferences } from "@/utils/context/hooks/hooks";
 
 declare var JitsiMeetExternalAPI: any;
 const MeetPage: React.FC = () => {
   const [joinAtom, setJoinAtom] = useAtom(joinMeetAtom);
   const [meetDetails, setMeetDetails] = useAtom(meetAtom);
-  const [loading, setLoading] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
   const jitsiApiRef = useRef<any>(null);
   const domain = "meet.jit.si";
@@ -35,11 +36,13 @@ const MeetPage: React.FC = () => {
   const { name } = useMeetContext();
   const { match } = router.query;
   const { signoutProcess, disableRefreshTokenCalled, tokenExpired, TrackTokenMovement, expirationTime, AlertTracker, FormatExpiry, refreshTokenBeingCalled, isMouseMoved, isKeyPressed,
-    accessToken } = useAuthContext();
+    accessToken, requestGetNums, requestNum, approveIncomingDevice, cookies, devicePromptApproval } = useAuthContext();
+    const { setLoading, loading } = useLoaders()
   const [idetifiedUser, setIdentifiedUser] = useState<any>("");
   const { handleOnToast } = useToastContext()
   const { getPropsDynamic } = useDynamicDashboardContext();
-
+  const [devicePrompt, setDevicePrompt] = useState<boolean>(false)
+  const [references, setReferences] = useReferences()
   useEffect(() => {
     if(typeof window !== 'undefined' && window.localStorage){
       getPropsDynamic(localStorage.getItem("uid") ?? 0).then((repo: any) => {
@@ -58,7 +61,7 @@ const MeetPage: React.FC = () => {
       setLoading(false)
       const isExpired = TrackTokenMovement()
       if(isExpired) {
-        signoutProcess()
+        signoutProcess("expired")
         handleOnToast(
           "Token expired. Please re-login.",
           "top-right",
@@ -139,7 +142,9 @@ const MeetPage: React.FC = () => {
       }, 500);
     });
   };
-
+  const handleApproveDeviceIncoming = () => {
+    approveIncomingDevice(cookies.deviceId, references?.email)
+  }
   return (
     <>
       {loading ? (
@@ -153,6 +158,37 @@ const MeetPage: React.FC = () => {
             )
           }
         <div ref={containerRef}></div>
+        {
+            devicePromptApproval({
+              content: (
+                <>
+                 <Typography gutterBottom variant="button">New Device Approval</Typography>
+                 <Container>
+                  <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}
+                  >
+                    <img 
+                    src='https://cdn.dribbble.com/userupload/7433107/file/original-dd35f5eb54ba85db5dedda17c84e0353.png?resize=1200x900'
+                    style={{
+                      width: '50%',
+                  }}
+                    />
+                  </div>
+                  <Typography variant="caption">
+                    A new device is trying to sign in. Please select between approve and decline. Once approved you will automatically logged out on this device
+                  </Typography>
+                 </Container>
+                </>
+              ),
+              handleAuthApproved: handleApproveDeviceIncoming,
+              handleAuthDeclined: () => {},
+              openState: devicePrompt
+            })
+          }
         </>
       )}
     </>

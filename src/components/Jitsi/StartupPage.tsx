@@ -2,7 +2,7 @@ import {
     useContext, useEffect, useState
 } from 'react'
 import {
-    Container, Grid
+    Container, Grid, Typography
 } from '@mui/material'
 import { useRouter } from 'next/router'
 import { ToastContextContinue } from '@/utils/context/base/ToastContext'
@@ -28,8 +28,9 @@ import { useAuthContext } from '@/utils/context/base/AuthContext'
 import { SessionContextMigrate } from '@/utils/context/base/SessionContext'
 
 import { useMutation } from 'react-query'
-import { useRefreshToken } from '@/utils/context/hooks/hooks'
+import { useReferences, useRefreshToken } from '@/utils/context/hooks/hooks'
 import { AxiosResponse } from 'axios'
+import { useLoaders } from '@/utils/context/base/LoadingContext'
 
 export const meetBaseSchema = z.object({
     username: requiredString('Username is required.'),
@@ -114,8 +115,11 @@ export const StartupPage = () => {
         storeMeetJoinedTeam.execute(props)
     )
     const {mutate} = useStoreDetails()
-    const { checkAuthentication } = useAuthContext()
-
+    const { signoutProcess, tokenExpired, TrackTokenMovement, expirationTime, AlertTracker, FormatExpiry, refreshTokenBeingCalled, isMouseMoved, isKeyPressed,
+        accessToken, disableRefreshTokenCalled, requestNum, devicePromptApproval, requestGetNums, approveIncomingDevice, cookies } = useAuthContext();
+        const { loading, setLoading } = useLoaders()
+        const [references, setReferences] = useReferences()
+        const [devicePrompt, setDevicePrompt] = useState<boolean>(false)
     const {
         accessSavedAuth, accessUserId
     } = useContext(SessionContextMigrate) as SessionStorageContextSetup
@@ -133,12 +137,57 @@ export const StartupPage = () => {
     useEffect(() => {
         reset({})
     }, [])
-    useEffect(
-        () => {
-          checkAuthentication("admin")
-        },
-        [accessSavedAuth, accessUserId]
-    )
+    useEffect(() => {
+        const interval = setInterval(requestGetNums, 1000)
+        return () => clearInterval(interval)
+      }, [])
+      useEffect(() => {
+        if(requestNum == 1 || requestNum == 2) {
+          setDevicePrompt(true)
+        }
+      }, [requestNum])
+      useEffect(() => {
+        if(!accessToken || accessToken == undefined) {
+          router.push('/login')
+          setTimeout(() => {
+            setLoading(false)
+          }, 2000)
+        } else {
+          setLoading(false)
+            const isExpired = TrackTokenMovement()
+            if(isExpired) {
+              signoutProcess("expired")
+              handleOnToast(
+                "Token expired. Please re-login.",
+                "top-right",
+                false,
+                true,
+                true,
+                true,
+                undefined,
+                "dark",
+                "error"
+              );
+            }
+        }
+      }, [tokenExpired]);
+      useEffect(() => {
+        if(!disableRefreshTokenCalled) {
+          if(isMouseMoved) {
+            refreshTokenBeingCalled()
+          }
+        }
+      }, [isMouseMoved, disableRefreshTokenCalled])
+      useEffect(() => {
+        if(!disableRefreshTokenCalled) {
+          if(isKeyPressed){
+            refreshTokenBeingCalled()
+          }
+        }
+      }, [isKeyPressed, disableRefreshTokenCalled])
+      const handleApproveDeviceIncoming = () => {
+        approveIncomingDevice(cookies.deviceId, references?.email)
+      }
     const {
         handleOnToast
     } = useContext(ToastContextContinue) as ToastContextSetup
@@ -234,6 +283,37 @@ export const StartupPage = () => {
             <ControlledBackdrop 
                 open={backdrop}
             />
+            {
+            devicePromptApproval({
+              content: (
+                <>
+                 <Typography gutterBottom variant="button">New Device Approval</Typography>
+                 <Container>
+                  <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}
+                  >
+                    <img 
+                    src='https://cdn.dribbble.com/userupload/7433107/file/original-dd35f5eb54ba85db5dedda17c84e0353.png?resize=1200x900'
+                    style={{
+                      width: '50%',
+                  }}
+                    />
+                  </div>
+                  <Typography variant="caption">
+                    A new device is trying to sign in. Please select between approve and decline. Once approved you will automatically logged out on this device
+                  </Typography>
+                 </Container>
+                </>
+              ),
+              handleAuthApproved: handleApproveDeviceIncoming,
+              handleAuthDeclined: () => {},
+              openState: devicePrompt
+            })
+          }
         </Container>
     )
   }

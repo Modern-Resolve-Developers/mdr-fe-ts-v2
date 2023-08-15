@@ -12,7 +12,7 @@ const LoadingContext = createContext<Props>(undefined as any)
 export const LoadingProvider: React.FC<React.PropsWithChildren<{}>> = ({
     children
 }) => {
-    const [loading, setLoading] = useState<boolean>(false)
+    const [loading, setLoading] = useState<boolean>(true)
     const [preload, setPreLoad] = useState<boolean>(true)
     return (
         <LoadingContext.Provider
