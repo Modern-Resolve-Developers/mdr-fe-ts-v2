@@ -145,6 +145,7 @@ const NewDeviceRegistration: React.FC = () => {
                                 You are currently logged in to the other device. Please approved the request to proceed.
                             </Typography>
                         </div>
+                        {/* Don't remove this code is part of psi poc. will remove on the future sprint by me. thanks */}
                         {/* <main className={styles.main}>
   <div className={styles.UIElement}>
     <HelloWorld />
