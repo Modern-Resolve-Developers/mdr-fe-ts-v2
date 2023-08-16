@@ -60,7 +60,8 @@ const context = createContext<{
   approveIncomingDevice(deviceId: string | undefined, email: string) : void
   cookies: any
   approvedDeviceTrigger(email: string | undefined): void
-  isApprovedDeviceAlive: boolean
+  declineIncomingDevice(deviceId: string | undefined, email: string) : void
+  isApprovedDeviceAlive: number
 }>(undefined as any);
 interface JwtProps extends JwtPayload {
   exp?: number
@@ -71,7 +72,7 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({
   const { handleOnToast } = useToastContext()
   const { setLoading } = useLoaders()
   const router = useRouter();
-  const [isApprovedDeviceAlive, setIsApprovedDeviceAlive] = useState<boolean>(false)
+  const [isApprovedDeviceAlive, setIsApprovedDeviceAlive] = useState<number>(0)
   const [maxResentWith401, setMaxResentWith401] = useState<number | null>(null)
   const [compressedDeviceInfo, setCompressedDeviceInfo] = useState<string | undefined>(undefined)
   const [remainingTime, setRemainingTime] = useState<number>(0)
@@ -107,6 +108,12 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({
       deviceId: string | undefined,
       email: string
     }) => await api.users.authDeviceApproval(args)
+  )
+  const declineDevice = useApiCallBack(
+    async (api, args: {
+      deviceId: string | undefined,
+      email: string
+    }) => await api.users.authDeviceDecline(args)
   )
   const FoundAuthCb = useApiCallBack(
     async (api, args: RequestRouterParams) => 
@@ -172,6 +179,10 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({
   const approvedDeviceTrigger = (email: string | undefined) => {
     APTCb.execute(email)
     .then((trigger: AxiosResponse | undefined) => {
+      /**
+       * Change this logic from boolean to integer
+       * once received 1 then approved else 2 means declined
+       */
       setIsApprovedDeviceAlive(trigger?.data)
     })
   }
@@ -198,6 +209,61 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({
         </ControlledModal>
       </>
     )
+  }
+  const declineIncomingDevice = (deviceId: string | undefined, email: string) => {
+    const obj: {
+      deviceId: string | undefined,
+      email: string
+    } = {
+        deviceId: deviceId,
+        email: email
+    }
+    setLoading(true)
+    declineDevice.execute(obj)
+    .then((response: AxiosResponse | undefined) => {
+      if(response?.data == 200){
+        setRequestNum(0)
+        handleOnToast(
+          "Device declined.",
+          "top-right",
+          false,
+          true,
+          true,
+          true,
+          undefined,
+          "dark",
+          "warning"
+        );
+        setLoading(false)
+      }
+    }).catch((err: AxiosError) => {
+      if(err.response?.status == 401) {
+        handleOnToast(
+          "Something went wrong unauthorized request.",
+          "top-right",
+          false,
+          true,
+          true,
+          true,
+          undefined,
+          "dark",
+          "error"
+        );
+        localStorage.clear()
+      } else {
+        handleOnToast(
+          "Something went wrong.",
+          "top-right",
+          false,
+          true,
+          true,
+          true,
+          undefined,
+          "dark",
+          "error"
+        );
+      }
+    })
   }
   const approveIncomingDevice = (deviceId: string | undefined, email: string) => {
     const obj: {
@@ -500,8 +566,8 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({
     }
   }, [cooldownIsActive])
   const requestGetNums = () => {
-    FetchRequestCb.execute(cookies['deviceId'])
-    .then((repository: AxiosResponse | undefined) => setRequestNum(repository?.data))
+    FetchRequestCb.execute(cookies['deviceId'] && cookies['deviceId'])
+    .then((repository: AxiosResponse | undefined) => setRequestNum(repository?.data ?? 0))
   }
   useEffect(() => {
     const handleMouseMove = () => {
@@ -678,7 +744,9 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({
                     }
                   })
               } else if (req?.data == 500) {
+                setDevice("ndd")
                 setLoading(false)
+                setToBeEncryptedPassword(password)
                 handleOnToast(
                   "Maximum device request",
                   "top-right",
@@ -804,6 +872,7 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({
         toBeEncryptedPassword,
         requestGetNums,
         approveIncomingDevice,
+        declineIncomingDevice,
         cookies,
         approvedDeviceTrigger,
         isApprovedDeviceAlive

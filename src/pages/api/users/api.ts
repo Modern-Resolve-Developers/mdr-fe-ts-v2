@@ -63,6 +63,9 @@ export class UsersApi {
     public authDeviceApproval(props: {deviceId?: string | undefined, email: string}){
         return this.axios.put(`/api/users/device-approval/${props.deviceId}/auth/${props.email}`)
     }
+    public authDeviceDecline(props: {deviceId?: string | undefined, email: string}){
+        return this.axios.put(`/api/users/device-decline/${props.deviceId}/auth/${props.email}`)
+    }
     public approvedDeviceTriggered(email: string) {
         return this.axios.get(`/api/users/approved-device/${email}/trigger`)
     }

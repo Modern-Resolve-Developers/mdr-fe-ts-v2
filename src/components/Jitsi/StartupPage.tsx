@@ -28,7 +28,7 @@ import { useAuthContext } from '@/utils/context/base/AuthContext'
 import { SessionContextMigrate } from '@/utils/context/base/SessionContext'
 
 import { useMutation } from 'react-query'
-import { useReferences, useRefreshToken } from '@/utils/context/hooks/hooks'
+import { useReferences } from '@/utils/context/hooks/hooks'
 import { AxiosResponse } from 'axios'
 import { useLoaders } from '@/utils/context/base/LoadingContext'
 
@@ -102,7 +102,6 @@ const CreateMeetForm = () => {
     )
 }
 export const StartupPage = () => {
-    useRefreshToken()
     const router = useRouter()
     const [jitsiMeetAtom, setJitsiMeetAtom] = useAtom(meetAtom)
     const [backdrop, setBackdrop] = useState(false)

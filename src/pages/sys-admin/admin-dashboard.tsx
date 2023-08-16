@@ -39,7 +39,7 @@ if (typeof Highcharts === "object") {
 
 const TestAdminDashboard: React.FC = () => {
   const { signoutProcess, tokenExpired, TrackTokenMovement, expirationTime, AlertTracker, FormatExpiry, refreshTokenBeingCalled, isMouseMoved, isKeyPressed,
-  accessToken, disableRefreshTokenCalled, requestNum, devicePromptApproval, requestGetNums, approveIncomingDevice, cookies } = useAuthContext();
+  accessToken, disableRefreshTokenCalled, requestNum, devicePromptApproval, declineIncomingDevice, requestGetNums, approveIncomingDevice, cookies } = useAuthContext();
   const { loading, setLoading } = useLoaders()
   const [options, setOptions] = useState<any>({
     chart: {
@@ -141,6 +141,9 @@ const TestAdminDashboard: React.FC = () => {
     if(requestNum == 1 || requestNum == 2) {
       setDevicePrompt(true)
     }
+    else{
+      setDevicePrompt(false)
+    }
   }, [requestNum])
   useEffect(() => {
     if(!accessToken || accessToken == undefined) {
@@ -183,6 +186,9 @@ const TestAdminDashboard: React.FC = () => {
   }, [isKeyPressed, disableRefreshTokenCalled])
   const handleApproveDeviceIncoming = () => {
     approveIncomingDevice(cookies.deviceId, references?.email)
+  }
+  const handleDeclineDeviceIncoming = () => {
+    declineIncomingDevice(cookies.deviceId, references?.email)
   }
   return (
     <>
@@ -333,7 +339,7 @@ const TestAdminDashboard: React.FC = () => {
                 </>
               ),
               handleAuthApproved: handleApproveDeviceIncoming,
-              handleAuthDeclined: () => {},
+              handleAuthDeclined: handleDeclineDeviceIncoming,
               openState: devicePrompt
             })
           }

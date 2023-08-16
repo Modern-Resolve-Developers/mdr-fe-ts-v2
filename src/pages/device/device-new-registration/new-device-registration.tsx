@@ -36,7 +36,7 @@ const NewDeviceRegistration: React.FC = () => {
         return () => clearInterval(intervalId)
     }, [])
     useEffect(() => {
-        if(isApprovedDeviceAlive){
+        if(isApprovedDeviceAlive == 1){
             setLoading(true)
             approvedDeviceReset.execute(decrypt(email))
             .then((response: AxiosResponse | undefined) => {
@@ -47,6 +47,15 @@ const NewDeviceRegistration: React.FC = () => {
             }).catch((error: AxiosError) => {
                 if(error.response?.status == 400){
                     setDevice(undefined)
+                }
+            })
+        } else {
+            setLoading(true)
+            approvedDeviceReset.execute(decrypt(email))
+            .then((response: AxiosResponse | undefined) => {
+                if(response?.data == 200) {
+                    setDevice(undefined)
+                    router.push('/login')
                 }
             })
         }
