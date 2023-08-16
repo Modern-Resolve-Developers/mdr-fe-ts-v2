@@ -5,7 +5,7 @@ import {
   ProjectTable,
   UncontrolledCard,
 } from "@/components";
-import { Container, Grid } from "@mui/material";
+import { Container, Grid, Typography } from "@mui/material";
 import { StartupPage } from "@/components/Jitsi/StartupPage";
 import { ControlledPopoverButton } from "@/components/Button/PopoverButton";
 import { ControlledTabs } from "@/components/Tabs/Tabs";
@@ -32,7 +32,9 @@ import { GetServerSideProps } from "next";
 import { PageProps } from "@/utils/types";
 import { getSecretsIdentifiedAccessLevel } from "@/utils/secrets/secrets_identified_user";
 import { JoinMeetingFormAccount, baseJoinFormSchema } from "@/utils/schema/Sys-adminSchema/DigitalMeetSchema";
-import { useUserId } from "@/utils/context/hooks/hooks";
+import { useReferences, useUserId } from "@/utils/context/hooks/hooks";
+import { useLoaders } from "@/utils/context/base/LoadingContext";
+import { AxiosResponse } from "axios";
 
 
 
@@ -99,7 +101,6 @@ const DigitalMeet: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [roomId, setRoomId] = useState(0);
   const [url, setUrl] = useState("");
-  const [loading, setLoading] = useState(true);
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
   const [meetId, setMeetId] = useState<number>(0);
   const handleShowPopOver = (
@@ -125,14 +126,17 @@ const DigitalMeet: React.FC = () => {
     async (api, id: number) => await api.mdr.DeleteRoom(id)
   );
   const { signoutProcess, disableRefreshTokenCalled, tokenExpired, TrackTokenMovement, expirationTime, AlertTracker, FormatExpiry, refreshTokenBeingCalled, isMouseMoved, isKeyPressed,
-    accessToken } = useAuthContext();
+    accessToken, requestGetNums, requestNum, approveIncomingDevice, cookies, devicePromptApproval } = useAuthContext();
   const router = useRouter();
+  const [references, setReferences] = useReferences()
+  const { setLoading, loading } = useLoaders()
+  const [devicePrompt, setDevicePrompt] = useState<boolean>(false)
   const { getAllRooms, rooms, setRooms } = useMeetContext();
   const { handleOnToast } = useContext(
     ToastContextContinue
   ) as ToastContextSetup;
   useEffect(() => {
-    getAllRooms();
+    // getAllRooms();
   }, []);
   const columns: any[] = [
     {
@@ -299,50 +303,62 @@ const DigitalMeet: React.FC = () => {
   const [uid, setUid] = useUserId()
   useEffect(() => {
     if(typeof window !== 'undefined' && window.localStorage) {
-      getPropsDynamic(localStorage.getItem("uid") ?? 0).then((repo: any) => {
+      getPropsDynamic(localStorage.getItem("uid") ?? 0).then((repo: AxiosResponse | undefined) => {
         setIdentifiedUser(repo?.data);
       });
     }
   }, []);
   useEffect(() => {
-    if(!accessToken || accessToken == undefined){
+    const interval = setInterval(requestGetNums, 1000)
+    return () => clearInterval(interval)
+  }, [])
+  useEffect(() => {
+    if(requestNum == 1 || requestNum == 2) {
+      setDevicePrompt(true)
+    }
+  }, [requestNum])
+  useEffect(() => {
+    if(!accessToken || accessToken == undefined) {
       router.push('/login')
       setTimeout(() => {
         setLoading(false)
       }, 2000)
     } else {
       setLoading(false)
-      const isExpired = TrackTokenMovement()
-      if(isExpired) {
-        signoutProcess()
-        handleOnToast(
-          "Token expired. Please re-login.",
-          "top-right",
-          false,
-          true,
-          true,
-          true,
-          undefined,
-          "dark",
-          "error"
-        );
-      }
+        const isExpired = TrackTokenMovement()
+        if(isExpired) {
+          signoutProcess("expired")
+          handleOnToast(
+            "Token expired. Please re-login.",
+            "top-right",
+            false,
+            true,
+            true,
+            true,
+            undefined,
+            "dark",
+            "error"
+          );
+        }
     }
   }, [tokenExpired]);
   useEffect(() => {
-    if(!disableRefreshTokenCalled){
+    if(!disableRefreshTokenCalled) {
       if(isMouseMoved) {
         refreshTokenBeingCalled()
       }
     }
   }, [isMouseMoved, disableRefreshTokenCalled])
   useEffect(() => {
-    if(!disableRefreshTokenCalled){
+    if(!disableRefreshTokenCalled) {
       if(isKeyPressed){
         refreshTokenBeingCalled()
       }
     }
   }, [isKeyPressed, disableRefreshTokenCalled])
+  const handleApproveDeviceIncoming = () => {
+    approveIncomingDevice(cookies.deviceId, references?.email)
+  }
   const handleContinue = () => {
     handleSubmit((values) => {
       const obj = {
@@ -432,6 +448,37 @@ const DigitalMeet: React.FC = () => {
               <JoinForm isprivate={isPrivate} />
             </FormProvider>
           </ControlledModal>
+          {
+            devicePromptApproval({
+              content: (
+                <>
+                 <Typography gutterBottom variant="button">New Device Approval</Typography>
+                 <Container>
+                  <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}
+                  >
+                    <img 
+                    src='https://cdn.dribbble.com/userupload/7433107/file/original-dd35f5eb54ba85db5dedda17c84e0353.png?resize=1200x900'
+                    style={{
+                      width: '50%',
+                  }}
+                    />
+                  </div>
+                  <Typography variant="caption">
+                    A new device is trying to sign in. Please select between approve and decline. Once approved you will automatically logged out on this device
+                  </Typography>
+                 </Container>
+                </>
+              ),
+              handleAuthApproved: handleApproveDeviceIncoming,
+              handleAuthDeclined: () => {},
+              openState: devicePrompt
+            })
+          }
         </Container>
       )}
     </>

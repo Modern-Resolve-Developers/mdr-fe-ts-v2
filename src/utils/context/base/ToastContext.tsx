@@ -46,6 +46,18 @@ const ToastContext: React.FC<ToastContextProps> = ({ children }) => {
           theme: theme,
         });
         break;
+      case "warning":
+        toast.error(message, {
+          position: position,
+          autoClose: 5000,
+          hideProgressBar: hideProgressBar,
+          closeOnClick: closeOnClick,
+          pauseOnHover: pauseOnHover,
+          draggable: draggable,
+          progress: progress,
+          theme: theme,
+        });
+        break;
       default:
         break;
     }

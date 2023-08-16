@@ -273,10 +273,10 @@ export type RouteEntity = {
 
 export const toBeMigrated: RouteEntity[] = [
     {
-        id: 1,
-        access_level: 1,
-        ToWhomRoute: 'Administrator',
-        exactPath: 'sys-admin/auth/dashboardauth'
+        id: 2,
+        access_level: 0,
+        ToWhomRoute: 'AllAccess',
+        exactPath: '/device/device-new-registration/new-device-registration'
     }
 ]
 

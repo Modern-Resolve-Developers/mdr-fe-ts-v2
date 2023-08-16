@@ -20,7 +20,7 @@ const DashboardAuth: React.FC = () => {
         } else {
             if(isExpired) {
                 setLoading(false)
-                signoutProcess()
+                signoutProcess("expired")
                 handleOnToast(
                     "Token expired. Please re-login.",
                     "top-right",

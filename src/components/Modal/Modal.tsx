@@ -51,16 +51,17 @@ const ControlledModal: React.FC<ModalProps> = ({
                 </DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                {
-                    !enableDecline && <Button sx={{
-                        display: buttonTextAccept == 'NO-BTN' ? 'none' : ''
-                    }} variant='outlined' onClick={handleDecline}>{buttonTextDecline}</Button>
-                }
+                
                 <Button sx={{
                     display: buttonTextAccept == 'NO-BTN' ? 'none' : ''
                 }} variant='outlined' color={color} onClick={handleSubmit} autoFocus>
                     {buttonTextAccept}
                 </Button>
+                {
+                    !enableDecline && <Button sx={{
+                        display: buttonTextAccept == 'NO-BTN' ? 'none' : ''
+                    }} variant='outlined' color='error' onClick={handleDecline}>{buttonTextDecline}</Button>
+                }
                 </DialogActions>
             </Dialog>
         </>

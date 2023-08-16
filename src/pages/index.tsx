@@ -35,6 +35,7 @@ import {
 } from "@/utils/sys-routing/sys-routing";
 import { AxiosError, AxiosResponse } from "axios";
 import { useUserId } from "@/utils/context/hooks/hooks";
+import { useToastContext } from "@/utils/context/base/ToastContext";
 
 const Home: React.FC<PageProps> = ({ data }) => {
   const [uid] = useUserId();
@@ -44,7 +45,7 @@ const Home: React.FC<PageProps> = ({ data }) => {
   const { accessSavedAuth, accessUserId } = useContext(
     SessionContextMigrate
   ) as SessionStorageContextSetup;
-  const { checkAuthentication } = useAuthContext();
+  const { deviceInfo } = useAuthContext();
   const foundSecuredRouter = useSecureHiddenNetworkApi(
     async (api, id: string | undefined) =>
       await api.secure.sla_begin_work_find_secured_route(id)
@@ -79,7 +80,8 @@ const Home: React.FC<PageProps> = ({ data }) => {
     foundSecuredRouter.execute(id)
   );
   useEffect(() => {
-    if (uid != undefined) {
+    deviceInfo()
+    if(uid != undefined) {
       useFoundSecuredRouter.mutate(uid, {
         onSuccess: (response: AxiosResponse | undefined) => {
           if (response?.data != 404) {

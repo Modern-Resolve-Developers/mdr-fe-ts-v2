@@ -5,7 +5,7 @@ import { useAccessToken, useRefreshToken } from "../context/hooks/hooks";
 import Http from "@/pages/api/http-client";
 import { httpClient, useApiCallBack } from "./useApi";
 
-export const useRefreshTokenHandler = () => {
+export const useRefreshTokenHandler = (logout: AsyncFunction) => {
     const [accessToken, setAccessToken] = useAccessToken()
     const [refreshToken, setRefreshToken] = useRefreshToken()
     const retryInProgressRequest = useRef<Promise<void> | null>()
@@ -16,7 +16,11 @@ export const useRefreshTokenHandler = () => {
     const handleRetry = async (err: AxiosError | any, http: Http) => {
         if (err.response?.status !== 401) {
             return Promise.reject(err);
-          }
+        }
+
+        if(err.response?.status === 401){
+          return logout()
+        }
 
         if (!retryInProgressRequest.current) {
             retryInProgressRequest.current = refresh(err).then(() => {

@@ -24,7 +24,7 @@ import { LoadingProvider } from "@/utils/context/base/LoadingContext";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { DynamicDashboardProvider } from "@/utils/context/base/DynamicDashboardContext";
 import { GlobalsProvider } from "@/utils/context/base/GlobalContext";
-import { useAccessToken, useUserType } from "@/utils/context/hooks/hooks";
+import { useAccessToken, useDevice, useUserType } from "@/utils/context/hooks/hooks";
 import DashboardLayout from "@/components/DashboardLayout";
 import { sidebarExpand, sidebarList, clientSidebarList } from "@/utils/sys-routing/sys-routing";
 import { decrypt } from "@/utils/secrets/hashed";
@@ -51,7 +51,7 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
   const [storedValue, setStoredValue] = useState<string | undefined>(undefined);
   const [storedType, setStoredType] = useState<number | undefined>(undefined);
   const [accessToken, setAccessToken] = useAccessToken();
-
+  const [device, setDevice] = useDevice()
   useEffect(() => {
     setLoading(!loading);
     let savedAuthenticationStorage;
@@ -65,14 +65,18 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
       savedAuthenticationStorage = JSON.parse(savedAuthStorage);
       savedUserType = JSON.parse(savedUserTypeStorage);
     }
-    if (accessToken != undefined) {
-      setLoading(false);
-      setStoredValue(accessToken);
-      setStoredType(parseInt(decrypt(savedUserType)));
+    if(device != undefined) {
+      setLoading(false)
     } else {
-      setLoading(false);
-      setStoredValue(undefined);
-      setStoredType(undefined)
+      if (accessToken != undefined) {
+        setLoading(false);
+        setStoredValue(accessToken);
+        setStoredType(parseInt(decrypt(savedUserType)));
+      } else {
+        setLoading(false);
+        setStoredValue(undefined);
+        setStoredType(undefined)
+      }
     }
   }, [accessToken, userType]);
 
@@ -81,6 +85,7 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
       <GlobalsProvider
         globals={{ storedValue: storedValue, storedType: storedType }}
       >
+        <CookiesProvider>
         <LoadingProvider>
         <ThemeProvider theme={darkTheme}>
           <CssBaseline />
@@ -105,7 +110,7 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
                                 pauseOnHover
                                 theme="dark"
                               />
-                              <CookiesProvider>
+                              
                                 {loading && !storedValue ? (
                                   <ControlledBackdrop open={loading} />
                                 ) : storedValue ? (
@@ -124,7 +129,7 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
                                 ) : (
                                   <>{getLayout(<Component {...pageProps} />)}</>
                                 )}
-                              </CookiesProvider>
+                              
                         </AdminRegistrationContext>
                       </TableSearchContext>
                     </MeetProvider>
@@ -136,6 +141,7 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
           </QueryClientProvider>
         </ThemeProvider>
         </LoadingProvider>
+        </CookiesProvider>
       </GlobalsProvider>
     </>
   );

@@ -135,7 +135,7 @@ export default function DashboardLayout({children, sidebarConfig, subsidebarConf
       if(accessSavedAuth != null && accessUserId != null) {
         setOpen(!open)
         setDisableRefreshTokenCalled(true)
-        signoutProcess()
+        signoutProcess("signout")
         setTimeout(() => setOpen(false), 2000)
       }
     }

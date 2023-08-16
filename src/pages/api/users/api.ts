@@ -1,5 +1,6 @@
 import { AxiosInstance } from 'axios'
 import { UpdateUsersDetailsArgs, UAMAddRequestArgs,UAMCreationAdminArgs } from './types'
+import { RequestDeviceRecognition } from '../Authentication/types'
 
 export class UsersApi {
     constructor(private readonly axios: AxiosInstance){}
@@ -41,5 +42,34 @@ export class UsersApi {
     }
     public findEmailOnCustomerRegistration(email: string) {
         return this.axios.get(`/api/users/customer-check-email/${email}`)
+    }
+    public deviceRequestUpdate(email: string | undefined) {
+        return this.axios.put(`/api/users/device-request/${email}`)
+    }
+    public deviceGetRequest(deviceId: string | undefined) {
+        return this.axios.get(
+            `/api/users/device-get-request/${deviceId}`
+        )
+    }
+    public demolishDeviceRequest(email: string | undefined) {
+        return this.axios.put(`/api/users/demolish-device-request/${email}`)
+    }
+    public revokeDevice(email: string){
+        return this.axios.put(`/api/users/device-revoke/${email}`)
+    }
+    public unauthRevokeDevice(email: string) {
+        return this.axios.put(`/api/users/unauth-device-revoke/${email}`)
+    }
+    public authDeviceApproval(props: {deviceId?: string | undefined, email: string}){
+        return this.axios.put(`/api/users/device-approval/${props.deviceId}/auth/${props.email}`)
+    }
+    public authDeviceDecline(props: {deviceId?: string | undefined, email: string}){
+        return this.axios.put(`/api/users/device-decline/${props.deviceId}/auth/${props.email}`)
+    }
+    public approvedDeviceTriggered(email: string) {
+        return this.axios.get(`/api/users/approved-device/${email}/trigger`)
+    }
+    public approvedDeviceReset(email: string) {
+        return this.axios.put(`/api/users/approved-device/${email}/reset`)
     }
 }
